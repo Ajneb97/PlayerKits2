@@ -1,0 +1,68 @@
+package pk.ajneb97.configs;
+
+import org.bukkit.configuration.file.FileConfiguration;
+import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.managers.MessagesManager;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+public class MessagesConfigManager {
+
+    private PlayerKits2 plugin;
+    private CustomConfig configFile;
+
+    public MessagesConfigManager(PlayerKits2 plugin){
+        this.plugin = plugin;
+        this.configFile = new CustomConfig("messages.yml",plugin,null, false);
+        this.configFile.registerConfig();
+
+    }
+
+    public void configure(){
+        FileConfiguration config = configFile.getConfig();
+
+        //Configure messages
+        MessagesManager msgManager = new MessagesManager();
+        msgManager.setTimeSeconds(config.getString("seconds"));
+        msgManager.setTimeMinutes(config.getString("minutes"));
+        msgManager.setTimeHours(config.getString("hours"));
+        msgManager.setTimeDays(config.getString("days"));
+        msgManager.setPrefix(config.getString("prefix"));
+        msgManager.setRequirementsMessageStatusSymbolTrue(config.getString("requirementsMessageStatusSymbolTrue"));
+        msgManager.setRequirementsMessageStatusSymbolFalse(config.getString("requirementsMessageStatusSymbolFalse"));
+        msgManager.setCooldownPlaceholderReady(config.getString("cooldownPlaceholderReady"));
+
+        this.plugin.setMessagesManager(msgManager);
+    }
+
+    public boolean reloadConfig(){
+        if(!configFile.reloadConfig()){
+            return false;
+        }
+        configure();
+        return true;
+    }
+
+    public FileConfiguration getConfig(){
+        return configFile.getConfig();
+    }
+
+    public void checkUpdate(){
+        Path pathConfig = Paths.get(configFile.getRoute());
+        try{
+            String text = new String(Files.readAllBytes(pathConfig));
+            /*
+            if(!text.contains("register_commands:")){
+                List<String> commands = new ArrayList<>();
+                getConfig().set("Config.register_commands", commands);
+                saveConfig();
+            }
+            */
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+}

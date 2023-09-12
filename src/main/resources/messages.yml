@@ -1,0 +1,38 @@
+prefix: "&8[&bPlayerKits&a²&8] "
+kitDoesNotExists: "&cThe kit &7%kit% &cdoesn't exists."
+kitNoPermissions: "&cYou don't have permissions to claim this kit."
+noSpaceError: "&cYou don't have enough space in your inventory."
+commandReload: "&aConfig Reloaded."
+commandGiveError: "&cYou need to use: &7/kit give <kit> <player>"
+commandGiveError2: "&cThere was an error giving the kit: &7%error%"
+commandGiveCorrect: "&aKit &7%kit% &agiven to &e%player%&a!"
+commandClaimError: "&cYou need to use: &7/kit claim <kit>"
+commandCreateError: "&cYou need to use: &7/kit create <name>"
+commandDeleteError: "&cYou need to use: &7/kit delete <name>"
+commandResetError: "&cYou need to use: &7/kit reset <kit> <player>"
+commandEditError: "&cYou need to use: &7/kit edit <kit>"
+commandDoesNotExists: "&cThat command doesn't exists."
+playerNotOnline: "&cPlayer &7%player% &cis not online."
+oneTimeError: "&cYou can't claim this kit again."
+cooldownError: "&cYou need to wait &7%time% &cto claim this kit again."
+kitReceived: "&aKit &7%kit% &areceived."
+kitAlreadyExists: "&cThe kit &7%kit% &calready exists on the config."
+inventoryEmpty: "&cYou need at least 1 item on your inventory to create a kit."
+kitCreated: "&aKit &7%kit% &acreated correctly."
+kitNotAddedToInventory: "&eIt was not possible to automatically add the kit to the inventory. There is no more space left."
+kitAddedToInventory: "&eKit item added to the &7%inventory% &edefault inventory on slot &7%slot%&e!"
+noPermissions: "&cYou don't have permissions for that."
+kitDeleted: "&aKit &7%kit% &adeleted correctly."
+playerDataNotFound: "&cNo data found for player &7%player%&c."
+kitResetCorrect: "&aKit &7%kit% &areset for &7%player%&a!"
+cantPreviewError: "&cYou can't preview this kit."
+requirementsMessageStatusSymbolTrue: "&a&l✔"
+requirementsMessageStatusSymbolFalse: "&c&l✖"
+requirementsError: "&cYou dont't have the necessary requirements to buy this!"
+seconds: 's'
+minutes: 'm'
+hours: 'h'
+days: 'd'
+cooldownPlaceholderReady: "&a&lReady!"
+
+

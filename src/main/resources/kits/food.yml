@@ -1,0 +1,38 @@
+cooldown: 3600
+items:
+  1:
+    id: COOKED_BEEF
+    amount: 5
+  2:
+    id: COOKED_CHICKEN
+    amount: 5
+display:
+  default:
+    id: COOKED_BEEF
+    name: '&c&lFood &cKit'
+    lore:
+      - '&fThis kit includes:'
+      - '&8- &7x5 Cooked Beef'
+      - '&8- &7x5 Cooked Chicken'
+      - ' '
+      - '&7Cooldown: &c1 hour'
+      - ''
+      - '&aLeft Click to claim!'
+      - '&bRight Click to preview!'
+  cooldown:
+    id: COOKED_BEEF
+    name: "&c&lFood &cKit"
+    lore:
+      - '&fThis kit includes:'
+      - '&8- &7x5 Cooked Beef'
+      - '&8- &7x5 Cooked Chicken'
+      - ' '
+      - "&cYou need to wait &7%time%"
+      - "&cto claim this kit again."
+actions:
+  claim:
+    1:
+      action: "playsound: BLOCK_NOTE_BLOCK_PLING;10;2"
+  error:
+    1:
+      action: "playsound: BLOCK_NOTE_BLOCK_PLING;10;0.1"
