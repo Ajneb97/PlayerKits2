@@ -162,11 +162,6 @@ public class InventoryManager {
 
         int slot = 0;
         for(KitItem kitItem : allItems){
-            ItemStack currentItem = inv.getItem(slot);
-            if(currentItem != null && !currentItem.equals(Material.AIR)){
-                continue;
-            }
-
             ItemStack item = kitItemManager.createItemFromKitItem(kitItem,inventoryPlayer.getPlayer());
             if(kitItem.getPreviewSlot() != -1){
                 inv.setItem(kitItem.getPreviewSlot(),item);

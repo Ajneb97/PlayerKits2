@@ -22,6 +22,7 @@ public class MainConfigManager {
     private String firstJoinKit;
     private String newKitDefaultInventory;
     private boolean isMySQL;
+    private boolean updateNotify;
 
     public MainConfigManager(PlayerKits2 plugin){
         this.plugin = plugin;
@@ -38,6 +39,7 @@ public class MainConfigManager {
         firstJoinKit = config.getString("first_join_kit");
         newKitDefaultInventory = config.getString("new_kit_default_inventory");
         isMySQL = config.getBoolean("mysql_database.enabled");
+        updateNotify = config.getBoolean("update_notify");
     }
 
     public boolean reloadConfig(){
@@ -94,5 +96,9 @@ public class MainConfigManager {
 
     public boolean isMySQL() {
         return isMySQL;
+    }
+
+    public boolean isUpdateNotify() {
+        return updateNotify;
     }
 }

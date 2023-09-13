@@ -9,6 +9,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.InventoryManager;
+import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 
 public class PlayerListener implements Listener {
@@ -23,6 +24,12 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
         plugin.getPlayerDataManager().manageJoin(player);
 
+        //Update notification
+        String latestVersion = plugin.getUpdateCheckerManager().getLatestVersion();
+        if(player.isOp() && plugin.getConfigsManager().getMainConfigManager().isUpdateNotify() && !plugin.version.equals(latestVersion)){
+            player.sendMessage(MessagesManager.getColoredMessage(plugin.prefix+"&cThere is a new version available. &e(&7"+latestVersion+"&e)"));
+            player.sendMessage(MessagesManager.getColoredMessage("&cYou can download it at: &ahttps://www.spigotmc.org/resources/112616/"));
+        }
     }
 
     @EventHandler

@@ -11,14 +11,16 @@ import pk.ajneb97.database.MySQLConnection;
 import pk.ajneb97.listeners.InventoryEditListener;
 import pk.ajneb97.listeners.PlayerListener;
 import pk.ajneb97.managers.*;
+import pk.ajneb97.managers.dependencies.Metrics;
 import pk.ajneb97.managers.edit.InventoryEditManager;
+import pk.ajneb97.model.internal.UpdateCheckerResult;
 import pk.ajneb97.tasks.InventoryUpdateTaskManager;
 import pk.ajneb97.tasks.PlayerDataSaveTask;
 import pk.ajneb97.versions.NMSManager;
 
 public class PlayerKits2 extends JavaPlugin {
 
-    private String version = getDescription().getVersion();
+    public String version = getDescription().getVersion();
     public static String prefix = MessagesManager.getColoredMessage("&8[&bPlayerKits&a²&8] ");
 
     private KitItemManager kitItemManager;
@@ -30,7 +32,7 @@ public class PlayerKits2 extends JavaPlugin {
     private InventoryManager inventoryManager;
     private InventoryEditManager inventoryEditManager;
     private NMSManager nmsManager;
-
+    private UpdateCheckerManager updateCheckerManager;
 
     private InventoryUpdateTaskManager inventoryUpdateTaskManager;
     private PlayerDataSaveTask playerDataSaveTask;
@@ -65,9 +67,13 @@ public class PlayerKits2 extends JavaPlugin {
         if(getServer().getPluginManager().getPlugin("PlaceholderAPI") != null){
             new ExpansionPlayerKits(this).register();
         }
+        Metrics metrics = new Metrics(this,19795);
 
         Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(prefix+"&eHas been enabled! &fVersion: "+version));
         Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(prefix+"&eThanks for using my plugin!   &f~Ajneb97"));
+
+        updateCheckerManager = new UpdateCheckerManager(version);
+        updateMessage(updateCheckerManager.check());
     }
 
     public void onDisable(){
@@ -135,5 +141,22 @@ public class PlayerKits2 extends JavaPlugin {
 
     public NMSManager getNmsManager() {
         return nmsManager;
+    }
+
+    public UpdateCheckerManager getUpdateCheckerManager() {
+        return updateCheckerManager;
+    }
+
+    public void updateMessage(UpdateCheckerResult result){
+        if(!result.isError()){
+            String latestVersion = result.getLatestVersion();
+            if(latestVersion != null){
+                Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage("&cThere is a new version available. &e(&7"+latestVersion+"&e)"));
+                Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage("&cYou can download it at: &fhttps://www.spigotmc.org/resources/112616/"));
+            }
+        }else{
+            Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(prefix+"&cError while checking update."));
+        }
+
     }
 }
