@@ -89,7 +89,7 @@ public class InventoryEditDisplayManager {
         lore.add("&7inventory.");
         new InventoryItem(inv, 26, Material.EMERALD_BLOCK).name("&6&lSave Item").lore(lore).ready();
 
-        if(kitItem != null){
+        if(kitItem != null && kitItem.getId() != null){
             inv.setItem(13,plugin.getKitItemManager().createItemFromKitItem(kitItem, inventoryPlayer.getPlayer()));
         }
 

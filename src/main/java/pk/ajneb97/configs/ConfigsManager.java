@@ -66,6 +66,8 @@ public class ConfigsManager {
             plugin.reloadPlayerDataSaveTask();
         }
 
+        plugin.getVerifyManager().verify();
+
         return true;
     }
 }

@@ -29,6 +29,7 @@ public class InventoryEditListener implements Listener {
             if(inventoryPlayer.getInventoryName().startsWith("edit_position")){
                 invManager.getInventoryEditPositionManager().closeInventory(inventoryPlayer);
             }
+            plugin.getVerifyManager().verify();
         }
         plugin.getInventoryEditManager().removeInventoryPlayer(player);
     }

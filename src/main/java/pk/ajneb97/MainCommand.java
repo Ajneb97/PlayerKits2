@@ -64,6 +64,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 reset(sender,args,messagesConfig,msgManager);
             }else if(args[0].equalsIgnoreCase("edit")) {
                 edit(player,args,messagesConfig,msgManager);
+            }else if(args[0].equalsIgnoreCase("verify")){
+                verify(player,messagesConfig,msgManager);
             }
             else{
                 // /kit <kit> (short command)
@@ -76,6 +78,10 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             }
         }else{
             // /kit
+            if(plugin.getVerifyManager().isCriticalErrors()){
+                msgManager.sendMessage(player,messagesConfig.getString("pluginCriticalErrors"),true);
+                return true;
+            }
             plugin.getInventoryManager().openInventory(new InventoryPlayer(player,"main_inventory"));
         }
 
@@ -98,8 +104,17 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit delete <kit> &8Deletes a kit."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reset <kit> <player> &8Resets kit data for a player."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reload &8Reloads the config."));
+        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit verify &8Checks the plugin for errors."));
         sender.sendMessage(MessagesManager.getColoredMessage(" "));
         sender.sendMessage(MessagesManager.getColoredMessage("&7[ [ &8[&bPlayerKits&a²&8] &7] ]"));
+    }
+
+    public void verify(Player player,FileConfiguration messagesConfig,MessagesManager msgManager){
+        if(!PlayerUtils.isPlayerKitsAdmin(player)){
+            msgManager.sendMessage(player,messagesConfig.getString("noPermissions"),true);
+            return;
+        }
+        plugin.getVerifyManager().sendVerification(player);
     }
 
     public void reload(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
@@ -272,6 +287,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             if(PlayerUtils.isPlayerKitsAdmin(sender)){
                 commands.add("give");commands.add("delete");commands.add("create");
                 commands.add("reload");commands.add("reset");commands.add("edit");
+                commands.add("verify");
             }
             for(String c : commands) {
                 if(args[0].isEmpty() || c.startsWith(args[0].toLowerCase())) {

@@ -33,6 +33,7 @@ public class PlayerKits2 extends JavaPlugin {
     private InventoryEditManager inventoryEditManager;
     private NMSManager nmsManager;
     private UpdateCheckerManager updateCheckerManager;
+    private VerifyManager verifyManager;
 
     private InventoryUpdateTaskManager inventoryUpdateTaskManager;
     private PlayerDataSaveTask playerDataSaveTask;
@@ -55,6 +56,9 @@ public class PlayerKits2 extends JavaPlugin {
 
         this.inventoryUpdateTaskManager = new InventoryUpdateTaskManager(this);
         this.inventoryUpdateTaskManager.start();
+
+        this.verifyManager = new VerifyManager(this);
+        this.verifyManager.verify();
 
         if(configsManager.getMainConfigManager().isMySQL()){
             mySQLConnection = new MySQLConnection(this);
@@ -147,12 +151,16 @@ public class PlayerKits2 extends JavaPlugin {
         return updateCheckerManager;
     }
 
+    public VerifyManager getVerifyManager() {
+        return verifyManager;
+    }
+
     public void updateMessage(UpdateCheckerResult result){
         if(!result.isError()){
             String latestVersion = result.getLatestVersion();
             if(latestVersion != null){
                 Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage("&cThere is a new version available. &e(&7"+latestVersion+"&e)"));
-                Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage("&cYou can download it at: &fhttps://www.spigotmc.org/resources/112616/"));
+                Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage("&cYou can download it at: &fhttps://modrinth.com/plugin/playerkits-2"));
             }
         }else{
             Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(prefix+"&cError while checking update."));

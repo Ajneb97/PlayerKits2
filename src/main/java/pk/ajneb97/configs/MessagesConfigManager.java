@@ -18,7 +18,7 @@ public class MessagesConfigManager {
         this.plugin = plugin;
         this.configFile = new CustomConfig("messages.yml",plugin,null, false);
         this.configFile.registerConfig();
-
+        checkUpdate();
     }
 
     public void configure(){
@@ -38,6 +38,10 @@ public class MessagesConfigManager {
         this.plugin.setMessagesManager(msgManager);
     }
 
+    public void saveConfig(){
+        configFile.saveConfig();
+    }
+
     public boolean reloadConfig(){
         if(!configFile.reloadConfig()){
             return false;
@@ -54,13 +58,11 @@ public class MessagesConfigManager {
         Path pathConfig = Paths.get(configFile.getRoute());
         try{
             String text = new String(Files.readAllBytes(pathConfig));
-            /*
-            if(!text.contains("register_commands:")){
-                List<String> commands = new ArrayList<>();
-                getConfig().set("Config.register_commands", commands);
+            if(!text.contains("pluginCriticalErrors:")){
+                getConfig().set("pluginCriticalErrors", "&cThe plugin has detected some errors. Check them using &7/kit verify");
                 saveConfig();
             }
-            */
+
         }catch(IOException e){
             e.printStackTrace();
         }

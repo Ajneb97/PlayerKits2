@@ -34,5 +34,6 @@ minutes: 'm'
 hours: 'h'
 days: 'd'
 cooldownPlaceholderReady: "&a&lReady!"
+pluginCriticalErrors: "&cThe plugin has detected some errors. Check them using &7/kit verify"
 
 
