@@ -276,6 +276,8 @@ public class InventoryManager {
         for(String c : sep) {
             if(c.startsWith("msg %player% ")) {
                 inventoryPlayer.getPlayer().sendMessage(MessagesManager.getColoredMessage(c.replace("msg %player% ", "")));
+            }else if(c.equals("close_inventory")){
+                inventoryPlayer.getPlayer().closeInventory();
             }else{
                 Bukkit.dispatchCommand(sender, c.replace("%player%", inventoryPlayer.getPlayer().getName()));
             }

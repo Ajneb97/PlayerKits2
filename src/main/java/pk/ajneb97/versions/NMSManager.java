@@ -21,15 +21,17 @@ public class NMSManager {
             //Classes
             version.addClass("CraftItemStack",Class.forName("org.bukkit.craftbukkit."+serverVersion+".inventory.CraftItemStack"));
             if(!serverVersionGreaterEqualThan(ServerVersion.v1_13_R1)) {
-                //Lower than 1.13
+                //1.12 or lower
                 version.addClass("NBTTagList",Class.forName("net.minecraft.server."+serverVersion+".NBTTagList"));
             }
             if(serverVersionGreaterEqualThan(ServerVersion.v1_17_R1)){
+                //1.17 or greater
                 version.addClass("ItemStackNMS",Class.forName("net.minecraft.world.item.ItemStack"));
                 version.addClass("NBTTagCompound",Class.forName("net.minecraft.nbt.NBTTagCompound"));
                 version.addClass("MojangsonParser",Class.forName("net.minecraft.nbt.MojangsonParser"));
                 version.addClass("NBTBase",Class.forName("net.minecraft.nbt.NBTBase"));
             }else{
+                //1.16 or lower
                 version.addClass("ItemStackNMS",Class.forName("net.minecraft.server."+serverVersion+".ItemStack"));
                 version.addClass("NBTTagCompound",Class.forName("net.minecraft.server."+serverVersion+".NBTTagCompound"));
                 version.addClass("MojangsonParser",Class.forName("net.minecraft.server."+serverVersion+".MojangsonParser"));
@@ -40,13 +42,14 @@ public class NMSManager {
             version.addMethod("asNMSCopy",version.getClassRef("CraftItemStack").getMethod("asNMSCopy",ItemStack.class));
             version.addMethod("asBukkitCopy",version.getClassRef("CraftItemStack").getMethod("asBukkitCopy",version.getClassRef("ItemStackNMS")));
             if(!serverVersionGreaterEqualThan(ServerVersion.v1_13_R1)){
-                //Lower than 1.13
+                //1.12 or lower
                 version.addMethod("getList",version.getClassRef("NBTTagCompound").getMethod("getList",String.class,int.class));
                 version.addMethod("listSize",version.getClassRef("NBTTagList").getMethod("size"));
                 version.addMethod("listGet",version.getClassRef("NBTTagList").getMethod("get",int.class));
                 version.addMethod("listAdd",version.getClassRef("NBTTagList").getMethod("add",version.getClassRef("NBTBase")));
             }
             if(!serverVersionGreaterEqualThan(ServerVersion.v1_18_R1)){
+                //1.17 or lower
                 version.addMethod("hasTag",version.getClassRef("ItemStackNMS").getMethod("hasTag"));
                 version.addMethod("getTag",version.getClassRef("ItemStackNMS").getMethod("getTag"));
                 version.addMethod("setTag",version.getClassRef("ItemStackNMS").getMethod("setTag",version.getClassRef("NBTTagCompound")));
@@ -71,6 +74,7 @@ public class NMSManager {
                 version.addMethod("hasKeyOfType",version.getClassRef("NBTTagCompound").getMethod("hasKeyOfType",String.class,int.class));
                 version.addMethod("parse",version.getClassRef("MojangsonParser").getMethod("parse",String.class));
             }else{
+                //1.18 or greater
                 String methodName = null;
                 switch(serverVersion){
                     case v1_18_R1: methodName = "r"; break;
@@ -337,6 +341,6 @@ public class NMSManager {
 
 
     private boolean serverVersionGreaterEqualThan(ServerVersion version){
-        return serverVersion.ordinal() > version.ordinal();
+        return serverVersion.ordinal() >= version.ordinal();
     }
 }

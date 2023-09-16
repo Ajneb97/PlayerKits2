@@ -40,7 +40,7 @@ requirements:
   - '&8Status: &7$%vault_eco_balance% %status_symbol_price%'
   - ''
   - '&fYou need level 20+'
-  - '&8Status: &7$%player_level% %status_symbol_requirement_1%'
+  - '&8Status: &7%player_level% %status_symbol_requirement_1%'
   extra_requirements:
   - "%player_level% >= 20"
 display:
