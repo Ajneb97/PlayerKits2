@@ -38,6 +38,8 @@ new_kit_default_values:
       lore:
         - "&cYou need to wait &7%time%"
         - "&cto claim this kit again."
+      item_flags:
+        - HIDE_ATTRIBUTES
 player_data_save_time: 300
 update_notify: true
 mysql_database:

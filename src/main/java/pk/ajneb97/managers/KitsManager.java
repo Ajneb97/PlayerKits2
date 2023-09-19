@@ -1,6 +1,7 @@
 package pk.ajneb97.managers;
 
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -320,7 +321,7 @@ public class KitsManager {
 
             //Cooldown
             if(kit.getCooldown() != 0 && !PlayerUtils.isPlayerKitsAdmin(player) && !PlayerUtils.hasCooldownBypassPermission(player)){
-                long millisMax = System.currentTimeMillis()+(kit.getCooldown()*1000);
+                long millisMax = System.currentTimeMillis()+(kit.getCooldown()* 1000L);
                 playerDataManager.setKitCooldown(player,kit.getName(),millisMax);
             }
 
