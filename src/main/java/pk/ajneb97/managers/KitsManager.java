@@ -266,6 +266,12 @@ public class KitsManager {
 
             inventoryKitItems++;
         }
+        ArrayList<KitAction> claimActions = kit.getClaimActions();
+        for(KitAction action : claimActions){
+            if(action.isCountAsItem()){
+                inventoryKitItems++;
+            }
+        }
 
 
         boolean enoughSpace = freeSlots < inventoryKitItems;

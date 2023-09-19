@@ -203,6 +203,7 @@ public class KitsConfigManager {
             String path = "actions."+actionType+"."+currentPos;
             config.set(path+".action",kitAction.getAction());
             config.set(path+".execute_before_items",kitAction.isExecuteBeforeItems());
+            config.set(path+".count_as_item",kitAction.isCountAsItem());
             if(kitAction.getDisplayItem() != null){
                 kitItemManager.saveKitItemOnConfig(kitAction.getDisplayItem(),config,path+".display_item");
             }
@@ -287,10 +288,11 @@ public class KitsConfigManager {
             for(String key : config.getConfigurationSection(mainPath+"actions."+actionType).getKeys(false)){
                 String path = mainPath+"actions."+actionType+"."+key;
                 String action = config.getString(path+".action");
-                boolean executeBeforeItem = config.contains("execute_before_items") ? config.getBoolean("execute_before_items") : false;
+                boolean executeBeforeItem = config.contains(path+".execute_before_items") ? config.getBoolean(path+".execute_before_items") : false;
+                boolean countAsItem = config.contains(path+".count_as_item") ? config.getBoolean(path+".count_as_item") : false;
                 KitItem item = config.contains(path+".display_item") ? kitItemManager.getKitItemFromConfig(config,path+".display_item") : null;
 
-                actions.add(new KitAction(action,item,executeBeforeItem));
+                actions.add(new KitAction(action,item,executeBeforeItem,countAsItem));
             }
         }
         return actions;

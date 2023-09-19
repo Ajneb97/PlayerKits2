@@ -6,11 +6,13 @@ public class KitAction {
     private String action;
     private KitItem displayItem;
     private boolean executeBeforeItems;
+    private boolean countAsItem;
 
-    public KitAction(String action, KitItem displayItem, boolean executeBeforeItems) {
+    public KitAction(String action, KitItem displayItem, boolean executeBeforeItems, boolean countAsItem) {
         this.action = action;
         this.displayItem = displayItem;
         this.executeBeforeItems = executeBeforeItems;
+        this.countAsItem = countAsItem;
     }
 
     public String getAction() {
@@ -35,5 +37,13 @@ public class KitAction {
 
     public void setExecuteBeforeItems(boolean executeBeforeItems) {
         this.executeBeforeItems = executeBeforeItems;
+    }
+
+    public boolean isCountAsItem() {
+        return countAsItem;
+    }
+
+    public void setCountAsItem(boolean countAsItem) {
+        this.countAsItem = countAsItem;
     }
 }

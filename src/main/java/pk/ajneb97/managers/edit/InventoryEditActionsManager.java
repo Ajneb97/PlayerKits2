@@ -132,7 +132,7 @@ public class InventoryEditActionsManager {
         Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
         String type = inventoryPlayer.getInventoryName().replace("edit_chat_add_action_","");
         ArrayList<KitAction> actions = getKitActionsFromType(kit,type);
-        actions.add(new KitAction(message,null,false));
+        actions.add(new KitAction(message,null,false,false));
 
         inventoryEditManager.removeInventoryPlayer(inventoryPlayer.getPlayer());
         openInventory(inventoryPlayer,type);
