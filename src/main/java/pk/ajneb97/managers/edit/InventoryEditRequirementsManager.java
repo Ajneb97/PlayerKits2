@@ -103,6 +103,7 @@ public class InventoryEditRequirementsManager {
                 KitRequirements kitRequirements = kit.getRequirements();
                 if(kitRequirements == null){
                     kitRequirements = new KitRequirements();
+                    kit.setRequirements(kitRequirements);
                 }
                 kitRequirements.setPrice(price);
                 inventoryEditManager.removeInventoryPlayer(inventoryPlayer.getPlayer());

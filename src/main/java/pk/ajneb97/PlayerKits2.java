@@ -9,6 +9,7 @@ import pk.ajneb97.api.PlayerKitsAPI;
 import pk.ajneb97.configs.ConfigsManager;
 import pk.ajneb97.database.MySQLConnection;
 import pk.ajneb97.listeners.InventoryEditListener;
+import pk.ajneb97.listeners.OtherListener;
 import pk.ajneb97.listeners.PlayerListener;
 import pk.ajneb97.managers.*;
 import pk.ajneb97.managers.dependencies.Metrics;
@@ -93,6 +94,7 @@ public class PlayerKits2 extends JavaPlugin {
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new PlayerListener(this), this);
         pm.registerEvents(new InventoryEditListener(this), this);
+        pm.registerEvents(new OtherListener(), this);
     }
 
     public void reloadPlayerDataSaveTask() {

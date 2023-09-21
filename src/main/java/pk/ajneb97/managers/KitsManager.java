@@ -385,7 +385,7 @@ public class KitsManager {
                 ActionUtils.title(player,actionLine);
                 break;
             case "firework":
-                ActionUtils.firework(player,actionLine);
+                ActionUtils.firework(player,actionLine,plugin);
                 break;
         }
     }
