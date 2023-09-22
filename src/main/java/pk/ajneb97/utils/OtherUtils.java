@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.entity.Player;
 import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.api.PlayerKitsAPI;
 import pk.ajneb97.managers.MessagesManager;
 
 import java.util.ArrayList;
@@ -11,27 +12,25 @@ import java.util.ArrayList;
 public class OtherUtils {
 
     public static boolean isNew() {
-        if(Bukkit.getVersion().contains("1.16") || Bukkit.getVersion().contains("1.17")
-                || Bukkit.getVersion().contains("1.18") || Bukkit.getVersion().contains("1.19")
-                || Bukkit.getVersion().contains("1.20")) {
+        ServerVersion serverVersion = PlayerKits2.serverVersion;
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_16_R1)){
             return true;
-        }else {
-            return false;
         }
+        return false;
     }
 
     public static boolean isLegacy() {
-        if(Bukkit.getVersion().contains("1.13") || Bukkit.getVersion().contains("1.14") ||
-                Bukkit.getVersion().contains("1.15") || isNew()) {
+        ServerVersion serverVersion = PlayerKits2.serverVersion;
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_13_R1)) {
             return false;
-        }else {
-            return true;
         }
+        return true;
     }
 
     // 1.20+
     public static boolean isTrimNew() {
-        if(Bukkit.getVersion().contains("1.20")) {
+        ServerVersion serverVersion = PlayerKits2.serverVersion;
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R1)) {
             return true;
         }else {
             return false;

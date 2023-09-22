@@ -1,6 +1,7 @@
 package pk.ajneb97.utils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -94,28 +95,35 @@ public class ItemUtils {
 		try {
 			profileField = skullMeta.getClass().getDeclaredField("profile");
 			profileField.setAccessible(true);
-			try {
-				GameProfile gameProfile = (GameProfile) profileField.get(skullMeta);
-				if(gameProfile != null && gameProfile.getProperties() != null) {
-					PropertyMap propertyMap = gameProfile.getProperties();
-					owner = gameProfile.getName();
-					if(gameProfile.getId() != null) {
-						id = gameProfile.getId().toString();
-					}
-					for(Property p : propertyMap.values()) {
+
+			GameProfile gameProfile = (GameProfile) profileField.get(skullMeta);
+			if(gameProfile != null && gameProfile.getProperties() != null) {
+				PropertyMap propertyMap = gameProfile.getProperties();
+				owner = gameProfile.getName();
+				if(gameProfile.getId() != null) {
+					id = gameProfile.getId().toString();
+				}
+
+				ServerVersion serverVersion = PlayerKits2.serverVersion;
+				for(Property p : propertyMap.values()) {
+					if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R2)){
+						String pName = (String)p.getClass().getMethod("name").invoke(p);
+						if(pName.equals("textures")){
+							texture = (String)p.getClass().getMethod("value").invoke(p);
+						}
+					}else{
 						if(p.getName().equals("textures")) {
 							texture = p.getValue();
 						}
 					}
 				}
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				e.printStackTrace();
 			}
-		} catch (NoSuchFieldException | SecurityException e) {
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
+				| InvocationTargetException | NoSuchMethodException e) {
 			e.printStackTrace();
-		}	
-		
-		if(texture != null || id != null || owner != null) {
+		}
+
+        if(texture != null || id != null || owner != null) {
 			kitItemSkullData = new KitItemSkullData(owner,texture,id);
 		}
 		
@@ -148,9 +156,9 @@ public class ItemUtils {
         
         GameProfile profile = null;
         if(id == null) {
-        	profile = new GameProfile(UUID.randomUUID(), owner);
+        	profile = new GameProfile(UUID.randomUUID(), owner != null ? owner : "");
         }else {
-        	profile = new GameProfile(UUID.fromString(id), owner);
+        	profile = new GameProfile(UUID.fromString(id), owner != null ? owner : "");
         }
         profile.getProperties().put("textures", new Property("textures", texture));
 

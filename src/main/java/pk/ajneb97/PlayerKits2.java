@@ -18,11 +18,13 @@ import pk.ajneb97.model.internal.UpdateCheckerResult;
 import pk.ajneb97.tasks.InventoryUpdateTaskManager;
 import pk.ajneb97.tasks.PlayerDataSaveTask;
 import pk.ajneb97.versions.NMSManager;
+import pk.ajneb97.utils.ServerVersion;
 
 public class PlayerKits2 extends JavaPlugin {
 
     public String version = getDescription().getVersion();
-    public static String prefix = MessagesManager.getColoredMessage("&8[&bPlayerKits&a²&8] ");
+    public static String prefix;
+    public static ServerVersion serverVersion;
 
     private KitItemManager kitItemManager;
     private KitsManager kitsManager;
@@ -41,6 +43,8 @@ public class PlayerKits2 extends JavaPlugin {
     private MySQLConnection mySQLConnection;
 
     public void onEnable(){
+        setVersion();
+        setPrefix();
         registerCommands();
         registerEvents();
 
@@ -105,6 +109,15 @@ public class PlayerKits2 extends JavaPlugin {
         playerDataSaveTask.start(configsManager.getMainConfigManager().getConfig().getInt("player_data_save_time"));
     }
 
+    public void setPrefix(){
+        prefix = MessagesManager.getColoredMessage("&8[&bPlayerKits&a²&8] ");
+    }
+
+    public void setVersion(){
+        String packageName = Bukkit.getServer().getClass().getPackage().getName();
+        serverVersion = ServerVersion.valueOf(packageName.replace("org.bukkit.craftbukkit.", ""));
+    }
+
     public KitItemManager getKitItemManager() {
         return kitItemManager;
     }
@@ -156,6 +169,7 @@ public class PlayerKits2 extends JavaPlugin {
     public VerifyManager getVerifyManager() {
         return verifyManager;
     }
+
 
     public void updateMessage(UpdateCheckerResult result){
         if(!result.isError()){

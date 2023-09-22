@@ -1,7 +1,9 @@
 package pk.ajneb97.versions;
 
-import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
+import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.utils.ServerVersion;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,13 +11,13 @@ import java.util.Set;
 
 public class NMSManager {
 
-    private ServerVersion serverVersion;
+
     private Version version;
+    private ServerVersion serverVersion;
 
     public NMSManager(){
         this.version = new Version();
-        String packageName = Bukkit.getServer().getClass().getPackage().getName();
-        serverVersion = ServerVersion.valueOf(packageName.replace("org.bukkit.craftbukkit.", ""));
+        this.serverVersion = PlayerKits2.serverVersion;
 
         try {
             //Classes
@@ -82,7 +84,8 @@ public class NMSManager {
                     case v1_19_R1:
                     case v1_19_R2:
                     case v1_19_R3: methodName = "t"; break;
-                    case v1_20_R1: methodName = "u"; break;
+                    case v1_20_R1:
+                    case v1_20_R2: methodName = "u"; break;
                 }
                 version.addMethod("hasTag",version.getClassRef("ItemStackNMS").getMethod(methodName));
 
@@ -93,7 +96,8 @@ public class NMSManager {
                     case v1_19_R1:
                     case v1_19_R2:
                     case v1_19_R3: methodName = "u"; break;
-                    case v1_20_R1: methodName = "v"; break;
+                    case v1_20_R1:
+                    case v1_20_R2: methodName = "v"; break;
                 }
                 version.addMethod("getTag",version.getClassRef("ItemStackNMS").getMethod(methodName));
 
@@ -119,7 +123,8 @@ public class NMSManager {
                     case v1_19_R1: methodName = "d"; break;
                     case v1_19_R2:
                     case v1_19_R3:
-                    case v1_20_R1: methodName = "e"; break;
+                    case v1_20_R1:
+                    case v1_20_R2: methodName = "e"; break;
                 }
                 version.addMethod("getKeys",version.getClassRef("NBTTagCompound").getMethod(methodName));
                 version.addMethod("hasKeyOfType",version.getClassRef("NBTTagCompound").getMethod("b",String.class,int.class));
