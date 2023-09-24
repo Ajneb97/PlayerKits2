@@ -4,12 +4,10 @@ import org.bukkit.entity.Player;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.KitAction;
+import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.inventory.ItemKitInventory;
 import pk.ajneb97.model.inventory.KitInventory;
-import pk.ajneb97.model.verify.PKBaseError;
-import pk.ajneb97.model.verify.PKInventoryInvalidKitError;
-import pk.ajneb97.model.verify.PKKitActionError;
-import pk.ajneb97.model.verify.PKKitDisplayItemError;
+import pk.ajneb97.model.verify.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,9 +48,22 @@ public class VerifyManager {
         }
 
         //CHECK INVENTORIES
-        ArrayList<KitInventory> inventories = plugin.getInventoryManager().getInventories();
+        InventoryManager inventoryManager = plugin.getInventoryManager();
+        ArrayList<KitInventory> inventories = inventoryManager.getInventories();
         for(KitInventory inventory : inventories){
             verifyInventory(inventory);
+        }
+        if(inventoryManager.getInventory("main_inventory") == null){
+            errors.add(new PKInventoryDefaultNotExistsError("inventory.yml",null,true,"main_inventory"));
+            criticalErrors = true;
+        }
+        if(inventoryManager.getInventory("preview_inventory") == null){
+            errors.add(new PKInventoryDefaultNotExistsError("inventory.yml",null,true,"preview_inventory"));
+            criticalErrors = true;
+        }
+        if(inventoryManager.getInventory("buy_requirements_inventory") == null){
+            errors.add(new PKInventoryDefaultNotExistsError("inventory.yml",null,true,"buy_requirements_inventory"));
+            criticalErrors = true;
         }
     }
 
@@ -84,6 +95,7 @@ public class VerifyManager {
         //Invalid kit on slot
         KitsManager kitsManager = plugin.getKitsManager();
         List<ItemKitInventory> items = inventory.getItems();
+        InventoryManager inventoryManager = plugin.getInventoryManager();
         for(ItemKitInventory item : items){
            String type = item.getType();
            if(type != null && type.startsWith("kit: ")){
@@ -91,6 +103,15 @@ public class VerifyManager {
                if(kitsManager.getKitByName(kitName) == null){
                    errors.add(new PKInventoryInvalidKitError("inventory.yml",null,true,kitName,
                            inventory.getName(),item.getSlotsString()));
+                   criticalErrors = true;
+               }
+           }
+
+           String openInventory = item.getOpenInventory();
+           if(openInventory != null){
+               if(!openInventory.equals("previous") && inventoryManager.getInventory(openInventory) == null){
+                   errors.add(new PKInventoryNotExistsError("inventory.yml",null,true,inventory.getName(),
+                           item.getSlotsString(),openInventory));
                    criticalErrors = true;
                }
            }

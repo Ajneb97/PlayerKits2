@@ -158,6 +158,8 @@ public class InventoryEditManager {
         lore = new ArrayList<String>();
         lore.add("&7Click to edit the default kit display");
         lore.add("&7item.");
+        lore.add("");
+        lore.add("&7Present: "+(kit.getDisplayItemDefault() != null ? "&aYES" : "&cNO"));
         new InventoryItem(inv, 38, headMaterial)
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMWNkZTUxNGFmYTE5NGQ1Y2JkMDQ3N2MwNWI3Y2IxODVmZjFkZmZkMGMyZmFkZmFlMWE1YmI4MDY0ODU2Yzg5MiJ9fX0=")
                 .name("&eSet &6&lDefault Display Item").lore(lore).ready();
@@ -167,6 +169,8 @@ public class InventoryEditManager {
         lore.add("&7Click to edit the kit display item when");
         lore.add("&7player doesn't have the permissions to");
         lore.add("&7claim it.");
+        lore.add("");
+        lore.add("&7Present: "+(kit.getDisplayItemNoPermission() != null ? "&aYES" : "&cNO"));
         new InventoryItem(inv, 39, headMaterial)
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzdkNDk5YTlhZjUyOTllZGE0Y2NkYWMyMDE5ZWZlN2YyNDk2MWYzZTFmY2U3Njk0Y2I2ODIwMjlkMjllOWVhMSJ9fX0=")
                 .name("&eSet &6&lNo Permissions Display Item").lore(lore).ready();
@@ -176,6 +180,8 @@ public class InventoryEditManager {
         lore.add("&7Click to edit the kit display item when");
         lore.add("&7one time option is enabled and the player");
         lore.add("&7has already claimed it.");
+        lore.add("");
+        lore.add("&7Present: "+(kit.getDisplayItemOneTime() != null ? "&aYES" : "&cNO"));
         new InventoryItem(inv, 40, headMaterial)
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzU3NDc2NmUzZGVjNDkwNGZhNWFhMTU5MjA4ZGFlYzExYzYzYzVlMzI2MTU3YzM2NWViMTY5MDFiNjFmNjQ1YiJ9fX0=")
                 .name("&eSet &6&lOne Time Display Item").lore(lore).ready();
@@ -184,6 +190,8 @@ public class InventoryEditManager {
         lore = new ArrayList<String>();
         lore.add("&7Click to edit the kit display item when");
         lore.add("&7the player is on cooldown.");
+        lore.add("");
+        lore.add("&7Present: "+(kit.getDisplayItemCooldown() != null ? "&aYES" : "&cNO"));
         new InventoryItem(inv, 41, headMaterial)
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODg3YTc1ZjZjYmNjOGUxN2I4ZmJmYWVlMzM3MGZlZjAyMWMyNWY3MDM1YjI1ZDRjNjU3OTZlZjMzODljZWYwMCJ9fX0=")
                 .name("&eSet &6&lCooldown Display Item").lore(lore).ready();
@@ -194,6 +202,8 @@ public class InventoryEditManager {
         lore.add("&7one time requirements option is enabled and");
         lore.add("&7the player has already accomplished the");
         lore.add("&7requirements.");
+        lore.add("");
+        lore.add("&7Present: "+(kit.getDisplayItemOneTimeRequirements() != null ? "&aYES" : "&cNO"));
         new InventoryItem(inv, 42, headMaterial)
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGU4NmJlNTQ5OWViNDI0NWE0NjFiZGNiODZmZjE2M2M4NTVjMTgyODFmOTcxMDU0MmIxN2ZkMjhiYWU0MjQzYiJ9fX0=")
                 .name("&eSet &6&lOne Time Requirements Display Item").lore(lore).ready();
