@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import pk.ajneb97.configs.MainConfigManager;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.internal.GiveKitInstructions;
@@ -52,6 +53,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         if(args.length >= 1){
             if(args[0].equalsIgnoreCase("claim") && !claimKitShortCommand){
                 claim(player,args,messagesConfig,msgManager);
+            }else if(args[0].equalsIgnoreCase("preview")){
+                preview(player,args,messagesConfig,msgManager);
             }else if(args[0].equalsIgnoreCase("create")){
                 create(player,args,messagesConfig,msgManager);
             }else if(args[0].equalsIgnoreCase("give")) {
@@ -103,6 +106,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit give <kit> <player> &8Gives a kit to a player."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit delete <kit> &8Deletes a kit."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reset <kit> <player> &8Resets kit data for a player."));
+        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit preview <kit> &8Previews a kit."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reload &8Reloads the config."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit verify &8Checks the plugin for errors."));
         sender.sendMessage(MessagesManager.getColoredMessage(" "));
@@ -195,6 +199,39 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         claimKitShortCommand(player,messagesConfig,msgManager,kitName);
     }
 
+    public void preview(Player player,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
+        // /kit preview <kit>
+        MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
+        if(!mainConfigManager.isKitPreview()){
+            msgManager.sendMessage(player,messagesConfig.getString("kitPreviewDisabled"),true);
+            return;
+        }
+
+        if(args.length < 2){
+            msgManager.sendMessage(player,messagesConfig.getString("commandPreviewError"),true);
+            return;
+        }
+
+        Kit kit = plugin.getKitsManager().getKitByName(args[1]);
+        if(kit == null){
+            msgManager.sendMessage(player,messagesConfig.getString("kitDoesNotExists")
+                    .replace("%kit%",args[1]),true);
+            return;
+        }
+
+        if(kit.isPermissionRequired()){
+            if(mainConfigManager.isKitPreviewRequiresKitPermission() && !kit.playerHasPermission(player)){
+                msgManager.sendMessage(player,messagesConfig.getString("cantPreviewError"),true);
+                return;
+            }
+        }
+
+        InventoryPlayer inventoryPlayer = new InventoryPlayer(player,"preview_inventory");
+        inventoryPlayer.setKitName(args[1]);
+        inventoryPlayer.setPreviousInventoryName("main_inventory");
+        plugin.getInventoryManager().openInventory(inventoryPlayer);
+    }
+
     public void claimKitShortCommand(Player player,FileConfiguration messagesConfig,MessagesManager msgManager,String kitName){
         // /kit <kit>
         PlayerKitsMessageResult result = plugin.getKitsManager().giveKit(player,kitName,new GiveKitInstructions());
@@ -269,8 +306,9 @@ public class MainCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        FileConfiguration configFile = plugin.getConfigsManager().getMainConfigManager().getConfig();
-        boolean claimKitShortCommand = configFile.getBoolean("claim_kit_short_command");
+        MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
+        boolean claimKitShortCommand = mainConfigManager.isClaimKitShortCommand();
+        boolean kitPreviewEnabled = mainConfigManager.isKitPreview();
 
         List<String> completions = new ArrayList<String>();
         List<String> commands = new ArrayList<String>();
@@ -283,6 +321,9 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 }
             }else{
                 commands.add("claim");
+            }
+            if(kitPreviewEnabled){
+                commands.add("preview");
             }
             if(PlayerUtils.isPlayerKitsAdmin(sender)){
                 commands.add("give");commands.add("delete");commands.add("create");
@@ -299,6 +340,9 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             if(args.length == 2) {
                 if(!claimKitShortCommand){
                     commands.add("claim");
+                }
+                if(kitPreviewEnabled){
+                    commands.add("preview");
                 }
                 if(PlayerUtils.isPlayerKitsAdmin(sender)){
                     commands.add("give");commands.add("delete");

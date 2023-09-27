@@ -58,6 +58,11 @@ public class MessagesConfigManager {
         Path pathConfig = Paths.get(configFile.getRoute());
         try{
             String text = new String(Files.readAllBytes(pathConfig));
+            if(!text.contains("commandPreviewError:")){
+                getConfig().set("commandPreviewError", "&cYou need to use: &7/kit preview <kit>");
+                getConfig().set("kitPreviewDisabled", "&cKit preview is disabled.");
+                saveConfig();
+            }
             if(!text.contains("pluginCriticalErrors:")){
                 getConfig().set("pluginCriticalErrors", "&cThe plugin has detected some errors. Check them using &7/kit verify");
                 saveConfig();

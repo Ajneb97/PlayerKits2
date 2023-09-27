@@ -18,6 +18,7 @@ public class MainConfigManager {
     private Kit newKitDefault;
     private boolean kitPreview;
     private boolean closeInventoryOnClaim;
+    private boolean claimKitShortCommand;
     private boolean kitPreviewRequiresKitPermission;
     private String firstJoinKit;
     private String newKitDefaultInventory;
@@ -40,6 +41,7 @@ public class MainConfigManager {
         newKitDefaultInventory = config.getString("new_kit_default_inventory");
         isMySQL = config.getBoolean("mysql_database.enabled");
         updateNotify = config.getBoolean("update_notify");
+        claimKitShortCommand = config.getBoolean("claim_kit_short_command");
     }
 
     public boolean reloadConfig(){
@@ -100,5 +102,9 @@ public class MainConfigManager {
 
     public boolean isUpdateNotify() {
         return updateNotify;
+    }
+
+    public boolean isClaimKitShortCommand() {
+        return claimKitShortCommand;
     }
 }
