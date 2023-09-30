@@ -22,9 +22,11 @@ public class InventoryEditActionsManager {
 
     private PlayerKits2 plugin;
     private InventoryEditManager inventoryEditManager;
+    private InventoryEditActionsEditManager inventoryEditActionsEditManager;
     public InventoryEditActionsManager(PlayerKits2 plugin, InventoryEditManager inventoryEditManager){
         this.plugin = plugin;
         this.inventoryEditManager = inventoryEditManager;
+        this.inventoryEditActionsEditManager = new InventoryEditActionsEditManager(plugin,this);
     }
 
     public void openInventory(InventoryPlayer inventoryPlayer,String type) {
@@ -62,24 +64,23 @@ public class InventoryEditActionsManager {
         ArrayList<KitAction> actions = getKitActionsFromType(kit,type);
         int slot = 0;
         for(KitAction kitAction : actions){
-            String executeBeforeItems = "&cNO";
-            if (kitAction.isExecuteBeforeItems()) {
-                executeBeforeItems = "&aYES";
-            }
+            String executeBeforeItems = kitAction.isExecuteBeforeItems() ? "&aYES" : "&cNO";
+            String countAsItem = kitAction.isCountAsItem() ? "&aYES" : "&cNO";
+            String displayItem = kitAction.getDisplayItem() != null ? "&aYES" : "&cNO";
 
             lore = new ArrayList<>();
             lore.add(MessagesManager.getColoredMessage("&f")+kitAction.getAction());
             lore.add("");
             lore.add(MessagesManager.getColoredMessage("&7Execute before giving kit items? "+executeBeforeItems));
+            lore.add(MessagesManager.getColoredMessage("&7Count as item? "+countAsItem));
+            lore.add(MessagesManager.getColoredMessage("&7Has display item? "+displayItem));
             lore.add("");
             lore.add(MessagesManager.getColoredMessage("&a&lLEFT CLICK &ato edit"));
-            lore.add(MessagesManager.getColoredMessage("&e&lSHIFT+LEFT CLICK &eto alternate execution"));
-            lore.add(MessagesManager.getColoredMessage(" &ebefore giving kit items"));
             lore.add(MessagesManager.getColoredMessage("&c&lRIGHT CLICK &cto remove"));
 
             ItemStack item = new ItemStack(Material.PAPER);
             ItemMeta meta = item.getItemMeta();
-            meta.setDisplayName(MessagesManager.getColoredMessage("&7Command &e#"+(slot+1)));
+            meta.setDisplayName(MessagesManager.getColoredMessage("&7Action &e#"+(slot+1)));
             meta.setLore(lore);
             item.setItemMeta(meta);
             inv.setItem(slot,item);
@@ -105,22 +106,11 @@ public class InventoryEditActionsManager {
         plugin.getConfigsManager().getKitsConfigManager().saveConfig(kit);
     }
 
-    public void alternateExecutionBeforeItems(InventoryPlayer inventoryPlayer,int slot){
-        Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
-        String type = inventoryPlayer.getInventoryName().replace("edit_actions_","");
-        ArrayList<KitAction> actions = getKitActionsFromType(kit,type);
-        KitAction kitAction = actions.get(slot);
-        kitAction.setExecuteBeforeItems(!kitAction.isExecuteBeforeItems());
-
-        openInventory(inventoryPlayer,type);
-
-        plugin.getConfigsManager().getKitsConfigManager().saveConfig(kit);
-    }
 
     public void clickAddAction(InventoryPlayer inventoryPlayer){
         Player player = inventoryPlayer.getPlayer();
         player.sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&7Write the new action to add."));
-        player.sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&fCheck all actions on the wiki: &bhttps://ajneb97.gitbook.io/playerkits-2/"));
+        player.sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&fCheck all actions on the wiki: &bhttps://ajneb97.gitbook.io/playerkits-2/actions"));
 
         player.closeInventory();
         String type = inventoryPlayer.getInventoryName().replace("edit_actions_","");
@@ -139,40 +129,14 @@ public class InventoryEditActionsManager {
         plugin.getConfigsManager().getKitsConfigManager().saveConfig(kit);
     }
 
-    public void clickEditAction(InventoryPlayer inventoryPlayer,int slot){
-        Player player = inventoryPlayer.getPlayer();
-        player.sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&7Write the new action to add."));
-        player.sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&fCheck all actions on the wiki: &bhttps://ajneb97.gitbook.io/playerkits-2/"));
-
-        player.closeInventory();
-        String type = inventoryPlayer.getInventoryName().replace("edit_actions_","");
-        inventoryPlayer.setInventoryName("edit_chat_edit_action_"+type+":"+slot);
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
-    }
-
-    public void editAction(InventoryPlayer inventoryPlayer,String message){
-        Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
-        String[] sep = inventoryPlayer.getInventoryName().replace("edit_chat_edit_action_","").split(":");
-        String type = sep[0];
-        int slot = Integer.parseInt(sep[1]);
-        ArrayList<KitAction> actions = getKitActionsFromType(kit,type);
-        actions.get(slot).setAction(message);
-
-        inventoryEditManager.removeInventoryPlayer(inventoryPlayer.getPlayer());
-        openInventory(inventoryPlayer,type);
-        plugin.getConfigsManager().getKitsConfigManager().saveConfig(kit);
-    }
 
     public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, int slot, ClickType clickType){
         if(slot == 45){
             inventoryEditManager.openInventory(inventoryPlayer);
         }else if(slot >= 0 && slot <= 44 && item != null && !item.getType().equals(Material.AIR)){
             if(clickType.isLeftClick()){
-                if(clickType.isShiftClick()){
-                    alternateExecutionBeforeItems(inventoryPlayer,slot);
-                }else{
-                    clickEditAction(inventoryPlayer,slot);
-                }
+                String type = inventoryPlayer.getInventoryName().replace("edit_actions_","");
+                inventoryEditActionsEditManager.openInventory(inventoryPlayer,type,slot);
             }else if(clickType.isRightClick()){
                 removeAction(inventoryPlayer,slot);
             }
@@ -189,5 +153,13 @@ public class InventoryEditActionsManager {
             actions = kit.getErrorActions();
         }
         return actions;
+    }
+
+    public InventoryEditManager getInventoryEditManager() {
+        return inventoryEditManager;
+    }
+
+    public InventoryEditActionsEditManager getInventoryEditActionsEditManager() {
+        return inventoryEditActionsEditManager;
     }
 }

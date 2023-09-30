@@ -22,7 +22,7 @@ actions:
     1:
       action: "console_command: bc &6%player% &ejust claimed a &aDIAMOND KIT&e!"
       display_item:
-        id: "BOOK"
+        id: BOOK
         name: "&4Announcement"
         lore:
           - "&7Claiming this kit will send an announcement"

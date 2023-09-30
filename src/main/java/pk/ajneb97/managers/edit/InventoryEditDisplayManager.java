@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.Kit;
+import pk.ajneb97.model.KitAction;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.InventoryItem;
@@ -77,7 +78,12 @@ public class InventoryEditDisplayManager {
             lore.add("&eSet &6&lCooldown Display Item");
         }else if(type.equals("requirements")){
             lore.add("&6&lOne Time Requirements Display Item");
-        }else{
+        }else if(type.startsWith("action")){
+            String actionType = type.split("_")[1];
+            int actionSlot = Integer.parseInt(type.split("_")[2]);
+            lore.add("&6&l"+actionType.toUpperCase()+" Action "+actionSlot+" Display Item");
+        }
+        else{
             lore.add("&6&lDefault Display Item");
         }
         new InventoryItem(inv, 0, Material.COMPASS).name("&6&lInfo").lore(lore).ready();
@@ -117,6 +123,11 @@ public class InventoryEditDisplayManager {
                 kit.setDisplayItemCooldown(kitItem);
             }else if(type.equals("requirements")){
                 kit.setDisplayItemOneTimeRequirements(kitItem);
+            }else if(type.startsWith("action")){
+                String actionType = type.split("_")[1];
+                int actionSlot = Integer.parseInt(type.split("_")[2]);
+                KitAction kitAction = getKitActionsFromType(kit,actionType).get(actionSlot);
+                kitAction.setDisplayItem(kitItem);
             }else{
                 kit.setDisplayItemDefault(kitItem);
             }
@@ -134,7 +145,15 @@ public class InventoryEditDisplayManager {
             if(slot != 13){
                 event.setCancelled(true);
                 if(slot == 18){
-                    inventoryEditManager.openInventory(inventoryPlayer);
+                    if(inventoryPlayer.getInventoryName().startsWith("edit_display_action")){
+                        String type = inventoryPlayer.getInventoryName().replace("edit_display_action_","");
+                        String actionType = type.split("_")[0];
+                        int actionSlot = Integer.parseInt(type.split("_")[1]);
+                        inventoryEditManager.getInventoryEditActionsManager().getInventoryEditActionsEditManager()
+                                .openInventory(inventoryPlayer,actionType,actionSlot);
+                    }else{
+                        inventoryEditManager.openInventory(inventoryPlayer);
+                    }
                 }else if(slot == 26){
                     saveKitItem(inventoryPlayer);
                     inventoryPlayer.getPlayer().sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&aDisplay item saved."));
@@ -144,17 +163,34 @@ public class InventoryEditDisplayManager {
     }
 
     public KitItem getKitDisplayItemFromType(Kit kit, String type){
-        KitItem kitItem = kit.getDisplayItemDefault();
-        switch(type){
-            case "permission":
-                return kit.getDisplayItemNoPermission();
-            case "onetime":
-                return kit.getDisplayItemOneTime();
-            case "cooldown":
-                return kit.getDisplayItemCooldown();
-            case "requirements":
-                return kit.getDisplayItemOneTimeRequirements();
+        if(type.startsWith("action")){
+            String actionType = type.split("_")[1];
+            int actionSlot = Integer.parseInt(type.split("_")[2]);
+            KitAction kitAction = getKitActionsFromType(kit,actionType).get(actionSlot);
+            return kitAction.getDisplayItem();
+        }else{
+            KitItem kitItem = kit.getDisplayItemDefault();
+            switch(type){
+                case "permission":
+                    return kit.getDisplayItemNoPermission();
+                case "onetime":
+                    return kit.getDisplayItemOneTime();
+                case "cooldown":
+                    return kit.getDisplayItemCooldown();
+                case "requirements":
+                    return kit.getDisplayItemOneTimeRequirements();
+            }
+            return kitItem;
         }
-        return kitItem;
+    }
+
+    public ArrayList<KitAction> getKitActionsFromType(Kit kit,String type){
+        ArrayList<KitAction> actions = null;
+        if(type.equals("claim")){
+            actions = kit.getClaimActions();
+        }else{
+            actions = kit.getErrorActions();
+        }
+        return actions;
     }
 }

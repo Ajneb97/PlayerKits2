@@ -7,7 +7,9 @@ import pk.ajneb97.model.KitAction;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.inventory.ItemKitInventory;
 import pk.ajneb97.model.inventory.KitInventory;
+import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.model.verify.*;
+import pk.ajneb97.utils.ItemUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,6 +77,29 @@ public class VerifyManager {
         }
         verifyActions(kit.getClaimActions(),"claim",kitName);
         verifyActions(kit.getErrorActions(),"error",kitName);
+
+        //Items
+        ArrayList<KitItem> allKitItems = new ArrayList<KitItem>();
+        allKitItems.add(kit.getDisplayItemDefault());
+        allKitItems.add(kit.getDisplayItemCooldown());
+        allKitItems.add(kit.getDisplayItemNoPermission());
+        allKitItems.add(kit.getDisplayItemOneTime());
+        allKitItems.add(kit.getDisplayItemOneTimeRequirements());
+        allKitItems.addAll(kit.getItems());
+        for(KitAction kitAction : kit.getClaimActions()){
+            allKitItems.add(kitAction.getDisplayItem());
+        }
+        for(KitAction kitAction : kit.getErrorActions()){
+            allKitItems.add(kitAction.getDisplayItem());
+        }
+        for(KitItem kitItem : allKitItems){
+            if(kitItem != null){
+                if(!verifyItem(kitItem.getId())){
+                    errors.add(new PKInvalidItem(kit.getName()+".yml",null,true,kitItem.getId()));
+                    criticalErrors = true;
+                }
+            }
+        }
     }
 
     public void verifyActions(ArrayList<KitAction> actions,String actionGroup,String kitName){
@@ -115,10 +140,28 @@ public class VerifyManager {
                    criticalErrors = true;
                }
            }
+
+           //Items
+           KitItem kitItem = item.getItem();
+           if(kitItem != null){
+               if(!verifyItem(kitItem.getId())){
+                   errors.add(new PKInvalidItem("inventory.yml",null,true,kitItem.getId()));
+                   criticalErrors = true;
+               }
+           }
         }
     }
 
     public boolean isCriticalErrors() {
         return criticalErrors;
+    }
+
+    public boolean verifyItem(String material){
+        try{
+            ItemUtils.createItemFromID(material);
+            return true;
+        }catch(Exception e){
+            return false;
+        }
     }
 }

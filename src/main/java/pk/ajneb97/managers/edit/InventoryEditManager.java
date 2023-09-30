@@ -387,6 +387,8 @@ public class InventoryEditManager {
             }
         }else if(inventory.startsWith("edit_actions_")){
             inventoryEditActionsManager.clickInventory(inventoryPlayer,item,slot,clickType);
+        }else if(inventory.startsWith("edit_action_slot_")){
+            inventoryEditActionsManager.getInventoryEditActionsEditManager().clickInventory(inventoryPlayer,item,slot,clickType);
         }else if(inventory.equals("edit_requirements")){
             inventoryEditRequirementsManager.clickInventory(inventoryPlayer,item,slot,clickType);
         }
@@ -398,8 +400,8 @@ public class InventoryEditManager {
             setCooldown(inventoryPlayer,message);
         }else if(inventory.startsWith("edit_chat_add_action_")){
             inventoryEditActionsManager.addAction(inventoryPlayer,message);
-        }else if(inventory.startsWith("edit_chat_edit_action_")){
-            inventoryEditActionsManager.editAction(inventoryPlayer,message);
+        }else if(inventory.startsWith("edit_chat_action_slot_")){
+            inventoryEditActionsManager.getInventoryEditActionsEditManager().editAction(inventoryPlayer,message);
         }else if(inventory.equals("edit_chat_price")){
             inventoryEditRequirementsManager.setPrice(inventoryPlayer,message);
         }

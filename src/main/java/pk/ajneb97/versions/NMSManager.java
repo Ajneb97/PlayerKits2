@@ -193,6 +193,9 @@ public class NMSManager {
                             && !t.equals("StoredEnchantments") && !t.equals("CustomPotionColor") && !t.equals("CustomPotionEffects") && !t.equals("Fireworks")
                             && !t.equals("Explosion")&& !t.equals("pages") && !t.equals("title") && !t.equals("author") && !t.equals("resolved")
                             && !t.equals("generation") && !t.equals("Trim")) {
+                        if(t.equals("BlockEntityTag") && !item.getType().name().contains("SHULKER")){
+                            continue;
+                        }
                         if((boolean)version.getMethodRef("hasKeyOfType").invoke(compound,t,1)) {
                             //boolean
                             nbtList.add(t+"|"+version.getMethodRef("getBoolean").invoke(compound,t)+"|boolean");
