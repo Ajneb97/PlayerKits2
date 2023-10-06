@@ -39,6 +39,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                     delete(sender,args,messagesConfig,msgManager);
                 }else if(args[0].equalsIgnoreCase("reset")) {
                     reset(sender,args,messagesConfig,msgManager);
+                }else if(args[0].equalsIgnoreCase("migrate")) {
+                    migrate(sender,args,messagesConfig,msgManager);
                 }else{
                     help(sender,msgManager,messagesConfig);
                 }
@@ -69,6 +71,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 edit(player,args,messagesConfig,msgManager);
             }else if(args[0].equalsIgnoreCase("verify")){
                 verify(player,messagesConfig,msgManager);
+            }else if(args[0].equalsIgnoreCase("migrate")) {
+                migrate(sender,args,messagesConfig,msgManager);
             }
             else{
                 // /kit <kit> (short command)
@@ -111,6 +115,15 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit verify &8Checks the plugin for errors."));
         sender.sendMessage(MessagesManager.getColoredMessage(" "));
         sender.sendMessage(MessagesManager.getColoredMessage("&7[ [ &8[&bPlayerKits&a²&8] &7] ]"));
+    }
+
+    public void migrate(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
+        if(!PlayerUtils.isPlayerKitsAdmin(sender)){
+            msgManager.sendMessage(sender,messagesConfig.getString("noPermissions"),true);
+            return;
+        }
+
+        plugin.getMigrationManager().migrateKits(sender);
     }
 
     public void verify(Player player,FileConfiguration messagesConfig,MessagesManager msgManager){
@@ -328,7 +341,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             if(PlayerUtils.isPlayerKitsAdmin(sender)){
                 commands.add("give");commands.add("delete");commands.add("create");
                 commands.add("reload");commands.add("reset");commands.add("edit");
-                commands.add("verify");
+                commands.add("verify");commands.add("migrate");
             }
             for(String c : commands) {
                 if(args[0].isEmpty() || c.startsWith(args[0].toLowerCase())) {

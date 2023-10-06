@@ -190,7 +190,8 @@ public class KitsManager {
 
             //Requirements - Buy
             KitRequirements kitRequirements = kit.getRequirements();
-            if(!giveKitInstructions.isIgnoreRequirements() && kitRequirements != null){
+            if(!giveKitInstructions.isIgnoreRequirements() && kitRequirements != null &&
+                    (kitRequirements.getPrice() != 0 || !kitRequirements.getExtraRequirements().isEmpty())){
                 if(!(kitRequirements.isOneTimeRequirements() && playerDataManager.isKitBought(player,kit.getName()))){
                     if(!giveKitInstructions.isRequirementsSatisfied()){
                         //Player must buy it first

@@ -15,10 +15,7 @@ import pk.ajneb97.model.item.*;
 import pk.ajneb97.utils.ItemUtils;
 import pk.ajneb97.utils.OtherUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class KitItemManager {
 
@@ -432,7 +429,133 @@ public class KitItemManager {
         return kitItem;
     }
 
+    public KitItem getKitItemFromV1Config(FileConfiguration config, String path){
+        String id = config.getString(path+".id");
+        String name = config.contains(path+".name") ? config.getString(path+".name") : null;
+        List<String> lore = config.contains(path+".lore") ? config.getStringList(path+".lore") : null;
+        int amount = config.contains(path+".amount") ? Integer.parseInt(config.getString(path+".amount")) : 1;
+        short durability = config.contains(path+".durability") ? Short.parseShort(config.getString(path+".durability")) : 0;
+        int customModelData = config.contains(path+".custom_model_data") ? Integer.parseInt(config.getString(path+".custom_model_data")) : 0;
+        int color = config.contains(path+".color") ? Integer.parseInt(config.getString(path+".color")) : 0;
+        List<String> enchants = config.contains(path+".enchants") ? config.getStringList(path+".enchants") : null;
+        List<String> flags = config.contains(path+".hide-flags") ? config.getStringList(path+".hide-flags") : null;
+        List<String> bookEnchants = config.contains(path+".book-enchants") ? config.getStringList(path+".book-enchants") : null;
 
+        KitItemPotionData potionData = null;
+        if(config.contains(path+".potion-type")) {
+            List<String> potionEffects = null;
+            boolean extended = false;
+            boolean upgraded = false;
+            String potionType = null;
+            int potionColor = 0;
+            if(config.contains(path+".potion-effects")) {
+                potionEffects = config.getStringList(path+".potion-effects");
+            }
+            if(config.contains(path+".potion-extended")) {
+                extended = Boolean.parseBoolean(config.getString(path+".potion-extended"));
+            }
+            if(config.contains(path+".potion-upgraded")) {
+                upgraded = Boolean.parseBoolean(config.getString(path+".potion-upgraded"));
+            }
+            potionType = config.getString(path+".potion-type");
+            if(config.contains(path+".potion-color")) {
+                potionColor = config.getInt(path+".potion-color");
+            }
+
+            potionData = new KitItemPotionData(upgraded,extended,potionType,potionColor,potionEffects);
+        }
+        KitItemBookData bookData = null;
+        if(config.contains(path+".book-title")) {
+            List<String> pages = config.getStringList(path+".book-pages");
+            String author = null;
+            String generation = null;
+            String title = null;
+            if(config.contains(path+".book-author")) {
+                author = config.getString(path+".book-author");
+            }
+            if(config.contains(path+".book-generation")) {
+                generation = config.getString(path+".book-generation");
+            }
+            title = config.getString(path+".book-title");
+
+            bookData = new KitItemBookData(pages,author,generation,title);
+        }
+        KitItemFireworkData fireworkData = null;
+        if(config.contains(path+".firework-effects")) {
+            List<String> rocketEffects = null;
+            int power = 0;
+            rocketEffects = config.getStringList(path+".firework-effects");
+            if(config.contains(path+".firework-power")) {
+                power = Integer.parseInt(config.getString(path+".firework-power"));
+            }
+
+            fireworkData = new KitItemFireworkData(rocketEffects,null,power);
+        }
+        KitItemBannerData bannerData = null;
+        if(config.contains(path+".banner-pattern")) {
+            List<String> patterns = null;
+            String baseColor = null;
+            String[] pattern = config.getString(path+".banner-pattern").split(";");
+            patterns = new ArrayList<>();
+            for(String p : pattern){
+                String[] pSep = p.split(":");
+                patterns.add(pSep[0]+";"+pSep[1]);
+            }
+            if(config.contains(path+".banner-color")) {
+                baseColor = config.getString(path+".banner-color");
+            }
+
+            bannerData = new KitItemBannerData(patterns,baseColor);
+        }
+        KitItemSkullData skullData = null;
+        if(config.contains(path+".skull-texture")) {
+            String skullTexture = null;
+            String skullId = null;
+            skullTexture = config.getString(path+".skull-texture");
+            skullId = UUID.randomUUID().toString();
+            skullData = new KitItemSkullData(null,skullTexture,skullId);
+        }
+
+        List<String> nbtList = new ArrayList<>();
+        if(config.contains(path+".nbt")){
+            nbtList = config.getStringList(path+".nbt");
+            for(int i=0;i<nbtList.size();i++){
+                nbtList.set(i,nbtList.get(i).replace(";","|"));
+            }
+        }
+
+        List<String> attributes = new ArrayList<>();
+        if(config.contains(path+".attributes")){
+            for(String attributeName : config.getConfigurationSection(path+".attributes").getKeys(false)){
+                String attribute = config.getString(path+".attributes."+attributeName+".modifiers");
+                attributes.add(attribute);
+            }
+        }
+
+        boolean offhand = config.contains(path+".offhand") ? config.getBoolean(path+".offhand") : false;
+
+        KitItem kitItem = new KitItem(id);
+        kitItem.setName(name);
+        kitItem.setLore(lore);
+        kitItem.setAmount(amount);
+        kitItem.setDurability(durability);
+        kitItem.setCustomModelData(customModelData);
+        kitItem.setColor(color);
+        kitItem.setEnchants(enchants);
+        kitItem.setFlags(flags);
+        kitItem.setBookEnchants(bookEnchants);
+        kitItem.setNbt(nbtList);
+        kitItem.setAttributes(attributes);
+        kitItem.setSkullData(skullData);
+        kitItem.setPotionData(potionData);
+        kitItem.setFireworkData(fireworkData);
+        kitItem.setBannerData(bannerData);
+        kitItem.setBookData(bookData);
+
+        kitItem.setOffhand(offhand);
+
+        return kitItem;
+    }
 
     public void replaceVariables(ItemStack item, ArrayList<KitVariable> variables){
         if(item.hasItemMeta()){

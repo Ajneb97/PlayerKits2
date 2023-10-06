@@ -37,6 +37,7 @@ public class PlayerKits2 extends JavaPlugin {
     private NMSManager nmsManager;
     private UpdateCheckerManager updateCheckerManager;
     private VerifyManager verifyManager;
+    private MigrationManager migrationManager;
 
     private InventoryUpdateTaskManager inventoryUpdateTaskManager;
     private PlayerDataSaveTask playerDataSaveTask;
@@ -58,6 +59,8 @@ public class PlayerKits2 extends JavaPlugin {
 
         this.configsManager = new ConfigsManager(this);
         this.configsManager.configure();
+
+        this.migrationManager = new MigrationManager(this);
 
         this.inventoryUpdateTaskManager = new InventoryUpdateTaskManager(this);
         this.inventoryUpdateTaskManager.start();
@@ -170,6 +173,9 @@ public class PlayerKits2 extends JavaPlugin {
         return verifyManager;
     }
 
+    public MigrationManager getMigrationManager() {
+        return migrationManager;
+    }
 
     public void updateMessage(UpdateCheckerResult result){
         if(!result.isError()){
