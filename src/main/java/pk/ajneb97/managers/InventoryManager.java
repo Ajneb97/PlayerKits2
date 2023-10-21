@@ -83,8 +83,12 @@ public class InventoryManager {
     public void openInventory(InventoryPlayer inventoryPlayer){
         KitInventory kitInventory = getInventory(inventoryPlayer.getInventoryName());
 
+        String title = kitInventory.getTitle();
+        if(inventoryPlayer.getInventoryName().equals("buy_requirements_inventory") || inventoryPlayer.getInventoryName().equals("preview_inventory")){
+            title = title.replace("%kit%",inventoryPlayer.getKitName());
+        }
         Inventory inv = Bukkit.createInventory(null,kitInventory.getSlots(),
-                MessagesManager.getColoredMessage(kitInventory.getTitle()));
+                MessagesManager.getColoredMessage(title));
 
         List<ItemKitInventory> items = kitInventory.getItems();
         KitItemManager kitItemManager = plugin.getKitItemManager();

@@ -117,10 +117,10 @@ public class VerifyManager {
     }
 
     public void verifyInventory(KitInventory inventory){
-        //Invalid kit on slot
         KitsManager kitsManager = plugin.getKitsManager();
         List<ItemKitInventory> items = inventory.getItems();
         InventoryManager inventoryManager = plugin.getInventoryManager();
+        int maxSlots = inventory.getSlots();
         for(ItemKitInventory item : items){
            String type = item.getType();
            if(type != null && type.startsWith("kit: ")){
@@ -146,6 +146,15 @@ public class VerifyManager {
            if(kitItem != null){
                if(!verifyItem(kitItem.getId())){
                    errors.add(new PKInvalidItem("inventory.yml",null,true,kitItem.getId()));
+                   criticalErrors = true;
+               }
+           }
+
+           //Valid slots
+           for(int slot : item.getSlots()){
+               if(slot >= maxSlots){
+                   errors.add(new PKInventoryInvalidSlotError("inventory.yml",null,true,slot,
+                           inventory.getName(),maxSlots));
                    criticalErrors = true;
                }
            }
