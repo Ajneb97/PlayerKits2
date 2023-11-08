@@ -123,7 +123,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        plugin.getMigrationManager().migrateKits(sender);
+        plugin.getMigrationManager().migrate(sender);
     }
 
     public void verify(Player player,FileConfiguration messagesConfig,MessagesManager msgManager){

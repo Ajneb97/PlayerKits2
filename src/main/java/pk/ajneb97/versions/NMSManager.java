@@ -5,9 +5,7 @@ import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.utils.ServerVersion;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class NMSManager {
 
@@ -186,13 +184,14 @@ public class NMSManager {
             if((boolean)version.getMethodRef("hasTag").invoke(newItem,null)){
                 Object compound = version.getMethodRef("getTag").invoke(newItem,null);
                 Set<String> tags = (Set<String>) version.getMethodRef("getKeys").invoke(compound,null);
+                Set<String> notTags = new HashSet<>(Arrays.asList(
+                        "ench", "HideFlags", "display", "SkullOwner", "AttributeModifiers", "Enchantments",
+                        "Damage", "CustomModelData", "Potion", "StoredEnchantments", "CustomPotionColor",
+                        "CustomPotionEffects", "Fireworks", "Explosion", "pages", "title", "author", "resolved",
+                        "generation", "Trim", "custom_potion_effects"
+                ));
                 for(String t : tags) {
-                    if(!t.equals("ench") && !t.equals("HideFlags") && !t.equals("display")
-                            && !t.equals("SkullOwner") && !t.equals("AttributeModifiers")
-                            && !t.equals("Enchantments") && !t.equals("Damage") && !t.equals("CustomModelData") && !t.equals("Potion")
-                            && !t.equals("StoredEnchantments") && !t.equals("CustomPotionColor") && !t.equals("CustomPotionEffects") && !t.equals("Fireworks")
-                            && !t.equals("Explosion")&& !t.equals("pages") && !t.equals("title") && !t.equals("author") && !t.equals("resolved")
-                            && !t.equals("generation") && !t.equals("Trim")) {
+                    if(!notTags.contains(t)) {
                         if(t.equals("BlockEntityTag") && !item.getType().name().contains("SHULKER")){
                             continue;
                         }

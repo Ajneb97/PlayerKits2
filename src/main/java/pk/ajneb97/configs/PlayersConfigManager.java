@@ -129,29 +129,33 @@ public class PlayersConfigManager {
         plugin.getPlayerDataManager().setPlayers(players);
     }
 
+    public void saveConfig(PlayerData playerData){
+        String playerName = playerData.getName();
+        CustomConfig playerConfig = getConfigFile(playerData.getUuid()+".yml");
+        if(playerConfig == null) {
+            registerConfigFile(playerData.getUuid()+".yml");
+            playerConfig = getConfigFile(playerData.getUuid()+".yml");
+        }
+        FileConfiguration config = playerConfig.getConfig();
+
+        config.set("name", playerName);
+        config.set("kits",null);
+
+        for(PlayerDataKit playerDataKit : playerData.getKits()){
+            String kitName = playerDataKit.getName();
+            config.set("kits."+kitName+".cooldown",playerDataKit.getCooldown());
+            config.set("kits."+kitName+".one_time",playerDataKit.isOneTime());
+            config.set("kits."+kitName+".bought",playerDataKit.isBought());
+        }
+
+        playerConfig.saveConfig();
+    }
+
     public void saveConfigs(){
         ArrayList<PlayerData> players = plugin.getPlayerDataManager().getPlayers();
         for(PlayerData playerData : players) {
-            String playerName = playerData.getName();
-            CustomConfig playerConfig = getConfigFile(playerData.getUuid()+".yml");
-            if(playerConfig == null) {
-                registerConfigFile(playerData.getUuid()+".yml");
-                playerConfig = getConfigFile(playerData.getUuid()+".yml");
-            }
-            FileConfiguration config = playerConfig.getConfig();
-
-            config.set("name", playerName);
-            config.set("kits",null);
-
-            for(PlayerDataKit playerDataKit : playerData.getKits()){
-                String kitName = playerDataKit.getName();
-                config.set("kits."+kitName+".cooldown",playerDataKit.getCooldown());
-                config.set("kits."+kitName+".one_time",playerDataKit.isOneTime());
-                config.set("kits."+kitName+".bought",playerDataKit.isBought());
-            }
+            saveConfig(playerData);
         }
-
-        saveConfigFiles();
     }
 
 }

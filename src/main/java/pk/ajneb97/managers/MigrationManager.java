@@ -2,11 +2,11 @@ package pk.ajneb97.managers;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.configs.KitsConfigManager;
-import pk.ajneb97.model.Kit;
-import pk.ajneb97.model.KitAction;
-import pk.ajneb97.model.KitRequirements;
+import pk.ajneb97.configs.PlayersConfigManager;
+import pk.ajneb97.model.*;
 import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.model.item.KitItemSkullData;
 
@@ -19,6 +19,18 @@ public class MigrationManager {
     private PlayerKits2 plugin;
     public MigrationManager(PlayerKits2 plugin){
         this.plugin = plugin;
+    }
+
+    public void migrate(CommandSender sender){
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                migrateKits(sender);
+                migratePlayers(sender);
+
+                sender.sendMessage(PlayerKits2.prefix+MessagesManager.getColoredMessage(" &aMigration completed."));
+            }
+        }.runTaskAsynchronously(plugin);
     }
 
     public void migrateKits(CommandSender sender){
@@ -98,8 +110,50 @@ public class MigrationManager {
             return;
         }
 
-        plugin.getConfigsManager().reload();
-        sender.sendMessage(PlayerKits2.prefix+MessagesManager.getColoredMessage(" &aMigration completed."));
+        kitsConfigManager.reloadConfigs();
+        plugin.getVerifyManager().verify();
+    }
+
+    public void migratePlayers(CommandSender sender){
+        File bStatsFolder = new File(plugin.getDataFolder().getParentFile(), "PlayerKits");
+        File configFile = new File(bStatsFolder, "players.yml");
+        if(!configFile.exists()){
+            sender.sendMessage(PlayerKits2.prefix+MessagesManager.getColoredMessage(" &cPlayerKits1 players.yml file not found."));
+            return;
+        }
+
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+        PlayersConfigManager playersConfigManager = plugin.getConfigsManager().getPlayersConfigManager();
+
+        if(config.contains("Players")) {
+            for (String uuid : config.getConfigurationSection("Players").getKeys(false)) {
+                try {
+                    String path = "Players."+uuid;
+                    String name = config.getString(path+".name");
+                    PlayerData playerData = new PlayerData(name,uuid);
+                    for(String kitName : config.getConfigurationSection(path).getKeys(false)){
+                        if(kitName.equals("name")){
+                           continue;
+                        }
+
+                        PlayerDataKit playerDataKit = new PlayerDataKit(kitName);
+                        playerDataKit.setBought(config.getBoolean(path+"."+kitName+".buyed"));
+                        playerDataKit.setCooldown(config.getLong(path+"."+kitName+".cooldown"));
+                        playerDataKit.setOneTime(config.getBoolean(path+"."+kitName+".one_time"));
+                        playerData.addKit(playerDataKit);
+                    }
+
+                    playersConfigManager.saveConfig(playerData);
+
+                    sender.sendMessage(PlayerKits2.prefix+MessagesManager.getColoredMessage(" &aPlayer &7"+name+" &amigrated."));
+                } catch (Exception e) {
+                    sender.sendMessage(PlayerKits2.prefix + MessagesManager.getColoredMessage(" &cError while trying to migrate player data with uuid &7" + uuid + "&c, check console."));
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        playersConfigManager.reloadConfigs();
     }
 
     public KitItem getDisplayItem(YamlConfiguration config,String path){
@@ -111,7 +165,7 @@ public class MigrationManager {
         KitItemSkullData skullData = null;
         if(config.contains(path+".display_item_skulldata")) {
             String[] fullSkull = config.getString(path+".display_item_skulldata").split(";");
-            skullData = new KitItemSkullData(null,fullSkull[0],fullSkull[1]);
+            skullData = new KitItemSkullData(null,fullSkull[1],fullSkull[0]);
         }
 
         kitItem.setName(name);

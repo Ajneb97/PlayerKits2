@@ -2,11 +2,9 @@ package pk.ajneb97.utils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
 
 import org.bukkit.*;
 import org.bukkit.FireworkEffect.Type;
@@ -32,8 +30,11 @@ import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
+import org.bukkit.profile.PlayerProfile;
+import org.bukkit.profile.PlayerTextures;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.model.item.*;
+import sun.misc.BASE64Decoder;
 
 public class ItemUtils {
 
@@ -153,22 +154,41 @@ public class ItemUtils {
         	item.setItemMeta(skullMeta);
         	return;
         }
-        
-        GameProfile profile = null;
-        if(id == null) {
-        	profile = new GameProfile(UUID.randomUUID(), owner != null ? owner : "");
-        }else {
-        	profile = new GameProfile(UUID.fromString(id), owner != null ? owner : "");
-        }
-        profile.getProperties().put("textures", new Property("textures", texture));
 
-        try {
-            Field profileField = skullMeta.getClass().getDeclaredField("profile");
-            profileField.setAccessible(true);
-            profileField.set(skullMeta, profile);
-        } catch (IllegalArgumentException|NoSuchFieldException|SecurityException|IllegalAccessException error) {
-            error.printStackTrace();
-        }
+		ServerVersion serverVersion = PlayerKits2.serverVersion;
+		if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R2)){
+			UUID uuid = id != null ? UUID.fromString(id) : UUID.randomUUID();
+			PlayerProfile profile = Bukkit.createPlayerProfile(uuid);
+			PlayerTextures textures = profile.getTextures();
+			URL url;
+			try {
+				String decoded = new String(Base64.getDecoder().decode(texture));
+				url = new URL(decoded.substring("{\"textures\":{\"SKIN\":{\"url\":\"".length(), decoded.length() - "\"}}}".length()));
+			} catch (MalformedURLException error) {
+				error.printStackTrace();
+				return;
+			}
+			textures.setSkin(url);
+			profile.setTextures(textures);
+			skullMeta.setOwnerProfile(profile);
+		}else{
+			GameProfile profile = null;
+			if(id == null) {
+				profile = new GameProfile(UUID.randomUUID(), owner != null ? owner : "");
+			}else {
+				profile = new GameProfile(UUID.fromString(id), owner != null ? owner : "");
+			}
+			profile.getProperties().put("textures", new Property("textures", texture));
+
+			try {
+				Field profileField = skullMeta.getClass().getDeclaredField("profile");
+				profileField.setAccessible(true);
+				profileField.set(skullMeta, profile);
+			} catch (IllegalArgumentException | NoSuchFieldException | SecurityException | IllegalAccessException error) {
+				error.printStackTrace();
+			}
+		}
+
         item.setItemMeta(skullMeta);
 	}
 	
