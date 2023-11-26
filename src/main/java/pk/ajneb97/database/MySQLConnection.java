@@ -15,12 +15,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 public class MySQLConnection {
 
-    private PlayerKits2 plugin;
+    private final PlayerKits2 plugin;
     private HikariConnection connection;
     private String host;
     private String database;
