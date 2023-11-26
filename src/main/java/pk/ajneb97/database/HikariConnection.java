@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public class HikariConnection {
 
-    private HikariDataSource hikari;
+    private final HikariDataSource hikari;
 
     public HikariConnection(String ip, int port, String database, String username, String password, PlayerKits2 plugin) {
         HikariConfig config = new HikariConfig();
