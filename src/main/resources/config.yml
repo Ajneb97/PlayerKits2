@@ -44,6 +44,8 @@ player_data_save_time: 300
 update_notify: true
 mysql_database:
   enabled: false
+  # Driver types: MySQL or MariaDB
+  driver: MySQL
   host: localhost
   port: 3306
   username: root

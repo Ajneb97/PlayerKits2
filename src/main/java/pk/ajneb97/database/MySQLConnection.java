@@ -1,5 +1,6 @@
 package pk.ajneb97.database;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -14,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class MySQLConnection {
@@ -38,16 +40,22 @@ public class MySQLConnection {
             database = config.getString("mysql_database.database");
             username = config.getString("mysql_database.username");
             password = config.getString("mysql_database.password");
-            connection = new HikariConnection(host,port,database,username,password);
-            connection.getHikari().getConnection();
-            createTables();
-            loadData();
-            Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(plugin.prefix+" &aSuccessfully connected to the Database."));
-        }catch(Exception e) {
+            connection = new HikariConnection(host,port,database,username,password, plugin);
+
+            HikariDataSource hikariDataSource = connection.getHikari();
+            if (hikariDataSource != null) {
+                hikariDataSource.getConnection();  // Realiza la conexión aquí
+                createTables();
+                loadData();
+                Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(plugin.prefix+" &aSuccessfully connected to the Database."));
+            } else {
+                Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(plugin.prefix + " &cHikariDataSource is null. Connection failed."));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
             Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(plugin.prefix+" &cError while connecting to the Database."));
         }
     }
-
 
     public String getDatabase() {
         return this.database;
@@ -55,7 +63,13 @@ public class MySQLConnection {
 
     public Connection getConnection() {
         try {
-            return connection.getHikari().getConnection();
+            HikariDataSource hikariDataSource = connection.getHikari();
+            if (hikariDataSource != null) {
+                return hikariDataSource.getConnection();
+            } else {
+                Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(plugin.prefix + " &cHikariDataSource is null. Connection failed."));
+                return null;
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -117,21 +131,21 @@ public class MySQLConnection {
         try(Connection connection = getConnection()){
             PreparedStatement statement1 = connection.prepareStatement(
                     "CREATE TABLE IF NOT EXISTS playerkits_players" +
-                    " (UUID varchar(200) NOT NULL, " +
-                    " PLAYER_NAME varchar(50), " +
-                    " PRIMARY KEY ( UUID ))"
+                            " (UUID varchar(200) NOT NULL, " +
+                            " PLAYER_NAME varchar(50), " +
+                            " PRIMARY KEY ( UUID ))"
             );
             statement1.executeUpdate();
             PreparedStatement statement2 = connection.prepareStatement(
                     "CREATE TABLE IF NOT EXISTS playerkits_players_kits" +
-                    " (ID int NOT NULL AUTO_INCREMENT, " +
-                    " UUID varchar(200) NOT NULL, " +
-                    " NAME varchar(100), " +
-                    " COOLDOWN BIGINT, " +
-                    " ONE_TIME BOOLEAN, " +
-                    " BOUGHT BOOLEAN, " +
-                    " PRIMARY KEY ( ID ), " +
-                    " FOREIGN KEY (UUID) REFERENCES playerkits_players(UUID))");
+                            " (ID int NOT NULL AUTO_INCREMENT, " +
+                            " UUID varchar(200) NOT NULL, " +
+                            " NAME varchar(100), " +
+                            " COOLDOWN BIGINT, " +
+                            " ONE_TIME BOOLEAN, " +
+                            " BOUGHT BOOLEAN, " +
+                            " PRIMARY KEY ( ID ), " +
+                            " FOREIGN KEY (UUID) REFERENCES playerkits_players(UUID))");
             statement2.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -203,6 +217,9 @@ public class MySQLConnection {
                     statement.setString(1, player.getUuid());
                     statement.setString(2, player.getName());
                     statement.executeUpdate();
+
+                    // Close the PreparedStatement
+                    statement.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -221,6 +238,9 @@ public class MySQLConnection {
 
                     statement.setString(1, player.getName());
                     statement.setString(2, player.getUuid());
+                    statement.executeUpdate();
+                    // Close the PreparedStatement
+                    statement.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -258,6 +278,8 @@ public class MySQLConnection {
                         statement.setString(5, kit.getName());
                     }
                     statement.executeUpdate();
+                    // Close the PreparedStatement
+                    statement.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -277,6 +299,8 @@ public class MySQLConnection {
                     statement.setString(1, uuid);
                     statement.setString(2, kitName);
                     statement.executeUpdate();
+                    // Close the PreparedStatement
+                    statement.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
