@@ -163,7 +163,10 @@ public class ItemUtils {
 			URL url;
 			try {
 				String decoded = new String(Base64.getDecoder().decode(texture));
-				url = new URL(decoded.substring("{\"textures\":{\"SKIN\":{\"url\":\"".length(), decoded.length() - "\"}}}".length()));
+				String decodedFormatted = decoded.replaceAll("\\s", "");
+				int firstIndex = decodedFormatted.indexOf("\"SKIN\":{\"url\":")+15;
+				int lastIndex = decodedFormatted.indexOf("}",firstIndex+1);
+				url = new URL(decodedFormatted.substring(firstIndex,lastIndex-1));
 			} catch (MalformedURLException error) {
 				error.printStackTrace();
 				return;
@@ -487,12 +490,13 @@ public class ItemUtils {
 
 				List<String> attributeList = new ArrayList<String>();
 				for(Attribute a : set) {
-					Collection<AttributeModifier> listaModifiers = attributes.get(a);
-					for(AttributeModifier m : listaModifiers) {
-						String line = a.name()+";"+m.getOperation().name()+";"+m.getAmount()+";"+UUID.randomUUID().toString();
+					Collection<AttributeModifier> listModifiers = attributes.get(a);
+					for(AttributeModifier m : listModifiers) {
+						String line = a.name()+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getUniqueId();
 						if(m.getSlot() != null) {
 							line=line+";"+m.getSlot().name();
 						}
+						line=line+";custom_name:"+m.getName();
 						attributeList.add(line);
 					}
 				}
@@ -519,12 +523,22 @@ public class ItemUtils {
 				AttributeModifier.Operation op = AttributeModifier.Operation.valueOf(sep[1]);
 				double amount = Double.valueOf(sep[2]);
 				UUID uuid = UUID.fromString(sep[3]);
+				String customName = attribute;
+				for(int i=0;i<sep.length;i++){
+					if(sep[i].startsWith("custom_name:")){
+						customName = sep[i].replace("custom_name:","");
+					}
+				}
 				AttributeModifier modifier = null;
 				if(sep.length >= 5) {
-					EquipmentSlot slot = EquipmentSlot.valueOf(sep[4]);
-					modifier = new AttributeModifier(uuid,attribute,amount,op,slot);
+					if(!sep[4].startsWith("custom_name:")){
+						EquipmentSlot slot = EquipmentSlot.valueOf(sep[4]);
+						modifier = new AttributeModifier(uuid,customName,amount,op,slot);
+					}else{
+						modifier = new AttributeModifier(uuid,customName,amount,op);
+					}
 				}else {
-					modifier = new AttributeModifier(uuid,attribute,amount,op);
+					modifier = new AttributeModifier(uuid,customName,amount,op);
 				}
 
 				meta.addAttributeModifier(Attribute.valueOf(attribute), modifier);
