@@ -83,7 +83,8 @@ public class NMSManager {
                     case v1_19_R2:
                     case v1_19_R3: methodName = "t"; break;
                     case v1_20_R1:
-                    case v1_20_R2: methodName = "u"; break;
+                    case v1_20_R2:
+                    case v1_20_R3: methodName = "u"; break;
                 }
                 version.addMethod("hasTag",version.getClassRef("ItemStackNMS").getMethod(methodName));
 
@@ -95,7 +96,8 @@ public class NMSManager {
                     case v1_19_R2:
                     case v1_19_R3: methodName = "u"; break;
                     case v1_20_R1:
-                    case v1_20_R2: methodName = "v"; break;
+                    case v1_20_R2:
+                    case v1_20_R3: methodName = "v"; break;
                 }
                 version.addMethod("getTag",version.getClassRef("ItemStackNMS").getMethod(methodName));
 
@@ -121,8 +123,8 @@ public class NMSManager {
                     case v1_19_R1: methodName = "d"; break;
                     case v1_19_R2:
                     case v1_19_R3:
-                    case v1_20_R1:
-                    case v1_20_R2: methodName = "e"; break;
+                    case v1_20_R2:
+                    case v1_20_R3: methodName = "e"; break;
                 }
                 version.addMethod("getKeys",version.getClassRef("NBTTagCompound").getMethod(methodName));
                 version.addMethod("hasKeyOfType",version.getClassRef("NBTTagCompound").getMethod("b",String.class,int.class));
