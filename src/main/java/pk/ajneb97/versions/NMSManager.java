@@ -123,6 +123,7 @@ public class NMSManager {
                     case v1_19_R1: methodName = "d"; break;
                     case v1_19_R2:
                     case v1_19_R3:
+                    case v1_20_R1:
                     case v1_20_R2:
                     case v1_20_R3: methodName = "e"; break;
                 }
