@@ -1,5 +1,6 @@
 package pk.ajneb97.managers.edit;
 
+import me.hsgamer.hscore.bukkit.scheduler.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
@@ -7,7 +8,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.*;
 import pk.ajneb97.model.Kit;
@@ -145,13 +145,14 @@ public class InventoryEditPositionManager {
     public void closeInventory(InventoryPlayer inventoryPlayer){
         boolean mustReturn = Boolean.parseBoolean(inventoryPlayer.getInventoryName().split(";")[2]);
         if(mustReturn){
-            new BukkitRunnable(){
-                @Override
-                public void run() {
-                    inventoryPlayer.restoreSavedInventoryContents();
-                    inventoryEditManager.openInventory(inventoryPlayer);
-                }
-            }.runTaskLater(plugin,1L);
+            Scheduler.plugin(plugin).sync().runEntityTaskLater(
+                    inventoryPlayer.getPlayer(),
+                    () -> {
+                        inventoryPlayer.restoreSavedInventoryContents();
+                        inventoryEditManager.openInventory(inventoryPlayer);
+                    },
+                    1L
+            );
         }
     }
 }

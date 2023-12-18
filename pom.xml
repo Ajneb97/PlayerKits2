@@ -63,6 +63,11 @@
             <artifactId>HikariCP</artifactId>
             <version>4.0.3</version>
         </dependency>
+        <dependency>
+            <groupId>me.hsgamer</groupId>
+            <artifactId>hscore-bukkit-scheduler</artifactId>
+            <version>4.3.21</version>
+        </dependency>
     </dependencies>
 
     <build>
