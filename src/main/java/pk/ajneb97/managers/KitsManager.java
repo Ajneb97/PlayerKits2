@@ -241,7 +241,7 @@ public class KitsManager {
                 String id = item.getId();
 
                 //Check if the item must be put in the player equipment
-                if((id.contains("_HELMET") || id.contains("PLAYER_HELMET") || id.contains("SKULL_ITEM")) && itemHelmet == null && (playerInventory.getHelmet() == null
+                if((id.contains("_HELMET") || id.contains("PLAYER_HEAD") || id.contains("SKULL_ITEM")) && itemHelmet == null && (playerInventory.getHelmet() == null
                     || playerInventory.getHelmet().getType().equals(Material.AIR))){
                     itemHelmet = item;
                     continue;

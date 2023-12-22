@@ -1,5 +1,6 @@
 package pk.ajneb97.model.item;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class KitItemBookData {
@@ -38,5 +39,9 @@ public class KitItemBookData {
     }
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public KitItemBookData clone(){
+        return new KitItemBookData(new ArrayList<>(pages),author,generation,title);
     }
 }

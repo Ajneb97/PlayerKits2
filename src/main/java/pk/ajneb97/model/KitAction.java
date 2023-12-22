@@ -46,4 +46,9 @@ public class KitAction {
     public void setCountAsItem(boolean countAsItem) {
         this.countAsItem = countAsItem;
     }
+
+    public KitAction clone(){
+        KitItem item = displayItem != null ? displayItem.clone() : null;
+        return new KitAction(action,item,executeBeforeItems,countAsItem);
+    }
 }

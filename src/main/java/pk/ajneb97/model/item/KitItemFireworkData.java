@@ -1,5 +1,6 @@
 package pk.ajneb97.model.item;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class KitItemFireworkData {
@@ -30,5 +31,9 @@ public class KitItemFireworkData {
     }
     public void setFireworkPower(int fireworkPower) {
         this.fireworkPower = fireworkPower;
+    }
+
+    public KitItemFireworkData clone(){
+        return new KitItemFireworkData(new ArrayList<>(fireworkRocketEffects),fireworkStarEffect,fireworkPower);
     }
 }

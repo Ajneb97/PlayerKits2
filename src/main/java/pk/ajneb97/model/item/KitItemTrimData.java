@@ -25,4 +25,8 @@ public class KitItemTrimData {
 	public void setMaterial(String material) {
 		this.material = material;
 	}
+
+	public KitItemTrimData clone(){
+		return new KitItemTrimData(pattern,material);
+	}
 }
