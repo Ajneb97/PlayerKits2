@@ -1,5 +1,6 @@
 package pk.ajneb97.model.item;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class KitItemPotionData {
@@ -47,5 +48,9 @@ public class KitItemPotionData {
     }
     public void setPotionEffects(List<String> potionEffects) {
         this.potionEffects = potionEffects;
+    }
+
+    public KitItemPotionData clone(){
+        return new KitItemPotionData(upgraded,extended,potionType,potionColor,new ArrayList<>(potionEffects));
     }
 }

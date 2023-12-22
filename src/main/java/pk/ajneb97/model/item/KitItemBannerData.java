@@ -1,5 +1,6 @@
 package pk.ajneb97.model.item;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class KitItemBannerData {
@@ -22,5 +23,9 @@ public class KitItemBannerData {
     }
     public void setBaseColor(String baseColor) {
         this.baseColor = baseColor;
+    }
+
+    public KitItemBannerData clone(){
+        return new KitItemBannerData(new ArrayList<>(patterns),baseColor);
     }
 }

@@ -156,13 +156,25 @@ public class Kit {
         cooldown = defaultKit.getCooldown();
         oneTime = defaultKit.isOneTime();
         permissionRequired = defaultKit.isPermissionRequired();
-        claimActions = defaultKit.getClaimActions();
-        errorActions = defaultKit.getErrorActions();
-        displayItemDefault = defaultKit.getDisplayItemDefault();
-        displayItemNoPermission = defaultKit.getDisplayItemNoPermission();
-        displayItemCooldown = defaultKit.getDisplayItemCooldown();
-        displayItemOneTime = defaultKit.getDisplayItemOneTime();
-        displayItemOneTimeRequirements = defaultKit.getDisplayItemOneTimeRequirements();
+        if(defaultKit.getClaimActions() != null){
+            ArrayList<KitAction> actions = new ArrayList<>();
+            for(KitAction action : defaultKit.getClaimActions()){
+                actions.add(action.clone());
+            }
+            claimActions = actions;
+        }
+        if(defaultKit.getErrorActions() != null){
+            ArrayList<KitAction> actions = new ArrayList<>();
+            for(KitAction action : defaultKit.getErrorActions()){
+                actions.add(action.clone());
+            }
+            errorActions = actions;
+        }
+        displayItemDefault = defaultKit.getDisplayItemDefault() != null ? defaultKit.getDisplayItemDefault().clone() : null;
+        displayItemNoPermission = defaultKit.getDisplayItemNoPermission() != null ? defaultKit.getDisplayItemNoPermission().clone() : null;
+        displayItemCooldown = defaultKit.getDisplayItemCooldown() != null ? defaultKit.getDisplayItemCooldown().clone() : null;
+        displayItemOneTime = defaultKit.getDisplayItemOneTime() != null ? defaultKit.getDisplayItemOneTime().clone() : null;
+        displayItemOneTimeRequirements = defaultKit.getDisplayItemOneTimeRequirements() != null ? defaultKit.getDisplayItemOneTimeRequirements().clone() : null;
         autoArmor = defaultKit.isAutoArmor();
     }
 }

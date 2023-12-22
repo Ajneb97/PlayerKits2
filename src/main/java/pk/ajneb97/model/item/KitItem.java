@@ -1,8 +1,9 @@
 package pk.ajneb97.model.item;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class KitItem {
+public class KitItem{
 
     private String id;
     private int amount;
@@ -208,5 +209,32 @@ public class KitItem {
                 return;
             }
         }
+    }
+
+    public KitItem clone(){
+        KitItem kitItem = new KitItem(id);
+        kitItem.setAmount(amount);
+        kitItem.setName(name);
+        kitItem.setLore(lore != null ? new ArrayList<>(lore) : null);
+        kitItem.setDurability(durability);
+        kitItem.setCustomModelData(customModelData);
+        kitItem.setEnchants(enchants != null ? new ArrayList<>(enchants) : null);
+        kitItem.setFlags(flags != null ? new ArrayList<>(flags) : null);
+        kitItem.setBookEnchants(bookEnchants != null ? new ArrayList<>(bookEnchants) : null);
+        kitItem.setColor(color);
+        kitItem.setNbt(nbt != null ? new ArrayList<>(nbt) : null);
+        kitItem.setAttributes(attributes != null ? new ArrayList<>(attributes) : null);
+
+        kitItem.setSkullData(skullData != null ? skullData.clone() : null);
+        kitItem.setPotionData(potionData != null ? potionData.clone() : null);
+        kitItem.setFireworkData(fireworkData != null ? fireworkData.clone() : null);
+        kitItem.setBannerData(bannerData != null ? bannerData.clone() : null);
+        kitItem.setBookData(bookData != null ? bookData.clone() : null);
+        kitItem.setTrimData(trimData != null ? trimData.clone() : null);
+
+        kitItem.setPreviewSlot(previewSlot);
+        kitItem.setOffhand(offhand);
+
+        return kitItem;
     }
 }

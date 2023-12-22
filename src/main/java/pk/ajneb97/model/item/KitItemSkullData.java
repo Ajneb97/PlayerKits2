@@ -29,4 +29,8 @@ public class KitItemSkullData {
     public void setId(String id) {
         this.id = id;
     }
+
+    public KitItemSkullData clone(){
+        return new KitItemSkullData(owner,texture,id);
+    }
 }
