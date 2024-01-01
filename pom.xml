@@ -90,8 +90,10 @@
                         <configuration>
                             <relocations>
                                 <relocation>
-                                    <pattern>com.zaxxer.HikariCP</pattern>
+                                    <pattern>com.zaxxer.hikari</pattern>
                                     <shadedPattern>pk.ajneb97.libs.hikaricp</shadedPattern>
+                                    <pattern>org.slf4j</pattern>
+                                    <shadedPattern>pk.ajneb97.libs.slf4j</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
