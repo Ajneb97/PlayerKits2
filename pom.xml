@@ -62,6 +62,7 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>4.0.3</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -92,8 +93,16 @@
                                 <relocation>
                                     <pattern>com.zaxxer.hikari</pattern>
                                     <shadedPattern>pk.ajneb97.libs.hikaricp</shadedPattern>
+                                    <includes>
+                                        <include>com.zaxxer.hikari.**</include>
+                                    </includes>
+                                </relocation>
+                                <relocation>
                                     <pattern>org.slf4j</pattern>
                                     <shadedPattern>pk.ajneb97.libs.slf4j</shadedPattern>
+                                    <includes>
+                                        <include>org.slf4j.**</include>
+                                    </includes>
                                 </relocation>
                             </relocations>
                         </configuration>
