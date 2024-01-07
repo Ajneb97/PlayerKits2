@@ -1,6 +1,6 @@
 package pk.ajneb97.tasks;
 
-import org.bukkit.scheduler.BukkitRunnable;
+import me.hsgamer.hscore.bukkit.scheduler.Scheduler;
 import pk.ajneb97.PlayerKits2;
 
 public class PlayerDataSaveTask {
@@ -18,18 +18,14 @@ public class PlayerDataSaveTask {
 	
 	public void start(int minutes) {
 		long ticks = minutes*60*20;
-		
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				if(end) {
-					this.cancel();
-				}else {
-					execute();
-				}
+		Scheduler.plugin(plugin).async().runTaskTimer(() -> {
+			if(end) {
+				return false;
+			}else {
+				execute();
+				return true;
 			}
-			
-		}.runTaskTimerAsynchronously(plugin, 0L, ticks);
+		}, 0L, ticks);
 	}
 	
 	public void execute() {

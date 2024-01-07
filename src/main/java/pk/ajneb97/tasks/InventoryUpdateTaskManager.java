@@ -1,9 +1,9 @@
 package pk.ajneb97.tasks;
 
+import me.hsgamer.hscore.bukkit.scheduler.Scheduler;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.*;
 import pk.ajneb97.model.inventory.InventoryPlayer;
@@ -19,12 +19,7 @@ public class InventoryUpdateTaskManager {
     }
 
     public void start(){
-        new BukkitRunnable(){
-            @Override
-            public void run() {
-                execute();
-            }
-        }.runTaskTimerAsynchronously(plugin,0L,20L);
+        Scheduler.plugin(plugin).async().runTaskTimer(this::execute, 0L, 20L);
     }
 
     public void execute(){
