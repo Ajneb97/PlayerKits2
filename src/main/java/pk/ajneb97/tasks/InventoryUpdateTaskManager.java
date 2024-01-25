@@ -24,7 +24,7 @@ public class InventoryUpdateTaskManager {
             public void run() {
                 execute();
             }
-        }.runTaskTimerAsynchronously(plugin,0L,20L);
+        }.runTaskTimer(plugin,0L,20L);
     }
 
     public void execute(){

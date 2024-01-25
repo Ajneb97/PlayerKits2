@@ -16,8 +16,8 @@ public class PlayerDataSaveTask {
 		end = true;
 	}
 	
-	public void start(int minutes) {
-		long ticks = minutes*60*20;
+	public void start(int seconds) {
+		long ticks = seconds* 20L;
 		
 		new BukkitRunnable() {
 			@Override
