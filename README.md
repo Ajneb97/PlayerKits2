@@ -1,7 +1,7 @@
 # PlayerKits2
 https://www.spigotmc.org/resources/playerkits-2-fully-configurable-kits-1-8-1-20.112616/
 
-# unofficial Discord 
+# Unofficial Discord 
 
 https://discord.gg/aT9z7q7hX8
 
