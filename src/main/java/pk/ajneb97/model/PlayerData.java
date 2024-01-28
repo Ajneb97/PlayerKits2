@@ -8,11 +8,13 @@ public class PlayerData {
     private String uuid;
 
     private ArrayList<PlayerDataKit> kits;
+    private boolean modified;
 
     public PlayerData(String name,String uuid){
         this.name = name;
         this.uuid = uuid;
         this.kits = new ArrayList<PlayerDataKit>();
+        this.modified = false;
     }
 
     public String getName() {
@@ -41,6 +43,14 @@ public class PlayerData {
 
     public void addKit(PlayerDataKit kit){
         this.kits.add(kit);
+    }
+
+    public boolean isModified() {
+        return modified;
+    }
+
+    public void setModified(boolean modified) {
+        this.modified = modified;
     }
 
     public PlayerDataKit getKit(String kitName){

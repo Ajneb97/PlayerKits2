@@ -19,7 +19,7 @@ public class InventoryUpdateTaskManager {
     }
 
     public void start(){
-        Scheduler.plugin(plugin).async().runTaskTimer(this::execute, 0L, 20L);
+        Scheduler.plugin(plugin).sync().runTaskTimer(this::execute, 0L, 20L);
     }
 
     public void execute(){

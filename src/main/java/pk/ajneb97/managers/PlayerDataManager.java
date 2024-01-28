@@ -35,6 +35,7 @@ public class PlayerDataManager {
 
         if(create){
             PlayerData playerData = new PlayerData(player.getName(),player.getUniqueId().toString());
+            playerData.setModified(true);
             players.add(playerData);
             return playerData;
         }
@@ -71,6 +72,7 @@ public class PlayerDataManager {
     public void setKitCooldown(Player player,String kitName,long cooldown){
         PlayerData playerData = getPlayer(player,true);
         boolean creating = playerData.setKitCooldown(kitName,cooldown);
+        playerData.setModified(true);
         if(plugin.getMySQLConnection() != null){
             plugin.getMySQLConnection().updateKit(playerData,playerData.getKit(kitName),creating);
         }
@@ -95,6 +97,7 @@ public class PlayerDataManager {
     public void setKitOneTime(Player player,String kitName){
         PlayerData playerData = getPlayer(player,true);
         boolean creating = playerData.setKitOneTime(kitName);
+        playerData.setModified(true);
         if(plugin.getMySQLConnection() != null){
             plugin.getMySQLConnection().updateKit(playerData,playerData.getKit(kitName),creating);
         }
@@ -112,6 +115,7 @@ public class PlayerDataManager {
     public void setKitBought(Player player,String kitName){
         PlayerData playerData = getPlayer(player,true);
         boolean creating = playerData.setKitBought(kitName);
+        playerData.setModified(true);
         if(plugin.getMySQLConnection() != null){
             plugin.getMySQLConnection().updateKit(playerData,playerData.getKit(kitName),creating);
         }
@@ -135,6 +139,7 @@ public class PlayerDataManager {
         }
 
         playerData.resetKit(kitName);
+        playerData.setModified(true);
         if(plugin.getMySQLConnection() != null){
             plugin.getMySQLConnection().resetKit(playerData.getUuid(),kitName);
         }
@@ -173,9 +178,14 @@ public class PlayerDataManager {
             PlayerData playerData = getPlayerByUUID(player.getUniqueId().toString());
             if(playerData == null){
                 firstJoin = true;
-                players.add(new PlayerData(player.getName(),player.getUniqueId().toString()));
+                playerData = new PlayerData(player.getName(),player.getUniqueId().toString());
+                playerData.setModified(true);
+                players.add(playerData);
             }else{
-                playerData.setName(player.getName());
+                if(!playerData.getName().equals(player.getName())){
+                    playerData.setName(player.getName());
+                    playerData.setModified(true);
+                }
             }
 
             if(firstJoin){
