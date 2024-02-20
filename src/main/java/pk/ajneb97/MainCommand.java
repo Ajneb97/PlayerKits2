@@ -116,6 +116,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit delete <kit> &8Deletes a kit."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reset <kit> <player> &8Resets kit data for a player."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit preview <kit> &8Previews a kit."));
+        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit open <inventory> <player> &8Opens a specific inventory for a player."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reload &8Reloads the config."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit verify &8Checks the plugin for errors."));
         sender.sendMessage(MessagesManager.getColoredMessage(" "));
