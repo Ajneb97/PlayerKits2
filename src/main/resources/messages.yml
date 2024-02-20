@@ -12,6 +12,7 @@ commandDeleteError: "&cYou need to use: &7/kit delete <name>"
 commandResetError: "&cYou need to use: &7/kit reset <kit> <player>"
 commandEditError: "&cYou need to use: &7/kit edit <kit>"
 commandPreviewError: "&cYou need to use: &7/kit preview <kit>"
+commandOpenError: "&cYou need to use: &7/kit open <inventory> <player>"
 commandDoesNotExists: "&cThat command doesn't exists."
 playerNotOnline: "&cPlayer &7%player% &cis not online."
 oneTimeError: "&cYou can't claim this kit again."
@@ -37,5 +38,6 @@ days: 'd'
 cooldownPlaceholderReady: "&a&lReady!"
 pluginCriticalErrors: "&cThe plugin has detected some errors. Check them using &7/kit verify"
 kitPreviewDisabled: "&cKit preview is disabled."
+inventoryNotExists: "&cThat inventory doesn't exists."
 
 

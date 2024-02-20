@@ -58,6 +58,11 @@ public class MessagesConfigManager {
         Path pathConfig = Paths.get(configFile.getRoute());
         try{
             String text = new String(Files.readAllBytes(pathConfig));
+            if(!text.contains("commandOpenError:")){
+                getConfig().set("commandOpenError", "&cYou need to use: &7/kit open <inventory> <player>");
+                getConfig().set("inventoryNotExists", "&cThat inventory doesn't exists.");
+                saveConfig();
+            }
             if(!text.contains("commandPreviewError:")){
                 getConfig().set("commandPreviewError", "&cYou need to use: &7/kit preview <kit>");
                 getConfig().set("kitPreviewDisabled", "&cKit preview is disabled.");

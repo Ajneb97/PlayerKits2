@@ -165,8 +165,8 @@ public class ItemUtils {
 				String decoded = new String(Base64.getDecoder().decode(texture));
 				String decodedFormatted = decoded.replaceAll("\\s", "");
 				int firstIndex = decodedFormatted.indexOf("\"SKIN\":{\"url\":")+15;
-				int lastIndex = decodedFormatted.indexOf("}",firstIndex+1);
-				url = new URL(decodedFormatted.substring(firstIndex,lastIndex-1));
+				int lastIndex = decodedFormatted.indexOf("\"",firstIndex+1);
+				url = new URL(decodedFormatted.substring(firstIndex,lastIndex));
 			} catch (MalformedURLException error) {
 				error.printStackTrace();
 				return;
