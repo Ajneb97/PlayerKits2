@@ -1,9 +1,13 @@
 package pk.ajneb97.versions;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.utils.ServerVersion;
 
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -20,22 +24,20 @@ public class NMSManager {
         try {
             //Classes
             version.addClass("CraftItemStack",Class.forName("org.bukkit.craftbukkit."+serverVersion+".inventory.CraftItemStack"));
-            if(!serverVersionGreaterEqualThan(ServerVersion.v1_13_R1)) {
-                //1.12 or lower
-                version.addClass("NBTTagList",Class.forName("net.minecraft.server."+serverVersion+".NBTTagList"));
-            }
             if(serverVersionGreaterEqualThan(ServerVersion.v1_17_R1)){
                 //1.17 or greater
                 version.addClass("ItemStackNMS",Class.forName("net.minecraft.world.item.ItemStack"));
                 version.addClass("NBTTagCompound",Class.forName("net.minecraft.nbt.NBTTagCompound"));
                 version.addClass("MojangsonParser",Class.forName("net.minecraft.nbt.MojangsonParser"));
                 version.addClass("NBTBase",Class.forName("net.minecraft.nbt.NBTBase"));
+                version.addClass("NBTTagList",Class.forName("net.minecraft.nbt.NBTTagList"));
             }else{
                 //1.16 or lower
                 version.addClass("ItemStackNMS",Class.forName("net.minecraft.server."+serverVersion+".ItemStack"));
                 version.addClass("NBTTagCompound",Class.forName("net.minecraft.server."+serverVersion+".NBTTagCompound"));
                 version.addClass("MojangsonParser",Class.forName("net.minecraft.server."+serverVersion+".MojangsonParser"));
                 version.addClass("NBTBase",Class.forName("net.minecraft.server."+serverVersion+".NBTBase"));
+                version.addClass("NBTTagList",Class.forName("net.minecraft.server."+serverVersion+".NBTTagList"));
             }
 
             //Methods
@@ -43,10 +45,8 @@ public class NMSManager {
             version.addMethod("asBukkitCopy",version.getClassRef("CraftItemStack").getMethod("asBukkitCopy",version.getClassRef("ItemStackNMS")));
             if(!serverVersionGreaterEqualThan(ServerVersion.v1_13_R1)){
                 //1.12 or lower
-                version.addMethod("getList",version.getClassRef("NBTTagCompound").getMethod("getList",String.class,int.class));
                 version.addMethod("listSize",version.getClassRef("NBTTagList").getMethod("size"));
                 version.addMethod("listGet",version.getClassRef("NBTTagList").getMethod("get",int.class));
-                version.addMethod("listAdd",version.getClassRef("NBTTagList").getMethod("add",version.getClassRef("NBTBase")));
             }
             if(!serverVersionGreaterEqualThan(ServerVersion.v1_18_R1)){
                 //1.17 or lower
@@ -64,6 +64,7 @@ public class NMSManager {
                 version.addMethod("getInt",version.getClassRef("NBTTagCompound").getMethod("getInt",String.class));
                 version.addMethod("getDouble",version.getClassRef("NBTTagCompound").getMethod("getDouble",String.class));
                 version.addMethod("getCompound",version.getClassRef("NBTTagCompound").getMethod("getCompound",String.class));
+                version.addMethod("getList",version.getClassRef("NBTTagCompound").getMethod("getList",String.class,int.class));
                 version.addMethod("get",version.getClassRef("NBTTagCompound").getMethod("get",String.class));
                 version.addMethod("remove",version.getClassRef("NBTTagCompound").getMethod("remove",String.class));
                 if(serverVersionGreaterEqualThan(ServerVersion.v1_13_R1)){
@@ -73,6 +74,7 @@ public class NMSManager {
                 }
                 version.addMethod("hasKeyOfType",version.getClassRef("NBTTagCompound").getMethod("hasKeyOfType",String.class,int.class));
                 version.addMethod("parse",version.getClassRef("MojangsonParser").getMethod("parse",String.class));
+                version.addMethod("listAdd",version.getClassRef("NBTTagList").getMethod("add",version.getClassRef("NBTBase")));
             }else{
                 //1.18 or greater
                 String methodName = null;
@@ -113,6 +115,7 @@ public class NMSManager {
                 version.addMethod("getInt",version.getClassRef("NBTTagCompound").getMethod("h",String.class));
                 version.addMethod("getDouble",version.getClassRef("NBTTagCompound").getMethod("k",String.class));
                 version.addMethod("getCompound",version.getClassRef("NBTTagCompound").getMethod("p",String.class));
+                version.addMethod("getList",version.getClassRef("NBTTagCompound").getMethod("c",String.class,int.class));
                 version.addMethod("get",version.getClassRef("NBTTagCompound").getMethod("c",String.class));
                 version.addMethod("remove",version.getClassRef("NBTTagCompound").getMethod("r",String.class));
 
@@ -213,7 +216,13 @@ public class NMSManager {
                         }else if((boolean)version.getMethodRef("hasKeyOfType").invoke(compound,t,8)) {
                             //String
                             nbtList.add(t+"|"+version.getMethodRef("getString").invoke(compound,t));
-                        }else {
+                        }
+                        /*
+                        else if((boolean)version.getMethodRef("hasKeyOfType").invoke(compound,t,9)){
+                            nbtList.add(t+"|"+version.getMethodRef("get").invoke(compound,t)+"|list");
+                        }
+                        */
+                        else {
                             //Other
                             nbtList.add(t+"|"+version.getMethodRef("get").invoke(compound,t));
                         }
@@ -250,7 +259,22 @@ public class NMSManager {
                     String finalNBT = nbt.replace(id+"|", "").replace("|compound", "");
                     Object compoundNew = version.getMethodRef("parse").invoke(null,finalNBT);
                     version.getMethodRef("set").invoke(compound,sep[0],compoundNew);
-                }else {
+                }else if(type.equals("list")){
+                    /*
+                    String finalNBT = nbt.replace(id+"|", "").replace("|list", "");
+                    JsonArray jsonArray = new Gson().fromJson(finalNBT, JsonArray.class);
+                    Object list = version.getClassRef("NBTTagList").newInstance();
+                    for (int c=0;c<jsonArray.size();i++) {
+                        if(finalNBT.startsWith("{")){
+                            Object compoundNew = version.getMethodRef("parse").invoke(null,jsonArray.get(i).toString());
+                            version.getMethodRef("listAdd").invoke(list,compoundNew);
+                        }else{
+
+                        }
+                    }
+                     */
+                }
+                else {
                     version.getMethodRef("setString").invoke(compound,sep[0],nbt.replace(id+"|", ""));
                 }
 

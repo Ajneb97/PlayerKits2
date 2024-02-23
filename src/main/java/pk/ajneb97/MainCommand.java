@@ -13,6 +13,7 @@ import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.internal.GiveKitInstructions;
 import pk.ajneb97.model.internal.PlayerKitsMessageResult;
 import pk.ajneb97.model.inventory.InventoryPlayer;
+import pk.ajneb97.model.inventory.KitInventory;
 import pk.ajneb97.utils.PlayerUtils;
 
 import java.util.ArrayList;
@@ -41,6 +42,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                     reset(sender,args,messagesConfig,msgManager);
                 }else if(args[0].equalsIgnoreCase("migrate")) {
                     migrate(sender,args,messagesConfig,msgManager);
+                }else if(args[0].equalsIgnoreCase("open")){
+                    open(sender,args,messagesConfig,msgManager);
                 }else{
                     help(sender,msgManager,messagesConfig);
                 }
@@ -73,6 +76,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 verify(player,messagesConfig,msgManager);
             }else if(args[0].equalsIgnoreCase("migrate")) {
                 migrate(sender,args,messagesConfig,msgManager);
+            }else if(args[0].equalsIgnoreCase("open")){
+                open(sender,args,messagesConfig,msgManager);
             }
             else{
                 // /kit <kit> (short command)
@@ -111,6 +116,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit delete <kit> &8Deletes a kit."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reset <kit> <player> &8Resets kit data for a player."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit preview <kit> &8Previews a kit."));
+        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit open <inventory> <player> &8Opens a specific inventory for a player."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reload &8Reloads the config."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit verify &8Checks the plugin for errors."));
         sender.sendMessage(MessagesManager.getColoredMessage(" "));
@@ -169,6 +175,37 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             msgManager.sendMessage(sender, messagesConfig.getString("kitResetCorrect")
                     .replace("%kit%",kitName).replace("%player%",playerName), true);
         }
+    }
+
+    public void open(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager) {
+        // /kits open <inventory> <player>
+        if(!PlayerUtils.isPlayerKitsAdmin(sender)) {
+            msgManager.sendMessage(sender, messagesConfig.getString("noPermissions"), true);
+            return;
+        }
+
+        if(args.length < 3) {
+            msgManager.sendMessage(sender, messagesConfig.getString("commandOpenError"), true);
+            return;
+        }
+
+        String inventoryName = args[1];
+        String playerName = args[2];
+
+        if(plugin.getInventoryManager().getInventory(inventoryName) == null){
+            msgManager.sendMessage(sender, messagesConfig.getString("inventoryNotExists"), true);
+            return;
+        }
+
+        Player player = Bukkit.getPlayer(playerName);
+        if(player == null){
+            msgManager.sendMessage(sender,messagesConfig.getString("playerNotOnline")
+                    .replace("%player%",playerName),true);
+            return;
+        }
+
+        InventoryPlayer inventoryPlayer = new InventoryPlayer(player,inventoryName);
+        plugin.getInventoryManager().openInventory(inventoryPlayer);
     }
 
     public void give(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
@@ -341,7 +378,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             if(PlayerUtils.isPlayerKitsAdmin(sender)){
                 commands.add("give");commands.add("delete");commands.add("create");
                 commands.add("reload");commands.add("reset");commands.add("edit");
-                commands.add("verify");commands.add("migrate");
+                commands.add("verify");commands.add("migrate");commands.add("open");
             }
             for(String c : commands) {
                 if(args[0].isEmpty() || c.startsWith(args[0].toLowerCase())) {
@@ -360,10 +397,16 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 if(PlayerUtils.isPlayerKitsAdmin(sender)){
                     commands.add("give");commands.add("delete");
                     commands.add("reset");commands.add("edit");
+                    commands.add("open");
                 }
                 for(String c : commands) {
                     if(args[0].equalsIgnoreCase(c)){
-                        return getKitCompletions(sender,args,1);
+                        if(c.equals("open")){
+                            return getInventoryCompletions(args,1);
+                        }else{
+                            return getKitCompletions(sender,args,1);
+                        }
+
                     }
                 }
             }
@@ -382,6 +425,25 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 if(kit.playerHasPermission(sender)){
                     completions.add(kit.getName());
                 }
+            }
+        }
+
+        if(completions.isEmpty()){
+            return null;
+        }
+        return completions;
+    }
+
+    public List<String> getInventoryCompletions(String[] args,int argInvPos){
+        List<String> completions = new ArrayList<>();
+        String argInv = args[argInvPos];
+
+        ArrayList<KitInventory> inventories = plugin.getInventoryManager().getInventories();
+        for(KitInventory inv : inventories) {
+            Bukkit.getConsoleSender().sendMessage(inv.getName());
+            if((argInv.isEmpty() || inv.getName().toLowerCase().startsWith(argInv.toLowerCase()))
+                && !inv.getName().equals("preview_inventory") && !inv.getName().equals("buy_requirements_inventory")) {
+                completions.add(inv.getName());
             }
         }
 
