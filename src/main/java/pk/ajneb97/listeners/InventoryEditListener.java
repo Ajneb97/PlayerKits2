@@ -1,6 +1,6 @@
 package pk.ajneb97.listeners;
 
-import me.hsgamer.hscore.bukkit.scheduler.Scheduler;
+import io.github.projectunified.minelib.scheduler.entity.EntityScheduler;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -75,10 +75,8 @@ public class InventoryEditListener implements Listener {
         InventoryPlayer inventoryPlayer = invManager.getInventoryPlayer(player);
         if(inventoryPlayer != null) {
             event.setCancelled(true);
-            Scheduler.plugin(plugin).sync().runEntityTaskLater(
-                    player,
-                    () -> invManager.writeChat(inventoryPlayer, ChatColor.stripColor(event.getMessage())),
-                    1L
+            EntityScheduler.get(plugin, player).run(
+                    () -> invManager.writeChat(inventoryPlayer, ChatColor.stripColor(event.getMessage()))
             );
         }
     }

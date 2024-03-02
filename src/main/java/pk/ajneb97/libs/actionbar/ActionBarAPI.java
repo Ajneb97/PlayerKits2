@@ -1,6 +1,6 @@
 package pk.ajneb97.libs.actionbar;
 
-import me.hsgamer.hscore.bukkit.scheduler.Scheduler;
+import io.github.projectunified.minelib.scheduler.entity.EntityScheduler;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -80,13 +80,13 @@ public class ActionBarAPI
 	  
       if (duration > 0) {
           // Sends empty message at the end of the duration. Allows messages shorter than 3 seconds, ensures precision.
-          Scheduler.plugin(plugin).sync().runEntityTaskLater(player, () -> sendActionBar(player, ""), duration + 1);
+          EntityScheduler.get(plugin, player).runLater(() -> sendActionBar(player, ""), duration + 1);
       }
 
       // Re-sends the messages every 3 seconds so it doesn't go away from the player's screen.
       while (duration > 40) {
           duration -= 40;
-          Scheduler.plugin(plugin).sync().runEntityTaskLater(player, () -> sendActionBar(player, message), duration);
+          EntityScheduler.get(plugin, player).runLater(() -> sendActionBar(player, message), duration);
       }
   }
 

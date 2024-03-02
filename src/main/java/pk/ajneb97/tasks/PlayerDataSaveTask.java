@@ -1,6 +1,6 @@
 package pk.ajneb97.tasks;
 
-import me.hsgamer.hscore.bukkit.scheduler.Scheduler;
+import io.github.projectunified.minelib.scheduler.async.AsyncScheduler;
 import pk.ajneb97.PlayerKits2;
 
 public class PlayerDataSaveTask {
@@ -18,7 +18,7 @@ public class PlayerDataSaveTask {
 	
 	public void start(int minutes) {
 		long ticks = minutes*60*20;
-		Scheduler.plugin(plugin).async().runTaskTimer(() -> {
+		AsyncScheduler.get(plugin).runTimer(() -> {
 			if(end) {
 				return false;
 			}else {

@@ -1,6 +1,6 @@
 package pk.ajneb97.managers;
 
-import me.hsgamer.hscore.bukkit.scheduler.Scheduler;
+import io.github.projectunified.minelib.scheduler.async.AsyncScheduler;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import pk.ajneb97.PlayerKits2;
@@ -22,7 +22,7 @@ public class MigrationManager {
     }
 
     public void migrate(CommandSender sender){
-        Scheduler.plugin(plugin).async().runTask(() -> {
+        AsyncScheduler.get(plugin).run(() -> {
             migrateKits(sender);
             migratePlayers(sender);
 

@@ -65,15 +65,31 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>me.hsgamer</groupId>
-            <artifactId>hscore-bukkit-scheduler</artifactId>
-            <version>4.3.21</version>
+            <groupId>io.github.projectunified</groupId>
+            <artifactId>minelib-scheduler-common</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.projectunified</groupId>
+            <artifactId>minelib-scheduler-entity</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.projectunified</groupId>
+            <artifactId>minelib-scheduler-async</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.projectunified</groupId>
+            <artifactId>minelib-scheduler-global</artifactId>
+            <version>1.0.1</version>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
@@ -101,6 +117,10 @@
                                     <includes>
                                         <include>com.zaxxer.hikari.**</include>
                                     </includes>
+                                </relocation>
+                                <relocation>
+                                    <pattern>io.github.projectunified.minelib</pattern>
+                                    <shadedPattern>pk.ajneb97.libs.minelib</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

@@ -1,6 +1,6 @@
 package pk.ajneb97.tasks;
 
-import me.hsgamer.hscore.bukkit.scheduler.Scheduler;
+import io.github.projectunified.minelib.scheduler.global.GlobalScheduler;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -19,7 +19,7 @@ public class InventoryUpdateTaskManager {
     }
 
     public void start(){
-        Scheduler.plugin(plugin).sync().runTaskTimer(this::execute, 0L, 20L);
+        GlobalScheduler.get(plugin).runTimer(this::execute, 0L, 20L);
     }
 
     public void execute(){

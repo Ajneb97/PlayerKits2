@@ -1,6 +1,6 @@
 package pk.ajneb97.managers.edit;
 
-import me.hsgamer.hscore.bukkit.scheduler.Scheduler;
+import io.github.projectunified.minelib.scheduler.entity.EntityScheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
@@ -145,13 +145,11 @@ public class InventoryEditPositionManager {
     public void closeInventory(InventoryPlayer inventoryPlayer){
         boolean mustReturn = Boolean.parseBoolean(inventoryPlayer.getInventoryName().split(";")[2]);
         if(mustReturn){
-            Scheduler.plugin(plugin).sync().runEntityTaskLater(
-                    inventoryPlayer.getPlayer(),
+            EntityScheduler.get(plugin, inventoryPlayer.getPlayer()).run(
                     () -> {
                         inventoryPlayer.restoreSavedInventoryContents();
                         inventoryEditManager.openInventory(inventoryPlayer);
-                    },
-                    1L
+                    }
             );
         }
     }

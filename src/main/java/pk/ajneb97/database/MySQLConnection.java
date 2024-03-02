@@ -1,6 +1,7 @@
 package pk.ajneb97.database;
 
-import me.hsgamer.hscore.bukkit.scheduler.Scheduler;
+import io.github.projectunified.minelib.scheduler.async.AsyncScheduler;
+import io.github.projectunified.minelib.scheduler.global.GlobalScheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import pk.ajneb97.PlayerKits2;
@@ -139,7 +140,7 @@ public class MySQLConnection {
     }
 
     public void getPlayer(String uuid,PlayerCallback callback){
-        Scheduler.plugin(plugin).async().runTask(() -> {
+        AsyncScheduler.get(plugin).run(() -> {
             PlayerData player = null;
             try(Connection connection = getConnection()){
                 PreparedStatement statement = connection.prepareStatement(
@@ -176,7 +177,7 @@ public class MySQLConnection {
                 }
 
                 PlayerData finalPlayer = player;
-                Scheduler.plugin(plugin).sync().runTask(() -> callback.onDone(finalPlayer));
+                GlobalScheduler.get(plugin).run(() -> callback.onDone(finalPlayer));
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -184,7 +185,7 @@ public class MySQLConnection {
     }
 
     public void createPlayer(PlayerData player){
-        Scheduler.plugin(plugin).async().runTask(() -> {
+        AsyncScheduler.get(plugin).run(() -> {
             try(Connection connection = getConnection()){
                 PreparedStatement statement = connection.prepareStatement(
                         "INSERT INTO playerkits_players " +
@@ -200,7 +201,7 @@ public class MySQLConnection {
     }
 
     public void updatePlayerName(PlayerData player){
-        Scheduler.plugin(plugin).async().runTask(() -> {
+        AsyncScheduler.get(plugin).run(() -> {
             try(Connection connection = getConnection()){
                 PreparedStatement statement = connection.prepareStatement(
                         "UPDATE playerkits_players SET " +
@@ -216,7 +217,7 @@ public class MySQLConnection {
     }
 
     public void updateKit(PlayerData player,PlayerDataKit kit,boolean mustCreate){
-        Scheduler.plugin(plugin).async().runTask(() -> {
+        AsyncScheduler.get(plugin).run(() -> {
             try(Connection connection = getConnection()){
                 PreparedStatement statement = null;
                 if(mustCreate){
@@ -250,7 +251,7 @@ public class MySQLConnection {
     }
 
     public void resetKit(String uuid,String kitName){
-        Scheduler.plugin(plugin).async().runTask(() -> {
+        AsyncScheduler.get(plugin).run(() -> {
             try(Connection connection = getConnection()){
                 PreparedStatement statement = connection.prepareStatement(
                         "DELETE FROM playerkits_players_kits " +
