@@ -66,23 +66,18 @@
         </dependency>
         <dependency>
             <groupId>io.github.projectunified</groupId>
-            <artifactId>minelib-scheduler-common</artifactId>
-            <version>1.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.projectunified</groupId>
             <artifactId>minelib-scheduler-entity</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.3</version>
         </dependency>
         <dependency>
             <groupId>io.github.projectunified</groupId>
             <artifactId>minelib-scheduler-async</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.3</version>
         </dependency>
         <dependency>
             <groupId>io.github.projectunified</groupId>
             <artifactId>minelib-scheduler-global</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.3</version>
         </dependency>
     </dependencies>
 
@@ -91,7 +86,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.12.1</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -100,7 +95,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
+                <version>3.5.2</version>
                 <configuration>
                 </configuration>
                 <executions>
