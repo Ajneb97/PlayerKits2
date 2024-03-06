@@ -1,6 +1,5 @@
 package pk.ajneb97.configs;
 
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.model.PlayerData;
