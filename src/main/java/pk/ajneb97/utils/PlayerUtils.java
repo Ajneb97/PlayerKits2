@@ -56,6 +56,10 @@ public class PlayerUtils {
         return sender.hasPermission("playerkits.bypass.onetime");
     }
 
+    public static boolean hasCostBypassPermission(CommandSender sender, String kitName){
+        return sender.hasPermission("playerkits.bypass.cost." + kitName);
+    }
+
     public static boolean passCondition(Player player,String condition) {
         String[] sep = condition.split(" ");
         String variable = sep[0];
