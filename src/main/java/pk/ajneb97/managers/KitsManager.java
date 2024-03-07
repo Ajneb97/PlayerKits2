@@ -191,7 +191,8 @@ public class KitsManager {
             //Requirements - Buy
             KitRequirements kitRequirements = kit.getRequirements();
             if(!giveKitInstructions.isIgnoreRequirements() && kitRequirements != null &&
-                    (kitRequirements.getPrice() != 0 || !kitRequirements.getExtraRequirements().isEmpty())){
+                    (kitRequirements.getPrice() != 0 || !kitRequirements.getExtraRequirements().isEmpty())
+                    && !PlayerUtils.hasCostBypassPermission(player)){
                 if(!(kitRequirements.isOneTimeRequirements() && playerDataManager.isKitBought(player,kit.getName()))){
                     if(!giveKitInstructions.isRequirementsSatisfied()){
                         //Player must buy it first
@@ -328,7 +329,7 @@ public class KitsManager {
 
             //Requirements - Buy
             KitRequirements kitRequirements = kit.getRequirements();
-            if(!giveKitInstructions.isIgnoreRequirements() && kitRequirements != null && giveKitInstructions.isRequirementsSatisfied()){
+            if(!giveKitInstructions.isIgnoreRequirements() && kitRequirements != null && giveKitInstructions.isRequirementsSatisfied() && !PlayerUtils.hasCostBypassPermission(player)){
                 //Check price and update balance
                 double price = kitRequirements.getPrice();
                 Economy economy = plugin.getDependencyManager().getVaultEconomy();
@@ -404,7 +405,7 @@ public class KitsManager {
         if(price != 0){
             Economy economy = plugin.getDependencyManager().getVaultEconomy();
             if(economy != null){
-                if(economy.getBalance(player) < price){
+                if(economy.getBalance(player) < price  && !PlayerUtils.hasCostBypassPermission(player)){
                     return false;
                 }
             }
