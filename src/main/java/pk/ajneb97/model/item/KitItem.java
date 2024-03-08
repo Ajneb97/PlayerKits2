@@ -20,6 +20,10 @@ public class KitItem{
     //<name>;<operation>;<amount>;<uuid>;<slot>
     private List<String> attributes;
 
+    //For Paper only
+    private List<String> canDestroy;
+    private List<String> canPlace;
+
     private KitItemSkullData skullData;
     private KitItemPotionData potionData;
     private KitItemFireworkData fireworkData;
@@ -151,6 +155,22 @@ public class KitItem{
         this.attributes = attributes;
     }
 
+    public List<String> getCanDestroy() {
+        return canDestroy;
+    }
+
+    public void setCanDestroy(List<String> canDestroy) {
+        this.canDestroy = canDestroy;
+    }
+
+    public List<String> getCanPlace() {
+        return canPlace;
+    }
+
+    public void setCanPlace(List<String> canPlace) {
+        this.canPlace = canPlace;
+    }
+
     public KitItemFireworkData getFireworkData() {
         return fireworkData;
     }
@@ -224,6 +244,8 @@ public class KitItem{
         kitItem.setColor(color);
         kitItem.setNbt(nbt != null ? new ArrayList<>(nbt) : null);
         kitItem.setAttributes(attributes != null ? new ArrayList<>(attributes) : null);
+        kitItem.setCanDestroy(canDestroy != null ? new ArrayList<>(canDestroy) : null);
+        kitItem.setCanDestroy(canPlace != null ? new ArrayList<>(canPlace) : null);
 
         kitItem.setSkullData(skullData != null ? skullData.clone() : null);
         kitItem.setPotionData(potionData != null ? potionData.clone() : null);

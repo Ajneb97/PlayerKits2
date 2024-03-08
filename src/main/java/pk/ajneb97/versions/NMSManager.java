@@ -194,11 +194,11 @@ public class NMSManager {
                         "ench", "HideFlags", "display", "SkullOwner", "AttributeModifiers", "Enchantments",
                         "Damage", "CustomModelData", "Potion", "StoredEnchantments", "CustomPotionColor",
                         "CustomPotionEffects", "Fireworks", "Explosion", "pages", "title", "author", "resolved",
-                        "generation", "Trim", "custom_potion_effects"
+                        "generation", "Trim", "custom_potion_effects", "CanPlaceOn", "CanDestroy"
                 ));
                 for(String t : tags) {
                     if(!notTags.contains(t)) {
-                        if(t.equals("BlockEntityTag") && !item.getType().name().contains("SHULKER")){
+                        if(t.equals("BlockEntityTag") && !item.getType().name().contains("SHULKER") && !item.getType().name().contains("CHEST")){
                             continue;
                         }
                         if((boolean)version.getMethodRef("hasKeyOfType").invoke(compound,t,1)) {

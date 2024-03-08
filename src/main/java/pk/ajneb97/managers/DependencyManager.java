@@ -11,6 +11,7 @@ public class DependencyManager {
 
     private boolean isPlaceholderAPI;
     private Economy vaultEconomy;
+    private boolean isPaper;
 
     public DependencyManager(PlayerKits2 plugin){
         this.plugin = plugin;
@@ -24,6 +25,12 @@ public class DependencyManager {
                 vaultEconomy = rsp.getProvider();
             }
         }
+        try{
+            Class.forName("com.destroystokyo.paper.ParticleBuilder");
+            isPaper = true;
+        }catch(Exception e){
+
+        }
     }
 
     public boolean isPlaceholderAPI() {
@@ -32,5 +39,9 @@ public class DependencyManager {
 
     public Economy getVaultEconomy() {
         return vaultEconomy;
+    }
+
+    public boolean isPaper() {
+        return isPaper;
     }
 }

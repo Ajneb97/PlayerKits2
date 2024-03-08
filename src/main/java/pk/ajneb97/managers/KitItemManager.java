@@ -1,6 +1,9 @@
 package pk.ajneb97.managers;
 
+import com.destroystokyo.paper.Namespaced;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -82,6 +85,23 @@ public class KitItemManager {
                     kitItem.setBookEnchants(enchantsList);
                 }
             }
+
+            if(plugin.getDependencyManager().isPaper()){
+                List<String> canDestroy = new ArrayList<>();
+                for(Namespaced n : meta.getDestroyableKeys()){
+                    canDestroy.add(n.getNamespace()+":"+n.getKey());
+                }
+                if(!canDestroy.isEmpty()){
+                    kitItem.setCanDestroy(canDestroy);
+                }
+                List<String> canPlace = new ArrayList<>();
+                for(Namespaced n : meta.getPlaceableKeys()){
+                    canPlace.add(n.getNamespace()+":"+n.getKey());
+                }
+                if(!canPlace.isEmpty()){
+                    kitItem.setCanPlace(canPlace);
+                }
+            }
         }
 
         List<String> nbtList = ItemUtils.getNBT(plugin,item);
@@ -147,6 +167,28 @@ public class KitItemManager {
                 meta.addItemFlags(ItemFlag.valueOf(flags.get(i)));
             }
         }
+
+        if(plugin.getDependencyManager().isPaper()){
+            List<String> canDestroy = kitItem.getCanDestroy();
+            if(canDestroy != null && !canDestroy.isEmpty()){
+                Collection<Namespaced> destroyableKeys = new ArrayList<>();
+                for(String line : canDestroy){
+                    String[] sep = line.split(":");
+                    destroyableKeys.add(new NamespacedKey(sep[0],sep[1]));
+                }
+                meta.setDestroyableKeys(destroyableKeys);
+            }
+            List<String> canPlace = kitItem.getCanPlace();
+            if(canPlace != null && !canPlace.isEmpty()){
+                Collection<Namespaced> placeableKeys = new ArrayList<>();
+                for(String line : canPlace){
+                    String[] sep = line.split(":");
+                    placeableKeys.add(new NamespacedKey(sep[0],sep[1]));
+                }
+                meta.setPlaceableKeys(placeableKeys);
+            }
+        }
+
         item.setItemMeta(meta);
 
         //OTHER META
@@ -229,6 +271,12 @@ public class KitItemManager {
         if(item.getBookEnchants() != null && !item.getBookEnchants().isEmpty()) {
             config.set(path+".book_enchants", item.getBookEnchants());
         }
+        if(item.getCanPlace() != null && !item.getCanPlace().isEmpty()) {
+            config.set(path+".can_place", item.getCanPlace());
+        }
+        if(item.getCanDestroy() != null && !item.getCanDestroy().isEmpty()) {
+            config.set(path+".can_destroy", item.getCanDestroy());
+        }
 
         KitItemSkullData skullData = item.getSkullData();
         if(skullData != null) {
@@ -304,6 +352,8 @@ public class KitItemManager {
         List<String> bookEnchants = config.contains(path+".book_enchants") ? config.getStringList(path+".book_enchants") : null;
         List<String> nbtList = config.contains(path+".nbt") ? config.getStringList(path+".nbt") : null;
         List<String> attributes = config.contains(path+".attributes") ? config.getStringList(path+".attributes") : null;
+        List<String> canPlace = config.contains(path+".can_place") ? config.getStringList(path+".can_place") : null;
+        List<String> canDestroy = config.contains(path+".can_destroy") ? config.getStringList(path+".can_destroy") : null;
 
         boolean offhand = config.contains(path+".offhand") ? config.getBoolean(path+".offhand") : false;
         int previewSlot = config.contains(path+".preview_slot") ? config.getInt(path+".preview_slot") : -1;
@@ -416,6 +466,8 @@ public class KitItemManager {
         kitItem.setBookEnchants(bookEnchants);
         kitItem.setNbt(nbtList);
         kitItem.setAttributes(attributes);
+        kitItem.setCanPlace(canPlace);
+        kitItem.setCanDestroy(canDestroy);
         kitItem.setSkullData(skullData);
         kitItem.setPotionData(potionData);
         kitItem.setFireworkData(fireworkData);
