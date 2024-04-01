@@ -27,7 +27,7 @@ public class PKInventoryInvalidSlotError extends PKBaseError{
         hover.add("&eTHIS IS AN ERROR!");
         hover.add("&fSlot &c"+slot+" &fon inventory &c"+inventoryName);
         hover.add("&fis out of range. Use a range");
-        hover.add("&fbetween 0 and "+maxSlots+".");
+        hover.add("&fbetween 0 and "+(maxSlots-1)+".");
 
         jsonMessage.hover(hover).send();
     }
