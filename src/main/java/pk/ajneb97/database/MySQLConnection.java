@@ -13,9 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class MySQLConnection {
 
@@ -77,7 +75,7 @@ public class MySQLConnection {
 
             ResultSet result = statement.executeQuery();
 
-            Set<String> existingUUIDs = new HashSet<>();
+            Map<String, PlayerData> playerMap = new HashMap<>();
             while(result.next()){
                 String uuid = result.getString("UUID");
                 String playerName = result.getString("PLAYER_NAME");
@@ -86,17 +84,13 @@ public class MySQLConnection {
                 boolean oneTime = result.getBoolean("ONE_TIME");
                 boolean bought = result.getBoolean("BOUGHT");
 
-                PlayerData currentPlayer;
-                if(!existingUUIDs.contains(uuid)){
+                PlayerData player = playerMap.get(uuid);
+
+                if(player == null){
                     //Create and add it
-                    currentPlayer = new PlayerData(playerName,uuid);
-                    players.add(currentPlayer);
-                    existingUUIDs.add(uuid);
-                }else{
-                    currentPlayer = players.stream()
-                            .filter(p -> p.getUuid().equals(uuid))
-                            .findFirst()
-                            .orElse(null);
+                    player = new PlayerData(playerName,uuid);
+                    players.add(player);
+                    playerMap.put(uuid, player);
                 }
 
                 if(kitName != null){
@@ -104,7 +98,7 @@ public class MySQLConnection {
                     playerDataKit.setCooldown(cooldown);
                     playerDataKit.setOneTime(oneTime);
                     playerDataKit.setBought(bought);
-                    currentPlayer.addKit(playerDataKit);
+                    player.addKit(playerDataKit);
                 }
             }
         } catch (SQLException e) {
