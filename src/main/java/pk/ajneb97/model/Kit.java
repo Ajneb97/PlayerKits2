@@ -11,6 +11,7 @@ public class Kit {
     private String name;
     private int cooldown;
     private boolean permissionRequired;
+    private String customPermission;
     private boolean oneTime;
     private ArrayList<KitItem> items;
     private ArrayList<KitAction> claimActions;
@@ -145,9 +146,21 @@ public class Kit {
         this.requirements = requirements;
     }
 
+    public String getCustomPermission() {
+        return customPermission;
+    }
+
+    public void setCustomPermission(String customPermission) {
+        this.customPermission = customPermission;
+    }
+
     public boolean playerHasPermission(CommandSender player){
         if(permissionRequired){
-            return PlayerUtils.isPlayerKitsAdmin(player) || player.hasPermission("playerkits.kit."+name);
+            if(customPermission != null){
+                return PlayerUtils.isPlayerKitsAdmin(player) || player.hasPermission(customPermission);
+            }else{
+                return PlayerUtils.isPlayerKitsAdmin(player) || player.hasPermission("playerkits.kit."+name);
+            }
         }
         return true;
     }
