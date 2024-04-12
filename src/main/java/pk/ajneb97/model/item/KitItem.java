@@ -1,5 +1,10 @@
 package pk.ajneb97.model.item;
 
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.utils.ItemUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +39,8 @@ public class KitItem{
     private boolean offhand;
     private int previewSlot;
 
+    private ItemStack originalItem;
+
     public KitItem(String id) {
         this.id = id;
         this.amount = 1;
@@ -41,6 +48,19 @@ public class KitItem{
         this.customModelData = 0;
         this.color = 0;
         this.previewSlot = -1;
+    }
+
+    public KitItem(ItemStack item){
+        this.previewSlot = -1;
+        this.originalItem = item;
+    }
+
+    public ItemStack getOriginalItem() {
+        return originalItem;
+    }
+
+    public void setOriginalItem(ItemStack originalItem) {
+        this.originalItem = originalItem;
     }
 
     public String getId() {
@@ -219,8 +239,18 @@ public class KitItem{
         this.previewSlot = previewSlot;
     }
 
-    public void removeOffHandFromEditInventory(){
+    public void removeOffHandFromEditInventory(PlayerKits2 plugin){
         //Assumes that has the lore and the nbt
+        if(originalItem != null){
+            ItemMeta meta = originalItem.getItemMeta();
+            List<String> lore = meta.getLore();
+            lore.remove(lore.size()-1);
+            lore.remove(lore.size()-1);
+            meta.setLore(lore);
+            originalItem.setItemMeta(meta);
+            originalItem = ItemUtils.removeTagItem(plugin,originalItem,"playerkits_offhand");
+            return;
+        }
         lore.remove(lore.size()-1);
         lore.remove(lore.size()-1);
         for(int i=0;i<nbt.size();i++){

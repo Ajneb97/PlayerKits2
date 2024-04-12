@@ -27,7 +27,11 @@ public class KitItemManager {
         this.plugin = plugin;
     }
 
-    public KitItem createKitItemFromItemStack(ItemStack item){
+    public KitItem createKitItemFromItemStack(ItemStack item,boolean exactItem){
+        if(exactItem){
+            return new KitItem(item.clone());
+        }
+
         KitItem kitItem = new KitItem(item.getType().name());
         kitItem.setAmount(item.getAmount());
 
@@ -119,7 +123,12 @@ public class KitItemManager {
 
         return kitItem;
     }
+
     public ItemStack createItemFromKitItem(KitItem kitItem,Player player){
+        if(kitItem.getOriginalItem() != null){
+            return kitItem.getOriginalItem().clone();
+        }
+
         ItemStack item = ItemUtils.createItemFromID(kitItem.getId());
         item.setAmount(kitItem.getAmount());
 
@@ -240,95 +249,99 @@ public class KitItemManager {
     }
 
     public void saveKitItemOnConfig(KitItem item,FileConfiguration config,String path){
-        config.set(path+".id", item.getId());
-        config.set(path+".name", item.getName());
-        config.set(path+".amount", item.getAmount());
-        if(item.getDurability() != 0) {
-            config.set(path+".durability", item.getDurability());
-        }
-        if(item.getLore() != null && !item.getLore().isEmpty()) {
-            config.set(path+".lore", item.getLore());
-        }
-        if(item.getEnchants() != null && !item.getEnchants().isEmpty()) {
-            config.set(path+".enchants", item.getEnchants());
-        }
-        if(item.getFlags() != null && !item.getFlags().isEmpty()) {
-            config.set(path+".item_flags", item.getFlags());
-        }
-
-        if(item.getCustomModelData() != 0) {
-            config.set(path+".custom_model_data", item.getCustomModelData());
-        }
-        if(item.getColor() != 0) {
-            config.set(path+".color", item.getColor());
-        }
-        if(item.getNbt() != null && !item.getNbt().isEmpty()) {
-            config.set(path+".nbt", item.getNbt());
-        }
-        if(item.getAttributes() != null && !item.getAttributes().isEmpty()) {
-            config.set(path+".attributes", item.getAttributes());
-        }
-        if(item.getBookEnchants() != null && !item.getBookEnchants().isEmpty()) {
-            config.set(path+".book_enchants", item.getBookEnchants());
-        }
-        if(item.getCanPlace() != null && !item.getCanPlace().isEmpty()) {
-            config.set(path+".can_place", item.getCanPlace());
-        }
-        if(item.getCanDestroy() != null && !item.getCanDestroy().isEmpty()) {
-            config.set(path+".can_destroy", item.getCanDestroy());
-        }
-
-        KitItemSkullData skullData = item.getSkullData();
-        if(skullData != null) {
-            config.set(path+".skull_data.texture", skullData.getTexture());
-            config.set(path+".skull_data.id", skullData.getId());
-            config.set(path+".skull_data.owner", skullData.getOwner());
-        }
-
-        KitItemPotionData potionData = item.getPotionData();
-        if(potionData != null) {
-            if(potionData.getPotionEffects() != null && !potionData.getPotionEffects().isEmpty()) {
-                config.set(path+".potion_data.effects", potionData.getPotionEffects());
+        if(item.getOriginalItem() != null){
+            config.set(path+".original",item.getOriginalItem().clone());
+        }else{
+            config.set(path+".id", item.getId());
+            config.set(path+".name", item.getName());
+            config.set(path+".amount", item.getAmount());
+            if(item.getDurability() != 0) {
+                config.set(path+".durability", item.getDurability());
             }
-            config.set(path+".potion_data.extended", potionData.isExtended());
-            config.set(path+".potion_data.upgraded", potionData.isUpgraded());
-            config.set(path+".potion_data.type", potionData.getPotionType());
-            if(potionData.getPotionColor() != 0) {
-                config.set(path+".potion_data.color", potionData.getPotionColor());
+            if(item.getLore() != null && !item.getLore().isEmpty()) {
+                config.set(path+".lore", item.getLore());
             }
-        }
-
-        KitItemFireworkData fireworkData = item.getFireworkData();
-        if(fireworkData != null) {
-            if(fireworkData.getFireworkRocketEffects() != null && !fireworkData.getFireworkRocketEffects().isEmpty()) {
-                config.set(path+".firework_data.rocket_effects", fireworkData.getFireworkRocketEffects());
+            if(item.getEnchants() != null && !item.getEnchants().isEmpty()) {
+                config.set(path+".enchants", item.getEnchants());
             }
-            config.set(path+".firework_data.star_effect", fireworkData.getFireworkStarEffect());
-            if(fireworkData.getFireworkPower() != 0) {
-                config.set(path+".firework_data.power", fireworkData.getFireworkPower());
+            if(item.getFlags() != null && !item.getFlags().isEmpty()) {
+                config.set(path+".item_flags", item.getFlags());
             }
-        }
 
-        KitItemBannerData bannerData = item.getBannerData();
-        if(bannerData != null) {
-            if(bannerData.getPatterns() != null && !bannerData.getPatterns().isEmpty()) {
-                config.set(path+".banner_data.patterns", bannerData.getPatterns());
+            if(item.getCustomModelData() != 0) {
+                config.set(path+".custom_model_data", item.getCustomModelData());
             }
-            config.set(path+".banner_data.base_color", bannerData.getBaseColor());
-        }
+            if(item.getColor() != 0) {
+                config.set(path+".color", item.getColor());
+            }
+            if(item.getNbt() != null && !item.getNbt().isEmpty()) {
+                config.set(path+".nbt", item.getNbt());
+            }
+            if(item.getAttributes() != null && !item.getAttributes().isEmpty()) {
+                config.set(path+".attributes", item.getAttributes());
+            }
+            if(item.getBookEnchants() != null && !item.getBookEnchants().isEmpty()) {
+                config.set(path+".book_enchants", item.getBookEnchants());
+            }
+            if(item.getCanPlace() != null && !item.getCanPlace().isEmpty()) {
+                config.set(path+".can_place", item.getCanPlace());
+            }
+            if(item.getCanDestroy() != null && !item.getCanDestroy().isEmpty()) {
+                config.set(path+".can_destroy", item.getCanDestroy());
+            }
 
-        KitItemBookData bookData = item.getBookData();
-        if(bookData != null) {
-            config.set(path+".book_data.author", bookData.getAuthor());
-            config.set(path+".book_data.title", bookData.getTitle());
-            config.set(path+".book_data.pages", bookData.getPages());
-            config.set(path+".book_data.generation", bookData.getGeneration());
-        }
+            KitItemSkullData skullData = item.getSkullData();
+            if(skullData != null) {
+                config.set(path+".skull_data.texture", skullData.getTexture());
+                config.set(path+".skull_data.id", skullData.getId());
+                config.set(path+".skull_data.owner", skullData.getOwner());
+            }
 
-        KitItemTrimData trimData = item.getTrimData();
-        if(trimData != null){
-            config.set(path+".trim_data.pattern", trimData.getPattern());
-            config.set(path+".trim_data.material", trimData.getMaterial());
+            KitItemPotionData potionData = item.getPotionData();
+            if(potionData != null) {
+                if(potionData.getPotionEffects() != null && !potionData.getPotionEffects().isEmpty()) {
+                    config.set(path+".potion_data.effects", potionData.getPotionEffects());
+                }
+                config.set(path+".potion_data.extended", potionData.isExtended());
+                config.set(path+".potion_data.upgraded", potionData.isUpgraded());
+                config.set(path+".potion_data.type", potionData.getPotionType());
+                if(potionData.getPotionColor() != 0) {
+                    config.set(path+".potion_data.color", potionData.getPotionColor());
+                }
+            }
+
+            KitItemFireworkData fireworkData = item.getFireworkData();
+            if(fireworkData != null) {
+                if(fireworkData.getFireworkRocketEffects() != null && !fireworkData.getFireworkRocketEffects().isEmpty()) {
+                    config.set(path+".firework_data.rocket_effects", fireworkData.getFireworkRocketEffects());
+                }
+                config.set(path+".firework_data.star_effect", fireworkData.getFireworkStarEffect());
+                if(fireworkData.getFireworkPower() != 0) {
+                    config.set(path+".firework_data.power", fireworkData.getFireworkPower());
+                }
+            }
+
+            KitItemBannerData bannerData = item.getBannerData();
+            if(bannerData != null) {
+                if(bannerData.getPatterns() != null && !bannerData.getPatterns().isEmpty()) {
+                    config.set(path+".banner_data.patterns", bannerData.getPatterns());
+                }
+                config.set(path+".banner_data.base_color", bannerData.getBaseColor());
+            }
+
+            KitItemBookData bookData = item.getBookData();
+            if(bookData != null) {
+                config.set(path+".book_data.author", bookData.getAuthor());
+                config.set(path+".book_data.title", bookData.getTitle());
+                config.set(path+".book_data.pages", bookData.getPages());
+                config.set(path+".book_data.generation", bookData.getGeneration());
+            }
+
+            KitItemTrimData trimData = item.getTrimData();
+            if(trimData != null){
+                config.set(path+".trim_data.pattern", trimData.getPattern());
+                config.set(path+".trim_data.material", trimData.getMaterial());
+            }
         }
 
         if(item.isOffhand()){
@@ -340,140 +353,144 @@ public class KitItemManager {
     }
 
     public KitItem getKitItemFromConfig(FileConfiguration config, String path){
-        String id = config.getString(path+".id");
-        String name = config.contains(path+".name") ? config.getString(path+".name") : null;
-        List<String> lore = config.contains(path+".lore") ? config.getStringList(path+".lore") : null;
-        int amount = config.contains(path+".amount") ? config.getInt(path+".amount") : 1;
-        short durability = config.contains(path+".durability") ? (short) config.getInt(path+".durability") : 0;
-        int customModelData = config.contains(path+".custom_model_data") ? config.getInt(path+".custom_model_data") : 0;
-        int color = config.contains(path+".color") ? config.getInt(path+".color") : 0;
-        List<String> enchants = config.contains(path+".enchants") ? config.getStringList(path+".enchants") : null;
-        List<String> flags = config.contains(path+".item_flags") ? config.getStringList(path+".item_flags") : null;
-        List<String> bookEnchants = config.contains(path+".book_enchants") ? config.getStringList(path+".book_enchants") : null;
-        List<String> nbtList = config.contains(path+".nbt") ? config.getStringList(path+".nbt") : null;
-        List<String> attributes = config.contains(path+".attributes") ? config.getStringList(path+".attributes") : null;
-        List<String> canPlace = config.contains(path+".can_place") ? config.getStringList(path+".can_place") : null;
-        List<String> canDestroy = config.contains(path+".can_destroy") ? config.getStringList(path+".can_destroy") : null;
-
         boolean offhand = config.contains(path+".offhand") ? config.getBoolean(path+".offhand") : false;
         int previewSlot = config.contains(path+".preview_slot") ? config.getInt(path+".preview_slot") : -1;
+        KitItem kitItem = null;
+        if(config.contains(path+".original")){
+            kitItem = new KitItem(config.getItemStack(path+".original"));
+        }else{
+            String id = config.getString(path+".id");
+            String name = config.contains(path+".name") ? config.getString(path+".name") : null;
+            List<String> lore = config.contains(path+".lore") ? config.getStringList(path+".lore") : null;
+            int amount = config.contains(path+".amount") ? config.getInt(path+".amount") : 1;
+            short durability = config.contains(path+".durability") ? (short) config.getInt(path+".durability") : 0;
+            int customModelData = config.contains(path+".custom_model_data") ? config.getInt(path+".custom_model_data") : 0;
+            int color = config.contains(path+".color") ? config.getInt(path+".color") : 0;
+            List<String> enchants = config.contains(path+".enchants") ? config.getStringList(path+".enchants") : null;
+            List<String> flags = config.contains(path+".item_flags") ? config.getStringList(path+".item_flags") : null;
+            List<String> bookEnchants = config.contains(path+".book_enchants") ? config.getStringList(path+".book_enchants") : null;
+            List<String> nbtList = config.contains(path+".nbt") ? config.getStringList(path+".nbt") : null;
+            List<String> attributes = config.contains(path+".attributes") ? config.getStringList(path+".attributes") : null;
+            List<String> canPlace = config.contains(path+".can_place") ? config.getStringList(path+".can_place") : null;
+            List<String> canDestroy = config.contains(path+".can_destroy") ? config.getStringList(path+".can_destroy") : null;
 
-        KitItemSkullData skullData = null;
-        if(config.contains(path+".skull_data")) {
-            String skullTexture = null;
-            String skullId = null;
-            String skullOwner = null;
-            if(config.contains(path+".skull_data.texture")) {
-                skullTexture = config.getString(path+".skull_data.texture");
+            KitItemSkullData skullData = null;
+            if(config.contains(path+".skull_data")) {
+                String skullTexture = null;
+                String skullId = null;
+                String skullOwner = null;
+                if(config.contains(path+".skull_data.texture")) {
+                    skullTexture = config.getString(path+".skull_data.texture");
+                }
+                if(config.contains(path+".skull_data.id")) {
+                    skullId = config.getString(path+".skull_data.id");
+                }
+                if(config.contains(path+".skull_data.owner")) {
+                    skullOwner = config.getString(path+".skull_data.owner");
+                }
+                skullData = new KitItemSkullData(skullOwner,skullTexture,skullId);
             }
-            if(config.contains(path+".skull_data.id")) {
-                skullId = config.getString(path+".skull_data.id");
+            KitItemPotionData potionData = null;
+            if(config.contains(path+".potion_data")) {
+                List<String> potionEffects = null;
+                boolean extended = false;
+                boolean upgraded = false;
+                String potionType = null;
+                int potionColor = 0;
+                if(config.contains(path+".potion_data.effects")) {
+                    potionEffects = config.getStringList(path+".potion_data.effects");
+                }
+                if(config.contains(path+".potion_data.extended")) {
+                    extended = config.getBoolean(path+".potion_data.extended");
+                }
+                if(config.contains(path+".potion_data.upgraded")) {
+                    upgraded = config.getBoolean(path+".potion_data.upgraded");
+                }
+                if(config.contains(path+".potion_data.type")) {
+                    potionType = config.getString(path+".potion_data.type");
+                }
+                if(config.contains(path+".potion_data.color")) {
+                    potionColor = config.getInt(path+".potion_data.color");
+                }
+
+                potionData = new KitItemPotionData(upgraded,extended,potionType,potionColor,potionEffects);
             }
-            if(config.contains(path+".skull_data.owner")) {
-                skullOwner = config.getString(path+".skull_data.owner");
+            KitItemFireworkData fireworkData = null;
+            if(config.contains(path+".firework_data")) {
+                List<String> rocketEffects = null;
+                String starEffect = null;
+                int power = 0;
+                if(config.contains(path+".firework_data.rocket_effects")) {
+                    rocketEffects = config.getStringList(path+".firework_data.rocket_effects");
+                }
+                if(config.contains(path+".firework_data.star_effect")) {
+                    starEffect = config.getString(path+".firework_data.star_effect");
+                }
+                if(config.contains(path+".firework_data.power")) {
+                    power = config.getInt(path+".firework_data.power");
+                }
+
+                fireworkData = new KitItemFireworkData(rocketEffects,starEffect,power);
             }
-            skullData = new KitItemSkullData(skullOwner,skullTexture,skullId);
-        }
-        KitItemPotionData potionData = null;
-        if(config.contains(path+".potion_data")) {
-            List<String> potionEffects = null;
-            boolean extended = false;
-            boolean upgraded = false;
-            String potionType = null;
-            int potionColor = 0;
-            if(config.contains(path+".potion_data.effects")) {
-                potionEffects = config.getStringList(path+".potion_data.effects");
+            KitItemBannerData bannerData = null;
+            if(config.contains(path+".banner_data")) {
+                List<String> patterns = null;
+                String baseColor = null;
+                if(config.contains(path+".banner_data.patterns")) {
+                    patterns = config.getStringList(path+".banner_data.patterns");
+                }
+                if(config.contains(path+".banner_data.base_color")) {
+                    baseColor = config.getString(path+".banner_data.base_color");
+                }
+
+                bannerData = new KitItemBannerData(patterns,baseColor);
             }
-            if(config.contains(path+".potion_data.extended")) {
-                extended = config.getBoolean(path+".potion_data.extended");
+            KitItemBookData bookData = null;
+            if(config.contains(path+".book_data")) {
+                List<String> pages = config.getStringList(path+".book_data.pages");
+                String author = null;
+                String generation = null;
+                String title = null;
+                if(config.contains(path+".book_data.author")) {
+                    author = config.getString(path+".book_data.author");
+                }
+                if(config.contains(path+".book_data.generation")) {
+                    generation = config.getString(path+".book_data.generation");
+                }
+                if(config.contains(path+".book_data.title")) {
+                    title = config.getString(path+".book_data.title");
+                }
+
+                bookData = new KitItemBookData(pages,author,generation,title);
             }
-            if(config.contains(path+".potion_data.upgraded")) {
-                upgraded = config.getBoolean(path+".potion_data.upgraded");
-            }
-            if(config.contains(path+".potion_data.type")) {
-                potionType = config.getString(path+".potion_data.type");
-            }
-            if(config.contains(path+".potion_data.color")) {
-                potionColor = config.getInt(path+".potion_data.color");
+            KitItemTrimData trimData = null;
+            if(config.contains(path+".trim_data")){
+                String material = config.getString(path+".trim_data.material");
+                String pattern = config.getString(path+".trim_data.pattern");
+                trimData = new KitItemTrimData(pattern,material);
             }
 
-            potionData = new KitItemPotionData(upgraded,extended,potionType,potionColor,potionEffects);
+            kitItem = new KitItem(id);
+            kitItem.setName(name);
+            kitItem.setLore(lore);
+            kitItem.setAmount(amount);
+            kitItem.setDurability(durability);
+            kitItem.setCustomModelData(customModelData);
+            kitItem.setColor(color);
+            kitItem.setEnchants(enchants);
+            kitItem.setFlags(flags);
+            kitItem.setBookEnchants(bookEnchants);
+            kitItem.setNbt(nbtList);
+            kitItem.setAttributes(attributes);
+            kitItem.setCanPlace(canPlace);
+            kitItem.setCanDestroy(canDestroy);
+            kitItem.setSkullData(skullData);
+            kitItem.setPotionData(potionData);
+            kitItem.setFireworkData(fireworkData);
+            kitItem.setBannerData(bannerData);
+            kitItem.setBookData(bookData);
+            kitItem.setTrimData(trimData);
         }
-        KitItemFireworkData fireworkData = null;
-        if(config.contains(path+".firework_data")) {
-            List<String> rocketEffects = null;
-            String starEffect = null;
-            int power = 0;
-            if(config.contains(path+".firework_data.rocket_effects")) {
-                rocketEffects = config.getStringList(path+".firework_data.rocket_effects");
-            }
-            if(config.contains(path+".firework_data.star_effect")) {
-                starEffect = config.getString(path+".firework_data.star_effect");
-            }
-            if(config.contains(path+".firework_data.power")) {
-                power = config.getInt(path+".firework_data.power");
-            }
-
-            fireworkData = new KitItemFireworkData(rocketEffects,starEffect,power);
-        }
-        KitItemBannerData bannerData = null;
-        if(config.contains(path+".banner_data")) {
-            List<String> patterns = null;
-            String baseColor = null;
-            if(config.contains(path+".banner_data.patterns")) {
-                patterns = config.getStringList(path+".banner_data.patterns");
-            }
-            if(config.contains(path+".banner_data.base_color")) {
-                baseColor = config.getString(path+".banner_data.base_color");
-            }
-
-            bannerData = new KitItemBannerData(patterns,baseColor);
-        }
-        KitItemBookData bookData = null;
-        if(config.contains(path+".book_data")) {
-            List<String> pages = config.getStringList(path+".book_data.pages");
-            String author = null;
-            String generation = null;
-            String title = null;
-            if(config.contains(path+".book_data.author")) {
-                author = config.getString(path+".book_data.author");
-            }
-            if(config.contains(path+".book_data.generation")) {
-                generation = config.getString(path+".book_data.generation");
-            }
-            if(config.contains(path+".book_data.title")) {
-                title = config.getString(path+".book_data.title");
-            }
-
-            bookData = new KitItemBookData(pages,author,generation,title);
-        }
-        KitItemTrimData trimData = null;
-        if(config.contains(path+".trim_data")){
-            String material = config.getString(path+".trim_data.material");
-            String pattern = config.getString(path+".trim_data.pattern");
-            trimData = new KitItemTrimData(pattern,material);
-        }
-
-        KitItem kitItem = new KitItem(id);
-        kitItem.setName(name);
-        kitItem.setLore(lore);
-        kitItem.setAmount(amount);
-        kitItem.setDurability(durability);
-        kitItem.setCustomModelData(customModelData);
-        kitItem.setColor(color);
-        kitItem.setEnchants(enchants);
-        kitItem.setFlags(flags);
-        kitItem.setBookEnchants(bookEnchants);
-        kitItem.setNbt(nbtList);
-        kitItem.setAttributes(attributes);
-        kitItem.setCanPlace(canPlace);
-        kitItem.setCanDestroy(canDestroy);
-        kitItem.setSkullData(skullData);
-        kitItem.setPotionData(potionData);
-        kitItem.setFireworkData(fireworkData);
-        kitItem.setBannerData(bannerData);
-        kitItem.setBookData(bookData);
-        kitItem.setTrimData(trimData);
 
         kitItem.setOffhand(offhand);
         kitItem.setPreviewSlot(previewSlot);

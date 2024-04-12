@@ -110,7 +110,7 @@ public class InventoryEditDisplayManager {
 
             KitItem kitItem = null;
             if(item != null && !item.getType().equals(Material.AIR)){
-                kitItem = plugin.getKitItemManager().createKitItemFromItemStack(item);
+                kitItem = plugin.getKitItemManager().createKitItemFromItemStack(item,false);
             }
 
             Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());

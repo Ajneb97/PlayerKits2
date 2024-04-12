@@ -159,12 +159,12 @@ public class InventoryEditKitItemsManager {
                     continue;
                 }
 
-                KitItem kitItem = kitItemManager.createKitItemFromItemStack(item);
+                KitItem kitItem = kitItemManager.createKitItemFromItemStack(item,kit.isSaveOriginalItems());
                 //Check offhand
                 String offhand = ItemUtils.getTagStringItem(plugin,item,"playerkits_offhand");
                 if(offhand != null){
                     kitItem.setOffhand(true);
-                    kitItem.removeOffHandFromEditInventory();
+                    kitItem.removeOffHandFromEditInventory(plugin);
                 }
 
                 //Preview position
