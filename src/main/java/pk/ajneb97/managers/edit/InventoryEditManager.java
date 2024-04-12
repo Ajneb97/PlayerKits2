@@ -215,7 +215,12 @@ public class InventoryEditManager {
         lore.add("&7Current Items:");
         int max = 20;
         for(KitItem kitItem : kit.getItems()){
-            lore.add(MessagesManager.getColoredMessage("&8- &fx"+kitItem.getAmount()+" "+kitItem.getId()));
+            if(kitItem.getOriginalItem() != null){
+                ItemStack originalItem = kitItem.getOriginalItem();
+                lore.add(MessagesManager.getColoredMessage("&8- &fx"+originalItem.getAmount()+" "+originalItem.getType()));
+            }else{
+                lore.add(MessagesManager.getColoredMessage("&8- &fx"+kitItem.getAmount()+" "+kitItem.getId()));
+            }
             max--;
             if(max <= 0){
                 break;

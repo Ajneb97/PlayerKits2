@@ -65,7 +65,7 @@ public class KitsManager {
         }
     }
 
-    public void createKit(String kitName,Player player){
+    public void createKit(String kitName,Player player,boolean saveOriginalItems){
         Kit kit = getKitByName(kitName);
         FileConfiguration messagesFile = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
         MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
@@ -86,7 +86,7 @@ public class KitsManager {
                 continue;
             }
 
-            KitItem kitItem = kitItemManager.createKitItemFromItemStack(item);
+            KitItem kitItem = kitItemManager.createKitItemFromItemStack(item,saveOriginalItems);
 
             //Check for armor/offhand
             if(i >= 36 && i<=39){
@@ -109,6 +109,7 @@ public class KitsManager {
         kit.setItems(items);
         kit.setDefaults(mainConfigManager.getNewKitDefault());
         kit.setAutoArmor(hasArmor);
+        kit.setSaveOriginalItems(saveOriginalItems);
 
         kits.add(kit);
         plugin.getConfigsManager().getKitsConfigManager().saveConfig(kit);

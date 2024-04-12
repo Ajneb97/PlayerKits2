@@ -16,6 +16,7 @@ public class Kit {
     private ArrayList<KitItem> items;
     private ArrayList<KitAction> claimActions;
     private ArrayList<KitAction> errorActions;
+    private boolean saveOriginalItems;
 
     private KitItem displayItemDefault;
     private KitItem displayItemNoPermission;
@@ -31,6 +32,7 @@ public class Kit {
         this.cooldown = 0;
         this.autoArmor = false;
         this.oneTime = false;
+        this.saveOriginalItems = false;
     }
 
     public String getName() {
@@ -152,6 +154,14 @@ public class Kit {
 
     public void setCustomPermission(String customPermission) {
         this.customPermission = customPermission;
+    }
+
+    public boolean isSaveOriginalItems() {
+        return saveOriginalItems;
+    }
+
+    public void setSaveOriginalItems(boolean saveOriginalItems) {
+        this.saveOriginalItems = saveOriginalItems;
     }
 
     public boolean playerHasPermission(CommandSender player){
