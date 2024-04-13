@@ -74,6 +74,11 @@
         </dependency>
         <dependency>
             <groupId>io.github.projectunified</groupId>
+            <artifactId>minelib-scheduler-common</artifactId>
+            <version>1.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.projectunified</groupId>
             <artifactId>minelib-scheduler-entity</artifactId>
             <version>1.2.1</version>
         </dependency>
