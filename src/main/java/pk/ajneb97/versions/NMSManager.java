@@ -1,13 +1,12 @@
 package pk.ajneb97.versions;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.utils.ServerVersion;
-
-import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -16,10 +15,16 @@ public class NMSManager {
 
     private Version version;
     private ServerVersion serverVersion;
+    private PlayerKits2 plugin;
 
-    public NMSManager(){
+    public NMSManager(PlayerKits2 plugin){
+        this.plugin = plugin;
         this.version = new Version();
         this.serverVersion = PlayerKits2.serverVersion;
+
+        if(serverVersionGreaterEqualThan(ServerVersion.v1_20_R4)){
+            return;
+        }
 
         try {
             //Classes
@@ -134,17 +139,21 @@ public class NMSManager {
                 version.addMethod("hasKeyOfType",version.getClassRef("NBTTagCompound").getMethod("b",String.class,int.class));
                 version.addMethod("parse",version.getClassRef("MojangsonParser").getMethod("a",String.class));
             }
-
-
-
-
-
         } catch (ClassNotFoundException | NoSuchMethodException e) {
             e.printStackTrace();
         }
     }
 
     public ItemStack setTagStringItem(ItemStack item, String key, String value) {
+        if(serverVersionGreaterEqualThan(ServerVersion.v1_20_R4)){
+            ItemMeta meta = item.getItemMeta();
+            NamespacedKey namespacedKey = new NamespacedKey(plugin, key);
+            PersistentDataContainer p = meta.getPersistentDataContainer();
+            p.set(namespacedKey, PersistentDataType.STRING,value);
+            item.setItemMeta(meta);
+            return item;
+        }
+
         try {
             Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item); //ItemStackNMS
             Object compound = getNBTCompound(newItem);
@@ -158,6 +167,16 @@ public class NMSManager {
     }
 
     public String getTagStringItem(ItemStack item,String key) {
+        if(serverVersionGreaterEqualThan(ServerVersion.v1_20_R4)){
+            ItemMeta meta = item.getItemMeta();
+            NamespacedKey namespacedKey = new NamespacedKey(plugin, key);
+            PersistentDataContainer p = meta.getPersistentDataContainer();
+            if(p.has(namespacedKey)){
+                return p.get(namespacedKey,PersistentDataType.STRING);
+            }
+            return null;
+        }
+
         try {
             Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item); //ItemStackNMS
             Object compound = getNBTCompound(newItem);
@@ -171,6 +190,18 @@ public class NMSManager {
     }
 
     public ItemStack removeTagItem(ItemStack item, String key) {
+        if(serverVersionGreaterEqualThan(ServerVersion.v1_20_R4)){
+            ItemMeta meta = item.getItemMeta();
+            NamespacedKey namespacedKey = new NamespacedKey(plugin, key);
+
+            PersistentDataContainer p = meta.getPersistentDataContainer();
+            if(p.has(namespacedKey)){
+                p.remove(namespacedKey);
+            }
+            item.setItemMeta(meta);
+            return item;
+        }
+
         try {
             Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item); //ItemStackNMS
             Object compound = getNBTCompound(newItem);

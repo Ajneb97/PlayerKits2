@@ -215,6 +215,7 @@ public class MySQLConnection {
 
                     statement.setString(1, player.getName());
                     statement.setString(2, player.getUuid());
+                    statement.executeUpdate();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }

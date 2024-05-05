@@ -1,7 +1,6 @@
 package pk.ajneb97.managers;
 
 import com.destroystokyo.paper.Namespaced;
-import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -17,6 +16,7 @@ import pk.ajneb97.model.internal.KitVariable;
 import pk.ajneb97.model.item.*;
 import pk.ajneb97.utils.ItemUtils;
 import pk.ajneb97.utils.OtherUtils;
+import pk.ajneb97.utils.ServerVersion;
 
 import java.util.*;
 
@@ -108,10 +108,14 @@ public class KitItemManager {
             }
         }
 
-        List<String> nbtList = ItemUtils.getNBT(plugin,item);
-        if(!nbtList.isEmpty()) {
-            kitItem.setNbt(nbtList);
+        ServerVersion serverVersion = PlayerKits2.serverVersion;
+        if(!serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
+            List<String> nbtList = ItemUtils.getNBT(plugin,item);
+            if(!nbtList.isEmpty()) {
+                kitItem.setNbt(nbtList);
+            }
         }
+
 
         kitItem.setAttributes(ItemUtils.getAttributes(plugin,item));
         kitItem.setSkullData(ItemUtils.getSkullData(item));
@@ -242,8 +246,11 @@ public class KitItemManager {
         List<String> attributes = kitItem.getAttributes();
         item = ItemUtils.setAttributes(plugin,item, attributes);
 
-        List<String> nbtList = kitItem.getNbt();
-        item = ItemUtils.setNBT(plugin,item, nbtList);
+        ServerVersion serverVersion = PlayerKits2.serverVersion;
+        if(!serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
+            List<String> nbtList = kitItem.getNbt();
+            item = ItemUtils.setNBT(plugin,item, nbtList);
+        }
 
         return item;
     }
