@@ -54,7 +54,7 @@ public class PlayerKits2 extends JavaPlugin {
         this.inventoryEditManager = new InventoryEditManager(this);
         this.kitsManager = new KitsManager(this);
         this.dependencyManager = new DependencyManager(this);
-        this.nmsManager = new NMSManager();
+        this.nmsManager = new NMSManager(this);
         this.playerDataManager = new PlayerDataManager(this);
 
         this.configsManager = new ConfigsManager(this);

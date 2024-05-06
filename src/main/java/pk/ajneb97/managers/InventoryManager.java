@@ -100,11 +100,9 @@ public class InventoryManager {
         for(ItemKitInventory itemInventory : items){
             for(int slot : itemInventory.getSlots()){
                 String type = itemInventory.getType();
-                if(type != null){
-                    if(type.startsWith("kit: ")){
-                        setKit(type.replace("kit: ",""),inventoryPlayer.getPlayer(),inv,slot,kitsManager
-                                ,playerDataManager,kitItemManager,msgManager);
-                    }
+                if(type != null && type.startsWith("kit: ")){
+                    setKit(type.replace("kit: ",""),inventoryPlayer.getPlayer(),inv,slot,kitsManager
+                            ,playerDataManager,kitItemManager,msgManager);
                     continue;
                 }
 
@@ -112,6 +110,9 @@ public class InventoryManager {
 
                 if(inventoryPlayer.getInventoryName().equals("buy_requirements_inventory")){
                     inventoryRequirementsManager.configureRequirementsItem(item,inventoryPlayer.getKitName(),inventoryPlayer.getPlayer());
+                    if(type != null){
+                        item = ItemUtils.setTagStringItem(plugin,item, "playerkits_buy", type);
+                    }
                 }
 
                 String openInventory = itemInventory.getOpenInventory();
@@ -204,7 +205,7 @@ public class InventoryManager {
             if(buyTag == null){
                 return;
             }
-            if(buyTag.equals("yes")){
+            if(buyTag.equals("yes") || buyTag.equals("buy_yes")){
                 inventoryRequirementsManager.requirementsInventoryBuy(inventoryPlayer);
             }else{
                 inventoryRequirementsManager.requirementsInventoryCancel(inventoryPlayer);

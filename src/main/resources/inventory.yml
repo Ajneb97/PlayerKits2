@@ -50,11 +50,9 @@ inventories:
       item:
         id: "RED_STAINED_GLASS_PANE"
         name: "&cGo Back"
-        nbt:
-          - "playerkits_buy|no"
+      type: buy_no
     16:
       item:
         id: "GREEN_STAINED_GLASS_PANE"
         name: "&aBuy"
-        nbt:
-          - "playerkits_buy|yes"
+      type: buy_yes

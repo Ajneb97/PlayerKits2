@@ -301,7 +301,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     public void create(Player player,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
-        // /kit create <kit> (optional)<original>
+        // /kit create <kit> (optional)<original/configurable>
         if(!PlayerUtils.isPlayerKitsAdmin(player)){
             msgManager.sendMessage(player,messagesConfig.getString("noPermissions"),true);
             return;
@@ -313,8 +313,13 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         }
 
         boolean saveOriginalItems = false;
-        if(args.length >= 3 && args[2].equalsIgnoreCase("original")){
-            saveOriginalItems = true;
+        if(args.length >= 3){
+            if(args[2].equalsIgnoreCase("original")){
+                saveOriginalItems = true;
+            }else if(!args[2].equalsIgnoreCase("configurable")){
+                msgManager.sendMessage(player,messagesConfig.getString("commandCreateError"),true);
+                return;
+            }
         }
 
         plugin.getKitsManager().createKit(args[1],player,saveOriginalItems);
@@ -416,10 +421,13 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 }
             }else if(args.length == 3 && PlayerUtils.isPlayerKitsAdmin(sender)){
                 if(args[0].equalsIgnoreCase("create")){
-                    if(args[2].isEmpty() || "original".startsWith(args[2].toLowerCase())) {
-                        completions.add("original");
-                        return completions;
+                    commands.add("original");commands.add("configurable");
+                    for(String c : commands) {
+                        if(args[2].isEmpty() || c.startsWith(args[2].toLowerCase())) {
+                            completions.add(c);
+                        }
                     }
+                    return completions;
                 }
             }
         }
