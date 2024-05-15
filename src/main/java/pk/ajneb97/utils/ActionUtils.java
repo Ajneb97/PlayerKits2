@@ -97,7 +97,15 @@ public class ActionUtils {
         }
 
         Location location = player.getLocation();
-        Firework firework = (Firework) location.getWorld().spawnEntity(location, EntityType.FIREWORK);
+
+        ServerVersion serverVersion = PlayerKits2.serverVersion;
+        EntityType entityType = null;
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
+            entityType = EntityType.FIREWORK_ROCKET;
+        }else{
+            entityType = EntityType.valueOf("FIREWORK");
+        }
+        Firework firework = (Firework) location.getWorld().spawnEntity(location, entityType);
         FireworkMeta fireworkMeta = firework.getFireworkMeta();
         FireworkEffect effect = FireworkEffect.builder().flicker(false)
                 .withColor(colors)

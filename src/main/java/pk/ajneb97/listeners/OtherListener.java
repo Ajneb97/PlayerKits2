@@ -12,7 +12,7 @@ public class OtherListener implements Listener {
     @EventHandler
     public void fireworkDamage(EntityDamageByEntityEvent event) {
         Entity damager = event.getDamager();
-        if(event.getEntity() instanceof Player && damager.getType().equals(EntityType.FIREWORK)) {
+        if(event.getEntity() instanceof Player && damager.getType().name().contains("FIREWORK")) {
             if(damager.hasMetadata("playerkits")) {
                 event.setCancelled(true);
             }
