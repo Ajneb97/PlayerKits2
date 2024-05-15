@@ -1,8 +1,6 @@
 package pk.ajneb97.managers;
 
-import com.destroystokyo.paper.Namespaced;
 import org.bukkit.Color;
-import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -89,23 +87,6 @@ public class KitItemManager {
                     kitItem.setBookEnchants(enchantsList);
                 }
             }
-
-            if(plugin.getDependencyManager().isPaper()){
-                List<String> canDestroy = new ArrayList<>();
-                for(Namespaced n : meta.getDestroyableKeys()){
-                    canDestroy.add(n.getNamespace()+":"+n.getKey());
-                }
-                if(!canDestroy.isEmpty()){
-                    kitItem.setCanDestroy(canDestroy);
-                }
-                List<String> canPlace = new ArrayList<>();
-                for(Namespaced n : meta.getPlaceableKeys()){
-                    canPlace.add(n.getNamespace()+":"+n.getKey());
-                }
-                if(!canPlace.isEmpty()){
-                    kitItem.setCanPlace(canPlace);
-                }
-            }
         }
 
         ServerVersion serverVersion = PlayerKits2.serverVersion;
@@ -178,27 +159,6 @@ public class KitItemManager {
         if(flags != null) {
             for(int i=0;i<flags.size();i++) {
                 meta.addItemFlags(ItemFlag.valueOf(flags.get(i)));
-            }
-        }
-
-        if(plugin.getDependencyManager().isPaper()){
-            List<String> canDestroy = kitItem.getCanDestroy();
-            if(canDestroy != null && !canDestroy.isEmpty()){
-                Collection<Namespaced> destroyableKeys = new ArrayList<>();
-                for(String line : canDestroy){
-                    String[] sep = line.split(":");
-                    destroyableKeys.add(new NamespacedKey(sep[0],sep[1]));
-                }
-                meta.setDestroyableKeys(destroyableKeys);
-            }
-            List<String> canPlace = kitItem.getCanPlace();
-            if(canPlace != null && !canPlace.isEmpty()){
-                Collection<Namespaced> placeableKeys = new ArrayList<>();
-                for(String line : canPlace){
-                    String[] sep = line.split(":");
-                    placeableKeys.add(new NamespacedKey(sep[0],sep[1]));
-                }
-                meta.setPlaceableKeys(placeableKeys);
             }
         }
 

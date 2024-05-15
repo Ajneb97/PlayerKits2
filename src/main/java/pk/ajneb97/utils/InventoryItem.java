@@ -52,7 +52,7 @@ public class InventoryItem {
 	
 	public InventoryItem enchanted(boolean enchanted) {
 		if(enchanted) {
-			meta.addEnchant(Enchantment.ARROW_DAMAGE, 1, true);
+			meta.addEnchant(Enchantment.FIRE_ASPECT, 1, true);
 			meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 		}
 		return this;

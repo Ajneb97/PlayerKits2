@@ -2,7 +2,7 @@ package pk.ajneb97.utils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
+
 import java.net.URL;
 import java.util.*;
 
@@ -224,14 +224,22 @@ public class ItemUtils {
 				potionEffectsList.add(type+";"+amplifier+";"+duration);
 			}
 		}
-		if(!Bukkit.getVersion().contains("1.8")) {
+		ServerVersion serverVersion = PlayerKits2.serverVersion;
+		if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_9_R1)) {
 			if(meta.hasColor()) {
 				potionColor = meta.getColor().asRGB();
 			}
-			PotionData basePotionData = meta.getBasePotionData();
-			extended = basePotionData.isExtended();
-			upgraded = basePotionData.isUpgraded();
-			potionType = basePotionData.getType().name();
+
+			if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R2)) {
+				if(meta.getBasePotionType() != null){
+					potionType = meta.getBasePotionType().name();
+				}
+			}else{
+				PotionData basePotionData = meta.getBasePotionData();
+				extended = basePotionData.isExtended();
+				upgraded = basePotionData.isUpgraded();
+				potionType = basePotionData.getType().name();
+			}
 		}
 		
 		potionData = new KitItemPotionData(upgraded,extended,potionType,potionColor,potionEffectsList);
@@ -265,17 +273,24 @@ public class ItemUtils {
 				meta.addCustomEffect(new PotionEffect(PotionEffectType.getByName(type),duration,amplifier), false);
 			}
 		}
-		
-		if(!Bukkit.getVersion().contains("1.8")) {
-			PotionData basePotionData = new PotionData(
-					PotionType.valueOf(potionData.getPotionType()),
-					potionData.isExtended(),
-					potionData.isUpgraded());
-			meta.setBasePotionData(basePotionData);
-			
+
+		ServerVersion serverVersion = PlayerKits2.serverVersion;
+		if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_9_R1)) {
 			int color = potionData.getPotionColor();
 			if(color != 0) {
 				meta.setColor(Color.fromRGB(color));
+			}
+			if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R2)) {
+				if(potionData.getPotionType() != null && !potionData.getPotionType().isEmpty()){
+					meta.setBasePotionType(PotionType.valueOf(potionData.getPotionType()));
+				}
+			}else{
+				PotionData basePotionData = new PotionData(
+						PotionType.valueOf(potionData.getPotionType()),
+						potionData.isExtended(),
+						potionData.isUpgraded());
+
+				meta.setBasePotionData(basePotionData);
 			}
 		}
 		
