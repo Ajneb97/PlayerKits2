@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class PlayerUtils {
 
@@ -33,7 +34,14 @@ public class PlayerUtils {
     }
 
     public static int getUsedSlots(Player player){
-        ItemStack[] contents = getAllInventoryContents(player);
+        //ItemStack[] contents = getAllInventoryContents(player);
+        ItemStack[] contents = null;
+        if(Bukkit.getVersion().contains("1.8")) {
+            contents = player.getInventory().getContents();
+        }else{
+            contents = player.getInventory().getStorageContents();
+        }
+
         int usedSlots = 0;
         for(int i=0;i<contents.length;i++) {
             if(contents[i] != null && !contents[i].getType().equals(Material.AIR)) {
