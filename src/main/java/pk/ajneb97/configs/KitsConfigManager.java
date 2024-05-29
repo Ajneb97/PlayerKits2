@@ -144,6 +144,8 @@ public class KitsConfigManager {
         config.set("one_time",kit.isOneTime());
         config.set("auto_armor",kit.isAutoArmor());
         config.set("permission_required",kit.isPermissionRequired());
+        config.set("custom_permission",kit.getCustomPermission());
+        config.set("save_original_items",kit.isSaveOriginalItems());
 
         KitItemManager kitItemManager = plugin.getKitItemManager();
         int currentPos = 1;
@@ -229,8 +231,10 @@ public class KitsConfigManager {
         KitItemManager kitItemManager = plugin.getKitItemManager();
         int cooldown = config.contains(mainPath+"cooldown") ? config.getInt(mainPath+"cooldown") : 0;
         boolean permissionRequired = config.contains(mainPath+"permission_required") ? config.getBoolean(mainPath+"permission_required") : false;
+        String customPermission = config.contains(mainPath+"custom_permission") ? config.getString(mainPath+"custom_permission") : null;
         boolean autoArmor = config.contains(mainPath+"auto_armor") ? config.getBoolean(mainPath+"auto_armor") : false;
         boolean oneTime = config.contains(mainPath+"one_time") ? config.getBoolean(mainPath+"one_time") : false;
+        boolean saveOriginalItems = config.contains(mainPath+"save_original_items") ? config.getBoolean(mainPath+"save_original_items") : false;
 
         ArrayList<KitItem> items = new ArrayList<KitItem>();
         if(config.contains(mainPath+"items")){
@@ -269,6 +273,7 @@ public class KitsConfigManager {
         kit.setAutoArmor(autoArmor);
         kit.setOneTime(oneTime);
         kit.setPermissionRequired(permissionRequired);
+        kit.setCustomPermission(customPermission);
         kit.setItems(items);
         kit.setClaimActions(claimActions);
         kit.setErrorActions(errorActions);
@@ -278,6 +283,7 @@ public class KitsConfigManager {
         kit.setDisplayItemOneTime(displayItemOneTime);
         kit.setDisplayItemOneTimeRequirements(displayItemOneTimeRequirements);
         kit.setRequirements(kitRequirements);
+        kit.setSaveOriginalItems(saveOriginalItems);
 
         return kit;
     }

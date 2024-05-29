@@ -110,7 +110,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessagesManager.getColoredMessage(" "));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit &8Opens the GUI."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit claim <kit> &8Claims a kit outside the GUI."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit create <kit> &8Creates a new kit using the items in your inventory."));
+        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit create <kit> (optional)original &8Creates a new kit using the items in your inventory."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit edit <kit> &8Edits a kit."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit give <kit> <player> &8Gives a kit to a player."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit delete <kit> &8Deletes a kit."));
@@ -301,7 +301,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     public void create(Player player,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
-        // /kit create <kit>
+        // /kit create <kit> (optional)<original/configurable>
         if(!PlayerUtils.isPlayerKitsAdmin(player)){
             msgManager.sendMessage(player,messagesConfig.getString("noPermissions"),true);
             return;
@@ -312,7 +312,17 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        plugin.getKitsManager().createKit(args[1],player);
+        boolean saveOriginalItems = false;
+        if(args.length >= 3){
+            if(args[2].equalsIgnoreCase("original")){
+                saveOriginalItems = true;
+            }else if(!args[2].equalsIgnoreCase("configurable")){
+                msgManager.sendMessage(player,messagesConfig.getString("commandCreateError"),true);
+                return;
+            }
+        }
+
+        plugin.getKitsManager().createKit(args[1],player,saveOriginalItems);
     }
 
     public void delete(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
@@ -408,6 +418,16 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                         }
 
                     }
+                }
+            }else if(args.length == 3 && PlayerUtils.isPlayerKitsAdmin(sender)){
+                if(args[0].equalsIgnoreCase("create")){
+                    commands.add("original");commands.add("configurable");
+                    for(String c : commands) {
+                        if(args[2].isEmpty() || c.startsWith(args[2].toLowerCase())) {
+                            completions.add(c);
+                        }
+                    }
+                    return completions;
                 }
             }
         }

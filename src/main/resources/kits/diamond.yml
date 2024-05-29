@@ -16,7 +16,7 @@ items:
       - ""
       - "&7Owner: &6%player_name%"
     enchants:
-      - "DAMAGE_ALL;5"
+      - "FIRE_ASPECT;5"
 actions:
   claim:
     1:

@@ -94,6 +94,9 @@ public class VerifyManager {
         }
         for(KitItem kitItem : allKitItems){
             if(kitItem != null){
+                if(kitItem.getOriginalItem() != null){
+                    continue;
+                }
                 if(!verifyItem(kitItem.getId())){
                     errors.add(new PKInvalidItem(kit.getName()+".yml",null,true,kitItem.getId()));
                     criticalErrors = true;

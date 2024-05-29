@@ -2,10 +2,12 @@ package pk.ajneb97.utils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
+
 import java.net.URL;
 import java.util.*;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.bukkit.*;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.attribute.Attribute;
@@ -129,8 +131,7 @@ public class ItemUtils {
 		
 		return kitItemSkullData;
 	}
-	
-	@SuppressWarnings("deprecation")
+
 	public static void setSkullData(ItemStack item, KitItemSkullData skullData, Player player){
 		String typeName = item.getType().name();
 		if(!typeName.equals("PLAYER_HEAD") && !typeName.equals("SKULL_ITEM")) {
@@ -148,46 +149,48 @@ public class ItemUtils {
 		}
 		String id = skullData.getId();
         SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
-        if(texture == null && owner != null) {
+        if(owner != null) {
         	skullMeta.setOwner(owner);
-        	item.setItemMeta(skullMeta);
-        	return;
         }
 
-		ServerVersion serverVersion = PlayerKits2.serverVersion;
-		if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R2)){
-			UUID uuid = id != null ? UUID.fromString(id) : UUID.randomUUID();
-			PlayerProfile profile = Bukkit.createPlayerProfile(uuid);
-			PlayerTextures textures = profile.getTextures();
-			URL url;
-			try {
-				String decoded = new String(Base64.getDecoder().decode(texture));
-				String decodedFormatted = decoded.replaceAll("\\s", "");
-				int firstIndex = decodedFormatted.indexOf("\"SKIN\":{\"url\":")+15;
-				int lastIndex = decodedFormatted.indexOf("\"",firstIndex+1);
-				url = new URL(decodedFormatted.substring(firstIndex,lastIndex));
-			} catch (MalformedURLException error) {
-				error.printStackTrace();
-				return;
-			}
-			textures.setSkin(url);
-			profile.setTextures(textures);
-			skullMeta.setOwnerProfile(profile);
-		}else{
-			GameProfile profile = null;
-			if(id == null) {
-				profile = new GameProfile(UUID.randomUUID(), owner != null ? owner : "");
-			}else {
-				profile = new GameProfile(UUID.fromString(id), owner != null ? owner : "");
-			}
-			profile.getProperties().put("textures", new Property("textures", texture));
+		if(texture != null){
+			ServerVersion serverVersion = PlayerKits2.serverVersion;
+			if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R2)){
+				UUID uuid = id != null ? UUID.fromString(id) : UUID.randomUUID();
+				PlayerProfile profile = Bukkit.createPlayerProfile(uuid);
+				PlayerTextures textures = profile.getTextures();
+				URL url;
+				try {
+					String decoded = new String(Base64.getDecoder().decode(texture));
+					String decodedFormatted = decoded.replaceAll("\\s", "");
+					JsonObject jsonObject = new Gson().fromJson(decodedFormatted, JsonObject.class);
+					String urlText = jsonObject.get("textures").getAsJsonObject().get("SKIN")
+							.getAsJsonObject().get("url").getAsString();
 
-			try {
-				Field profileField = skullMeta.getClass().getDeclaredField("profile");
-				profileField.setAccessible(true);
-				profileField.set(skullMeta, profile);
-			} catch (IllegalArgumentException | NoSuchFieldException | SecurityException | IllegalAccessException error) {
-				error.printStackTrace();
+					url = new URL(urlText);
+				} catch (Exception error) {
+					error.printStackTrace();
+					return;
+				}
+				textures.setSkin(url);
+				profile.setTextures(textures);
+				skullMeta.setOwnerProfile(profile);
+			}else{
+				GameProfile profile = null;
+				if(id == null) {
+					profile = new GameProfile(UUID.randomUUID(), owner != null ? owner : "");
+				}else {
+					profile = new GameProfile(UUID.fromString(id), owner != null ? owner : "");
+				}
+				profile.getProperties().put("textures", new Property("textures", texture));
+
+				try {
+					Field profileField = skullMeta.getClass().getDeclaredField("profile");
+					profileField.setAccessible(true);
+					profileField.set(skullMeta, profile);
+				} catch (IllegalArgumentException | NoSuchFieldException | SecurityException | IllegalAccessException error) {
+					error.printStackTrace();
+				}
 			}
 		}
 
@@ -221,14 +224,22 @@ public class ItemUtils {
 				potionEffectsList.add(type+";"+amplifier+";"+duration);
 			}
 		}
-		if(!Bukkit.getVersion().contains("1.8")) {
+		ServerVersion serverVersion = PlayerKits2.serverVersion;
+		if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_9_R1)) {
 			if(meta.hasColor()) {
 				potionColor = meta.getColor().asRGB();
 			}
-			PotionData basePotionData = meta.getBasePotionData();
-			extended = basePotionData.isExtended();
-			upgraded = basePotionData.isUpgraded();
-			potionType = basePotionData.getType().name();
+
+			if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R2)) {
+				if(meta.getBasePotionType() != null){
+					potionType = meta.getBasePotionType().name();
+				}
+			}else{
+				PotionData basePotionData = meta.getBasePotionData();
+				extended = basePotionData.isExtended();
+				upgraded = basePotionData.isUpgraded();
+				potionType = basePotionData.getType().name();
+			}
 		}
 		
 		potionData = new KitItemPotionData(upgraded,extended,potionType,potionColor,potionEffectsList);
@@ -262,17 +273,24 @@ public class ItemUtils {
 				meta.addCustomEffect(new PotionEffect(PotionEffectType.getByName(type),duration,amplifier), false);
 			}
 		}
-		
-		if(!Bukkit.getVersion().contains("1.8")) {
-			PotionData basePotionData = new PotionData(
-					PotionType.valueOf(potionData.getPotionType()),
-					potionData.isExtended(),
-					potionData.isUpgraded());
-			meta.setBasePotionData(basePotionData);
-			
+
+		ServerVersion serverVersion = PlayerKits2.serverVersion;
+		if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_9_R1)) {
 			int color = potionData.getPotionColor();
 			if(color != 0) {
 				meta.setColor(Color.fromRGB(color));
+			}
+			if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R2)) {
+				if(potionData.getPotionType() != null && !potionData.getPotionType().isEmpty()){
+					meta.setBasePotionType(PotionType.valueOf(potionData.getPotionType()));
+				}
+			}else{
+				PotionData basePotionData = new PotionData(
+						PotionType.valueOf(potionData.getPotionType()),
+						potionData.isExtended(),
+						potionData.isUpgraded());
+
+				meta.setBasePotionData(basePotionData);
 			}
 		}
 		

@@ -62,7 +62,7 @@ public class PlayerDataManager {
 
     public PlayerData getPlayerByName(String name){
         for(PlayerData player : players){
-            if(player.getName().equals(name)){
+            if(player.getName() != null && player.getName().equals(name)){
                 return player;
             }
         }
@@ -182,7 +182,7 @@ public class PlayerDataManager {
                 playerData.setModified(true);
                 players.add(playerData);
             }else{
-                if(!playerData.getName().equals(player.getName())){
+                if(playerData.getName() == null || !playerData.getName().equals(player.getName())){
                     playerData.setName(player.getName());
                     playerData.setModified(true);
                 }
