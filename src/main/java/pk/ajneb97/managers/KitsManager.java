@@ -49,7 +49,7 @@ public class KitsManager {
 
     public Kit getKitByName(String name){
         for(Kit kit : kits){
-            if(kit.getName().equals(name)){
+            if(kit.getName().equalsIgnoreCase(name)){
                 return kit;
             }
         }
@@ -226,7 +226,7 @@ public class KitsManager {
         ArrayList<KitItem> items = kit.getItems();
 
         //Check amount of free slots, including auto-armor
-        int usedSlots = PlayerUtils.getUsedSlots(player);
+        int usedSlots = PlayerUtils.getUsedSlots(player); //storage contents, 36 slots
         int freeSlots = 36-usedSlots;
         int inventoryKitItems = 0; //Items that will be put in the player inventory (not equipment)
 
@@ -245,18 +245,22 @@ public class KitsManager {
                 if((id.contains("_HELMET") || id.contains("PLAYER_HEAD") || id.contains("SKULL_ITEM")) && itemHelmet == null && (playerInventory.getHelmet() == null
                     || playerInventory.getHelmet().getType().equals(Material.AIR))){
                     itemHelmet = item;
+                    freeSlots++;
                     continue;
                 }else if((id.contains("_CHESTPLATE") || id.contains("ELYTRA")) && itemChestplate == null && (playerInventory.getChestplate() == null
                         || playerInventory.getChestplate().getType().equals(Material.AIR))){
                     itemChestplate = item;
+                    freeSlots++;
                     continue;
                 }else if(id.contains("_LEGGINGS") && itemLeggings == null && (playerInventory.getLeggings() == null
                         || playerInventory.getLeggings().getType().equals(Material.AIR))){
                     itemLeggings = item;
+                    freeSlots++;
                     continue;
                 }else if(id.contains("_BOOTS") && itemBoots == null && (playerInventory.getBoots() == null
                         || playerInventory.getBoots().getType().equals(Material.AIR))){
                     itemBoots = item;
+                    freeSlots++;
                     continue;
                 }
             }
@@ -264,6 +268,7 @@ public class KitsManager {
             if(item.isOffhand() && itemOffhand == null && (playerInventory.getItemInOffHand() == null
                 || playerInventory.getItemInOffHand().getType().equals(Material.AIR))){
                 itemOffhand = item;
+                freeSlots++;
                 continue;
             }
 
@@ -275,7 +280,6 @@ public class KitsManager {
                 inventoryKitItems++;
             }
         }
-
 
         boolean enoughSpace = freeSlots < inventoryKitItems;
         boolean dropItemsIfFullInventory = configFile.getBoolean("drop_items_if_full_inventory");
