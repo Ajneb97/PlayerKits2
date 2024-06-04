@@ -241,6 +241,9 @@ public class KitsManager {
         for(KitItem item : items){
             if(kit.isAutoArmor()){
                 String id = item.getId();
+                if(item.getOriginalItem() != null){
+                    id = item.getOriginalItem().getType().name();
+                }
 
                 //Check if the item must be put in the player equipment
                 if((id.contains("_HELMET") || id.contains("PLAYER_HEAD") || id.contains("SKULL_ITEM")) && itemHelmet == null && (playerInventory.getHelmet() == null
