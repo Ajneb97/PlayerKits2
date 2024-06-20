@@ -1,6 +1,8 @@
 package pk.ajneb97.managers;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -37,6 +39,7 @@ public class KitItemManager {
             kitItem.setDurability(item.getDurability());
         }
 
+        ServerVersion serverVersion = PlayerKits2.serverVersion;
         if(item.hasItemMeta()) {
             ItemMeta meta = item.getItemMeta();
             if(meta.hasDisplayName()) {
@@ -52,7 +55,12 @@ public class KitItemManager {
             if(meta.hasEnchants()) {
                 List<String> enchants = new ArrayList<String>();
                 for(Map.Entry<Enchantment,Integer> entry : meta.getEnchants().entrySet()){
-                    String enchant = entry.getKey().getName();
+                    String enchant;
+                    if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R1)){
+                        enchant = entry.getKey().getKey().getKey().toUpperCase();
+                    }else{
+                        enchant = entry.getKey().getName();
+                    }
                     int level = entry.getValue();
                     enchants.add(enchant+";"+level);
                 }
@@ -81,7 +89,14 @@ public class KitItemManager {
                 Map<Enchantment, Integer> enchants = meta2.getStoredEnchants();
                 List<String> enchantsList = new ArrayList<String>();
                 for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
-                    enchantsList.add(entry.getKey().getName()+";"+entry.getValue().intValue());
+                    String enchant;
+                    if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R1)){
+                        enchant = entry.getKey().getKey().getKey().toUpperCase();
+                    }else{
+                        enchant = entry.getKey().getName();
+                    }
+                    int level = entry.getValue();
+                    enchantsList.add(enchant+";"+level);
                 }
                 if(!enchantsList.isEmpty()) {
                     kitItem.setBookEnchants(enchantsList);
@@ -89,7 +104,6 @@ public class KitItemManager {
             }
         }
 
-        ServerVersion serverVersion = PlayerKits2.serverVersion;
         if(!serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
             List<String> nbtList = ItemUtils.getNBT(plugin,item);
             if(!nbtList.isEmpty()) {
@@ -150,7 +164,8 @@ public class KitItemManager {
             for(int i=0;i<enchants.size();i++) {
                 String[] sep = enchants.get(i).split(";");
                 String enchantName = sep[0];
-                int enchantLevel = Integer.valueOf(sep[1]);
+                int enchantLevel = Integer.parseInt(sep[1]);
+
                 meta.addEnchant(Enchantment.getByName(enchantName), enchantLevel, true);
             }
         }

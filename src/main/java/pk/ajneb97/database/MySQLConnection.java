@@ -185,7 +185,7 @@ public class MySQLConnection {
         }.runTaskAsynchronously(plugin);
     }
 
-    public void createPlayer(PlayerData player){
+    public void createPlayer(PlayerData player,SimpleCallback callback){
         new BukkitRunnable(){
             @Override
             public void run() {
@@ -197,6 +197,13 @@ public class MySQLConnection {
                     statement.setString(1, player.getUuid());
                     statement.setString(2, player.getName());
                     statement.executeUpdate();
+
+                    new BukkitRunnable(){
+                        @Override
+                        public void run() {
+                            callback.onDone();
+                        }
+                    }.runTask(plugin);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
