@@ -170,13 +170,6 @@ public class KitItemManager {
             }
         }
 
-        List<String> flags = kitItem.getFlags();
-        if(flags != null) {
-            for(int i=0;i<flags.size();i++) {
-                meta.addItemFlags(ItemFlag.valueOf(flags.get(i)));
-            }
-        }
-
         item.setItemMeta(meta);
 
         //OTHER META
@@ -222,6 +215,22 @@ public class KitItemManager {
         item = ItemUtils.setAttributes(plugin,item, attributes);
 
         ServerVersion serverVersion = PlayerKits2.serverVersion;
+
+        //Item Flags
+        meta = item.getItemMeta();
+        List<String> flags = kitItem.getFlags();
+        if(flags != null) {
+            for(String flag : flags) {
+                if (flag.equals("HIDE_ATTRIBUTES") && plugin.getDependencyManager().isPaper() &&
+                        serverVersion.serverVersionGreaterEqualThan(serverVersion, ServerVersion.v1_21_R1)) {
+                    //Fix PAPER HIDE_ATTRIBUTES
+                    ItemUtils.addDummyAttribute(meta);
+                }
+                meta.addItemFlags(ItemFlag.valueOf(flag));
+            }
+        }
+        item.setItemMeta(meta);
+
         if(!serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
             List<String> nbtList = kitItem.getNbt();
             item = ItemUtils.setNBT(plugin,item, nbtList);
