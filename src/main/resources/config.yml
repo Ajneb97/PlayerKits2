@@ -4,6 +4,7 @@ close_inventory_on_claim: false
 kit_preview: true
 kit_preview_requires_kit_permission: false
 first_join_kit: none
+new_kit_default_save_mode_original: true
 new_kit_default_inventory: "main_inventory"
 new_kit_default_values:
   cooldown: 3600
