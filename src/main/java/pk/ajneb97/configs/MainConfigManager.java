@@ -20,6 +20,7 @@ public class MainConfigManager {
     private boolean closeInventoryOnClaim;
     private boolean claimKitShortCommand;
     private boolean kitPreviewRequiresKitPermission;
+    private boolean newKitDefaultSaveModeOriginal;
     private String firstJoinKit;
     private String newKitDefaultInventory;
     private boolean isMySQL;
@@ -29,6 +30,7 @@ public class MainConfigManager {
         this.plugin = plugin;
         this.configFile = new CustomConfig("config.yml",plugin,null, false);
         this.configFile.registerConfig();
+        checkUpdate();
     }
 
     public void configure(){
@@ -42,6 +44,7 @@ public class MainConfigManager {
         isMySQL = config.getBoolean("mysql_database.enabled");
         updateNotify = config.getBoolean("update_notify");
         claimKitShortCommand = config.getBoolean("claim_kit_short_command");
+        newKitDefaultSaveModeOriginal = config.getBoolean("new_kit_default_save_mode_original");
     }
 
     public boolean reloadConfig(){
@@ -60,13 +63,11 @@ public class MainConfigManager {
         Path pathConfig = Paths.get(configFile.getRoute());
         try{
             String text = new String(Files.readAllBytes(pathConfig));
-            /*
-            if(!text.contains("register_commands:")){
-                List<String> commands = new ArrayList<>();
-                getConfig().set("Config.register_commands", commands);
-                saveConfig();
+
+            if(!text.contains("new_kit_default_save_mode_original:")){
+                getConfig().set("new_kit_default_save_mode_original", true);
+                configFile.saveConfig();
             }
-            */
         }catch(IOException e){
             e.printStackTrace();
         }
@@ -106,5 +107,9 @@ public class MainConfigManager {
 
     public boolean isClaimKitShortCommand() {
         return claimKitShortCommand;
+    }
+
+    public boolean isNewKitDefaultSaveModeOriginal() {
+        return newKitDefaultSaveModeOriginal;
     }
 }
