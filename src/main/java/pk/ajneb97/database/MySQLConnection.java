@@ -178,7 +178,7 @@ public class MySQLConnection {
         });
     }
 
-    public void createPlayer(PlayerData player){
+    public void createPlayer(PlayerData player,SimpleCallback callback){
         AsyncScheduler.get(plugin).run(() -> {
             try(Connection connection = getConnection()){
                 PreparedStatement statement = connection.prepareStatement(
