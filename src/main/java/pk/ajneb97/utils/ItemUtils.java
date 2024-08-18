@@ -565,6 +565,11 @@ public class ItemUtils {
 		}
 		return item;
 	}
+
+	public static void addDummyAttribute(ItemMeta meta){
+		AttributeModifier modifier = new AttributeModifier(UUID.randomUUID(),"",0,AttributeModifier.Operation.ADD_NUMBER,EquipmentSlot.FEET);
+		meta.addAttributeModifier(Attribute.GENERIC_GRAVITY, modifier);
+	}
 	
 	public static KitItemBookData getBookData(ItemStack item){
 		KitItemBookData bookData = null;

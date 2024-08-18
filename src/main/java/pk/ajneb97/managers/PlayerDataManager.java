@@ -154,7 +154,6 @@ public class PlayerDataManager {
             String uuid = player.getUniqueId().toString();
             mySQLConnection.getPlayer(uuid, playerData -> {
                 removePlayerByUUID(uuid); //Remove data if already exists
-                boolean firstJoin = false;
                 if(playerData != null) {
                     players.add(playerData);
                     //Update name if different
@@ -163,33 +162,25 @@ public class PlayerDataManager {
                         mySQLConnection.updatePlayerName(playerData);
                     }
                 }else {
-                    firstJoin = true;
                     playerData = new PlayerData(player.getName(),uuid);
                     players.add(playerData);
+
                     //Create if it doesn't exist
-                    mySQLConnection.createPlayer(playerData);
-                }
-                if(firstJoin){
-                    plugin.getKitsManager().giveFirstJoinKit(player);
+                    mySQLConnection.createPlayer(playerData, () -> plugin.getKitsManager().giveFirstJoinKit(player));
                 }
             });
         }else{
-            boolean firstJoin = false;
             PlayerData playerData = getPlayerByUUID(player.getUniqueId().toString());
             if(playerData == null){
-                firstJoin = true;
                 playerData = new PlayerData(player.getName(),player.getUniqueId().toString());
                 playerData.setModified(true);
                 players.add(playerData);
+                plugin.getKitsManager().giveFirstJoinKit(player);
             }else{
                 if(playerData.getName() == null || !playerData.getName().equals(player.getName())){
                     playerData.setName(player.getName());
                     playerData.setModified(true);
                 }
-            }
-
-            if(firstJoin){
-                plugin.getKitsManager().giveFirstJoinKit(player);
             }
         }
     }

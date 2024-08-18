@@ -312,11 +312,13 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        boolean saveOriginalItems = false;
+        boolean saveOriginalItems = plugin.getConfigsManager().getMainConfigManager().isNewKitDefaultSaveModeOriginal();
         if(args.length >= 3){
             if(args[2].equalsIgnoreCase("original")){
                 saveOriginalItems = true;
-            }else if(!args[2].equalsIgnoreCase("configurable")){
+            }else if(args[2].equalsIgnoreCase("configurable")){
+                saveOriginalItems = false;
+            }else{
                 msgManager.sendMessage(player,messagesConfig.getString("commandCreateError"),true);
                 return;
             }

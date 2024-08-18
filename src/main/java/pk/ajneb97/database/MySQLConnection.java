@@ -188,6 +188,8 @@ public class MySQLConnection {
                 statement.setString(1, player.getUuid());
                 statement.setString(2, player.getName());
                 statement.executeUpdate();
+
+                GlobalScheduler.get(plugin).run(() -> callback.onDone());
             } catch (SQLException e) {
                 e.printStackTrace();
             }
