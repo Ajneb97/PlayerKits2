@@ -52,6 +52,7 @@ public class NMSManager {
                 //1.12 or lower
                 version.addMethod("listSize",version.getClassRef("NBTTagList").getMethod("size"));
                 version.addMethod("listGet",version.getClassRef("NBTTagList").getMethod("get",int.class));
+                version.addMethod("listAdd",version.getClassRef("NBTTagList").getMethod("add",version.getClassRef("NBTBase")));
             }
             if(!serverVersionGreaterEqualThan(ServerVersion.v1_18_R1)){
                 //1.17 or lower
@@ -79,7 +80,6 @@ public class NMSManager {
                 }
                 version.addMethod("hasKeyOfType",version.getClassRef("NBTTagCompound").getMethod("hasKeyOfType",String.class,int.class));
                 version.addMethod("parse",version.getClassRef("MojangsonParser").getMethod("parse",String.class));
-                version.addMethod("listAdd",version.getClassRef("NBTTagList").getMethod("add",version.getClassRef("NBTBase")));
             }else{
                 //1.18 or greater
                 String methodName = null;
