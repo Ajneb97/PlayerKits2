@@ -93,36 +93,58 @@ public class ItemUtils {
 		}
 		
 		SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
-		Field profileField;
-		try {
-			profileField = skullMeta.getClass().getDeclaredField("profile");
-			profileField.setAccessible(true);
-
-			GameProfile gameProfile = (GameProfile) profileField.get(skullMeta);
-			if(gameProfile != null && gameProfile.getProperties() != null) {
-				PropertyMap propertyMap = gameProfile.getProperties();
-				owner = gameProfile.getName();
-				if(gameProfile.getId() != null) {
-					id = gameProfile.getId().toString();
+		ServerVersion serverVersion = PlayerKits2.serverVersion;
+		if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R1)){
+			PlayerProfile profile = skullMeta.getOwnerProfile();
+			if(profile != null){
+				owner = profile.getName();
+				if(profile.getUniqueId() != null){
+					id = profile.getUniqueId().toString();
 				}
-
-				ServerVersion serverVersion = PlayerKits2.serverVersion;
-				for(Property p : propertyMap.values()) {
-					if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R2)){
-						String pName = (String)p.getClass().getMethod("name").invoke(p);
-						if(pName.equals("textures")){
-							texture = (String)p.getClass().getMethod("value").invoke(p);
-						}
-					}else{
-						if(p.getName().equals("textures")) {
-							texture = p.getValue();
-						}
+				if(profile.getTextures() != null){
+					PlayerTextures textures = profile.getTextures();
+					if(textures != null){
+						JsonObject skinJsonObject = new JsonObject();
+						skinJsonObject.addProperty("url", textures.getSkin().toString());
+						JsonObject texturesJsonObject = new JsonObject();
+						texturesJsonObject.add("SKIN", skinJsonObject);
+						JsonObject minecraftTexturesJsonObject = new JsonObject();
+						minecraftTexturesJsonObject.add("textures", texturesJsonObject);
+						texture = new String(Base64.getEncoder().encode(minecraftTexturesJsonObject.toString().getBytes()));
 					}
 				}
 			}
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
-				| InvocationTargetException | NoSuchMethodException e) {
-			e.printStackTrace();
+		}else{
+			Field profileField;
+			try {
+				profileField = skullMeta.getClass().getDeclaredField("profile");
+				profileField.setAccessible(true);
+
+				GameProfile gameProfile = (GameProfile) profileField.get(skullMeta);
+				if(gameProfile != null && gameProfile.getProperties() != null) {
+					PropertyMap propertyMap = gameProfile.getProperties();
+					owner = gameProfile.getName();
+					if(gameProfile.getId() != null) {
+						id = gameProfile.getId().toString();
+					}
+
+					for(Property p : propertyMap.values()) {
+						if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R2)){
+							String pName = (String)p.getClass().getMethod("name").invoke(p);
+							if(pName.equals("textures")){
+								texture = (String)p.getClass().getMethod("value").invoke(p);
+							}
+						}else{
+							if(p.getName().equals("textures")) {
+								texture = p.getValue();
+							}
+						}
+					}
+				}
+			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
+					 | InvocationTargetException | NoSuchMethodException e) {
+				e.printStackTrace();
+			}
 		}
 
         if(texture != null || id != null || owner != null) {
