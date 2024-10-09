@@ -224,7 +224,7 @@ public class KitItemManager {
                 if (flag.equals("HIDE_ATTRIBUTES") && plugin.getDependencyManager().isPaper() &&
                         serverVersion.serverVersionGreaterEqualThan(serverVersion, ServerVersion.v1_21_R1)) {
                     //Fix PAPER HIDE_ATTRIBUTES
-                    ItemUtils.addDummyAttribute(meta);
+                    ItemUtils.addDummyAttribute(meta,plugin);
                 }
                 meta.addItemFlags(ItemFlag.valueOf(flag));
             }

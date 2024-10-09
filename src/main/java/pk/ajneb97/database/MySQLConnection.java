@@ -267,18 +267,27 @@ public class MySQLConnection {
         }.runTaskAsynchronously(plugin);
     }
 
-    public void resetKit(String uuid,String kitName){
+    public void resetKit(String uuid,String kitName,boolean all){
         new BukkitRunnable(){
             @Override
             public void run() {
                 try(Connection connection = getConnection()){
-                    PreparedStatement statement = connection.prepareStatement(
-                            "DELETE FROM playerkits_players_kits " +
-                                    "WHERE UUID=? AND NAME=?");
+                    PreparedStatement statement;
+                    if(all){
+                        statement = connection.prepareStatement(
+                                "DELETE FROM playerkits_players_kits " +
+                                        "WHERE NAME=?");
+                        statement.setString(1, kitName);
+                    }else{
+                        statement = connection.prepareStatement(
+                                "DELETE FROM playerkits_players_kits " +
+                                        "WHERE UUID=? AND NAME=?");
 
-                    statement.setString(1, uuid);
-                    statement.setString(2, kitName);
+                        statement.setString(1, uuid);
+                        statement.setString(2, kitName);
+                    }
                     statement.executeUpdate();
+
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }

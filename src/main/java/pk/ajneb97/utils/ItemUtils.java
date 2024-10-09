@@ -17,6 +17,7 @@ import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.*;
 import org.bukkit.inventory.meta.BookMeta.Generation;
@@ -522,6 +523,9 @@ public class ItemUtils {
 			return plugin.getNmsManager().getAttributes(item);
 		}else {
 			//1.13+
+			ServerVersion serverVersion = PlayerKits2.serverVersion;
+			boolean newSystem = serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R1);
+
 			ItemMeta meta = item.getItemMeta();
 			if(meta.hasAttributeModifiers()) {
 				Multimap<Attribute,AttributeModifier> attributes = meta.getAttributeModifiers();
@@ -531,11 +535,18 @@ public class ItemUtils {
 				for(Attribute a : set) {
 					Collection<AttributeModifier> listModifiers = attributes.get(a);
 					for(AttributeModifier m : listModifiers) {
-						String line = a.name()+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getUniqueId();
-						if(m.getSlot() != null) {
-							line=line+";"+m.getSlot().name();
+						String line;
+						if(newSystem){
+							line = a.name()+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getKey().getNamespace()+":"+m.getKey().getKey();
+							line=line+";"+m.getSlotGroup().toString();
+						}else{
+							line = a.name()+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getUniqueId();
+							if(m.getSlot() != null) {
+								line=line+";"+m.getSlot().name();
+							}
+							line=line+";custom_name:"+m.getName();
 						}
-						line=line+";custom_name:"+m.getName();
+
 						attributeList.add(line);
 					}
 				}
@@ -555,41 +566,57 @@ public class ItemUtils {
 			return plugin.getNmsManager().setAttributes(item,attributes);
 		}else {
 			//1.13+
-			ItemMeta meta = item.getItemMeta();
-			for(String a : attributes) {
-				String[] sep = a.split(";");
-				String attribute = sep[0];
-				AttributeModifier.Operation op = AttributeModifier.Operation.valueOf(sep[1]);
-				double amount = Double.valueOf(sep[2]);
-				UUID uuid = UUID.fromString(sep[3]);
-				String customName = attribute;
-				for(int i=0;i<sep.length;i++){
-					if(sep[i].startsWith("custom_name:")){
-						customName = sep[i].replace("custom_name:","");
-					}
-				}
-				AttributeModifier modifier = null;
-				if(sep.length >= 5) {
-					if(!sep[4].startsWith("custom_name:")){
-						EquipmentSlot slot = EquipmentSlot.valueOf(sep[4]);
-						modifier = new AttributeModifier(uuid,customName,amount,op,slot);
+			ServerVersion serverVersion = PlayerKits2.serverVersion;
+			boolean newSystem = serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R1);
+
+			try{
+				ItemMeta meta = item.getItemMeta();
+				for(String a : attributes) {
+					String[] sep = a.split(";");
+					String attribute = sep[0];
+					AttributeModifier.Operation op = AttributeModifier.Operation.valueOf(sep[1]);
+					double amount = Double.valueOf(sep[2]);
+
+					AttributeModifier modifier = null;
+
+					if(newSystem){
+						String[] id = sep[3].split(":");
+						NamespacedKey namespacedKey = new NamespacedKey(id[0],id[1]);
+						modifier = new AttributeModifier(namespacedKey,amount,op,EquipmentSlotGroup.getByName(sep[4]));
 					}else{
-						modifier = new AttributeModifier(uuid,customName,amount,op);
+						String customName = attribute;
+						for(int i=0;i<sep.length;i++){
+							if(sep[i].startsWith("custom_name:")){
+								customName = sep[i].replace("custom_name:","");
+							}
+						}
+						UUID uuid = UUID.fromString(sep[3]);
+						if(sep.length >= 5) {
+							if(!sep[4].startsWith("custom_name:")){
+								EquipmentSlot slot = EquipmentSlot.valueOf(sep[4]);
+								modifier = new AttributeModifier(uuid,customName,amount,op,slot);
+							}else{
+								modifier = new AttributeModifier(uuid,customName,amount,op);
+							}
+						}else {
+							modifier = new AttributeModifier(uuid,customName,amount,op);
+						}
 					}
-				}else {
-					modifier = new AttributeModifier(uuid,customName,amount,op);
+
+					meta.addAttributeModifier(Attribute.valueOf(attribute), modifier);
 				}
 
-				meta.addAttributeModifier(Attribute.valueOf(attribute), modifier);
+				item.setItemMeta(meta);
+			}catch(Exception e){
+
 			}
-			
-			item.setItemMeta(meta);
 		}
 		return item;
 	}
 
-	public static void addDummyAttribute(ItemMeta meta){
-		AttributeModifier modifier = new AttributeModifier(UUID.randomUUID(),"",0,AttributeModifier.Operation.ADD_NUMBER,EquipmentSlot.FEET);
+	// 1.21+ only
+	public static void addDummyAttribute(ItemMeta meta,PlayerKits2 plugin){
+		AttributeModifier modifier = new AttributeModifier(new NamespacedKey(plugin,"dummy_attribute"),0,AttributeModifier.Operation.ADD_NUMBER,EquipmentSlotGroup.FEET);
 		meta.addAttributeModifier(Attribute.GENERIC_GRAVITY, modifier);
 	}
 	

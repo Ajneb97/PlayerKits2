@@ -7,6 +7,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.*;
 import pk.ajneb97.model.inventory.InventoryPlayer;
+import pk.ajneb97.utils.InventoryUtils;
 import pk.ajneb97.utils.ItemUtils;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class InventoryUpdateTaskManager {
 
         ArrayList<InventoryPlayer> players = inventoryManager.getPlayers();
         for(InventoryPlayer player : players){
-            Inventory inv = player.getPlayer().getOpenInventory().getTopInventory();
+            Inventory inv = InventoryUtils.getTopInventory(player.getPlayer());
             if(inv == null){
                 continue;
             }

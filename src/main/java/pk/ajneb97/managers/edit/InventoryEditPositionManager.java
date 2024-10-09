@@ -16,6 +16,7 @@ import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.inventory.ItemKitInventory;
 import pk.ajneb97.model.inventory.KitInventory;
 import pk.ajneb97.utils.InventoryItem;
+import pk.ajneb97.utils.InventoryUtils;
 import pk.ajneb97.utils.ItemUtils;
 
 import java.util.ArrayList;
@@ -124,7 +125,7 @@ public class InventoryEditPositionManager {
         if(event.getSlotType() == null || event.getClickedInventory() == null){
             return;
         }
-        if(event.getClickedInventory().equals(inventoryPlayer.getPlayer().getOpenInventory().getTopInventory())){
+        if(event.getClickedInventory().equals(InventoryUtils.getTopInventory(inventoryPlayer.getPlayer()))){
             //Should not be an item unless has open inventory tag
             if(item == null || item.getType().equals(Material.AIR)){
                 //Update position

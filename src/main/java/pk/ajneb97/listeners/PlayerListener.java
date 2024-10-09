@@ -11,6 +11,7 @@ import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.InventoryManager;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.inventory.InventoryPlayer;
+import pk.ajneb97.utils.InventoryUtils;
 
 public class PlayerListener implements Listener {
 
@@ -49,7 +50,7 @@ public class PlayerListener implements Listener {
                 return;
             }
 
-            if(event.getClickedInventory().equals(player.getOpenInventory().getTopInventory())) {
+            if(event.getClickedInventory().equals(InventoryUtils.getTopInventory(player))) {
                 ClickType clickType = event.getClick();
                 invManager.clickInventory(inventoryPlayer,event.getCurrentItem(),clickType);
             }

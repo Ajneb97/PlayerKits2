@@ -14,6 +14,7 @@ import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.InventoryItem;
+import pk.ajneb97.utils.InventoryUtils;
 import pk.ajneb97.utils.ItemUtils;
 import pk.ajneb97.utils.OtherUtils;
 
@@ -147,7 +148,7 @@ public class InventoryEditKitItemsManager {
     }
 
     public void saveKitItems(InventoryPlayer inventoryPlayer){
-        Inventory inv = inventoryPlayer.getPlayer().getOpenInventory().getTopInventory();
+        Inventory inv = InventoryUtils.getTopInventory(inventoryPlayer.getPlayer());
         if(inv != null) {
             Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
             KitItemManager kitItemManager = plugin.getKitItemManager();
@@ -182,7 +183,7 @@ public class InventoryEditKitItemsManager {
         if(event.getSlotType() == null || event.getClickedInventory() == null){
             return;
         }
-        if(event.getClickedInventory().equals(inventoryPlayer.getPlayer().getOpenInventory().getTopInventory())){
+        if(event.getClickedInventory().equals(InventoryUtils.getTopInventory(inventoryPlayer.getPlayer()))){
             //Top inventory
             //Cancel between 45 and 53
             //Cancel if right click
