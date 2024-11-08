@@ -3,6 +3,7 @@ package pk.ajneb97.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 
@@ -18,6 +19,7 @@ import org.bukkit.block.banner.PatternType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.EquipmentSlotGroup;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.*;
 import org.bukkit.inventory.meta.BookMeta.Generation;
@@ -349,7 +351,7 @@ public class ItemUtils {
 		}
 		
 		for(Pattern p : patterns) {
-			bannerPatterns.add(p.getColor().name()+";"+p.getPattern().name());
+			bannerPatterns.add(p.getColor().name()+";"+getBannerPatternName(p));
 		}
 		
 		if(bannerPatterns.isEmpty() && baseColor == null) {
@@ -377,7 +379,7 @@ public class ItemUtils {
 					String[] patternSplit = pattern.split(";");
 					String patternColor = patternSplit[0];
 					String patternName = patternSplit[1];
-					meta.addPattern(new Pattern(DyeColor.valueOf(patternColor),PatternType.valueOf(patternName)));
+					meta.addPattern(new Pattern(DyeColor.valueOf(patternColor),getBannerPatternByName(patternName)));
 				}
 				item.setItemMeta(meta);
 			}
@@ -395,7 +397,7 @@ public class ItemUtils {
 					String[] patternSplit = pattern.split(";");
 					String patternColor = patternSplit[0];
 					String patternName = patternSplit[1];
-					banner.addPattern(new Pattern(DyeColor.valueOf(patternColor),PatternType.valueOf(patternName)));
+					banner.addPattern(new Pattern(DyeColor.valueOf(patternColor),getBannerPatternByName(patternName)));
 				}
 			}
 			banner.update();
@@ -727,6 +729,27 @@ public class ItemUtils {
 				meta.setTrim(armorTrim);
 				item.setItemMeta(meta);
 			}
+		}
+	}
+
+	private static String getBannerPatternName(Pattern p) {
+		try {
+			Object patternType = p.getPattern();
+			Method getPatternName = patternType.getClass().getMethod("name");
+			getPatternName.setAccessible(true);
+			return (String) getPatternName.invoke(patternType);
+		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static PatternType getBannerPatternByName(String name){
+		try {
+			Class<?> patternTypeClass = Class.forName("org.bukkit.block.banner.PatternType");
+			Method valueOf = patternTypeClass.getMethod("valueOf", String.class);
+			return (PatternType) valueOf.invoke(null,name);
+		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }
