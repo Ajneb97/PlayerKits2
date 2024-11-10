@@ -1,5 +1,6 @@
 package pk.ajneb97.managers;
 
+import de.tr7zw.nbtapi.NBT;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
@@ -231,8 +232,28 @@ public class KitItemManager {
         }
         item.setItemMeta(meta);
 
-        if(!serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
-            List<String> nbtList = kitItem.getNbt();
+
+        List<String> nbtList = kitItem.getNbt();
+        if (nbtList == null) return item;
+        if (nbtList.isEmpty()) return item;
+
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
+            NBT.modify(item, nbt -> {
+                for (String nbtStr : nbtList) {
+                    String[] nbtSplit = nbtStr.split("\\|");
+                    if (nbtSplit.length == 3) {
+                        String type = nbtSplit[2];
+                        if (type.equalsIgnoreCase("double")) {
+                            nbt.setDouble(nbtSplit[0], Double.parseDouble(nbtSplit[1]));
+                        } else if (type.equalsIgnoreCase("int")) {
+                            nbt.setInteger(nbtSplit[0], Integer.parseInt(nbtSplit[1]));
+                        }
+                    } else {
+                        nbt.setString(nbtSplit[0], nbtSplit[1]);
+                    }
+                }
+            });
+        } else {
             item = ItemUtils.setNBT(plugin,item, nbtList);
         }
 

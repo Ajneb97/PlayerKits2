@@ -2,7 +2,7 @@ main: pk.ajneb97.PlayerKits2
 version: 1.13.1
 name: PlayerKits2
 api-version: 1.13
-softdepend: [Vault,PlaceholderAPI]
+softdepend: [NBTAPI,Vault,PlaceholderAPI]
 author: Ajneb97
 
 commands:
