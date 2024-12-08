@@ -618,8 +618,17 @@ public class ItemUtils {
 
 	// 1.21+ only
 	public static void addDummyAttribute(ItemMeta meta,PlayerKits2 plugin){
-		AttributeModifier modifier = new AttributeModifier(new NamespacedKey(plugin,"dummy_attribute"),0,AttributeModifier.Operation.ADD_NUMBER,EquipmentSlotGroup.FEET);
-		meta.addAttributeModifier(Attribute.GENERIC_GRAVITY, modifier);
+		try{
+			AttributeModifier modifier = new AttributeModifier(new NamespacedKey(plugin,"dummy_attribute"),0,AttributeModifier.Operation.ADD_NUMBER,EquipmentSlotGroup.FEET);
+			ServerVersion serverVersion = PlayerKits2.serverVersion;
+			if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+				meta.addAttributeModifier(Attribute.GRAVITY, modifier);
+			}else{
+				meta.addAttributeModifier(getAttributeByName("GENERIC_GRAVITY"), modifier);
+			}
+		}catch(Exception ignored){
+
+		}
 	}
 	
 	public static KitItemBookData getBookData(ItemStack item){
@@ -748,6 +757,16 @@ public class ItemUtils {
 			Class<?> patternTypeClass = Class.forName("org.bukkit.block.banner.PatternType");
 			Method valueOf = patternTypeClass.getMethod("valueOf", String.class);
 			return (PatternType) valueOf.invoke(null,name);
+		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static Attribute getAttributeByName(String name){
+		try {
+			Class<?> attributeTypeClass = Class.forName("org.bukkit.attribute");
+			Method valueOf = attributeTypeClass.getMethod("valueOf", String.class);
+			return (Attribute) valueOf.invoke(null,name);
 		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}

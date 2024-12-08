@@ -132,6 +132,9 @@ public class PlayerKits2 extends JavaPlugin {
             case "1.21.3":
                 serverVersion = ServerVersion.v1_21_R2;
                 break;
+            case "1.21.4":
+                serverVersion = ServerVersion.v1_21_R3;
+                break;
             default:
                 serverVersion = ServerVersion.valueOf(packageName.replace("org.bukkit.craftbukkit.", ""));
         }

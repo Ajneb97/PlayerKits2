@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.model.internal.KitVariable;
 import pk.ajneb97.model.item.*;
@@ -19,6 +20,7 @@ import pk.ajneb97.utils.OtherUtils;
 import pk.ajneb97.utils.ServerVersion;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class KitItemManager {
 
@@ -76,7 +78,39 @@ public class KitItemManager {
             }
 
             if(OtherUtils.isNew() && meta.hasCustomModelData()) {
-                kitItem.setCustomModelData(meta.getCustomModelData());
+                if(!serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+                    kitItem.setCustomModelData(meta.getCustomModelData());
+                }
+            }
+
+            if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+                if(meta.hasCustomModelData()){
+                    CustomModelDataComponent customModelDataComponent = meta.getCustomModelDataComponent();
+
+                    List<String> customModelDataComponentFlagsList = customModelDataComponent.getFlags()
+                            .stream()
+                            .map(String::valueOf)
+                            .collect(Collectors.toList());
+
+                    List<String> customModelDataComponentColorsList = customModelDataComponent.getColors()
+                            .stream()
+                            .map(color -> String.valueOf(color.asRGB()))
+                            .collect(Collectors.toList());
+
+                    List<String> customModelDataComponentFloatsList = customModelDataComponent.getFloats()
+                            .stream()
+                            .map(String::valueOf)
+                            .collect(Collectors.toList());
+
+                    List<String> customModelDataComponentStringsList = new ArrayList<>(customModelDataComponent.getStrings());
+
+                    kitItem.setCustomModelComponentData(new KitItemCustomModelComponentData(
+                            customModelDataComponentFlagsList,
+                            customModelDataComponentColorsList,
+                            customModelDataComponentFloatsList,
+                            customModelDataComponentStringsList
+                    ));
+                }
             }
 
             if(meta instanceof LeatherArmorMeta) {
@@ -159,6 +193,31 @@ public class KitItemManager {
             meta.setCustomModelData(customModelData);
         }
 
+        ServerVersion serverVersion = PlayerKits2.serverVersion;
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+            KitItemCustomModelComponentData kitItemCustomModelComponentData = kitItem.getCustomModelComponentData();
+            if(kitItemCustomModelComponentData != null){
+                CustomModelDataComponent customModelDataComponent = meta.getCustomModelDataComponent();
+
+                List<String> cFloats = kitItemCustomModelComponentData.getFloats();
+                List<String> cColors = kitItemCustomModelComponentData.getColors();
+                List<String> cFlags = kitItemCustomModelComponentData.getFlags();
+                List<String> cStrings = kitItemCustomModelComponentData.getStrings();
+
+                customModelDataComponent.setFlags(cFlags.stream()
+                        .map(Boolean::parseBoolean)
+                        .collect(Collectors.toList()));
+                customModelDataComponent.setFloats(cFloats.stream()
+                        .map(Float::parseFloat)
+                        .collect(Collectors.toList()));
+                customModelDataComponent.setColors(cColors.stream()
+                        .map(rgb -> Color.fromRGB(Integer.parseInt(rgb)))
+                        .collect(Collectors.toList()));
+                customModelDataComponent.setStrings(new ArrayList<>(cStrings));
+                meta.setCustomModelDataComponent(customModelDataComponent);
+            }
+        }
+
         List<String> enchants = kitItem.getEnchants();
         if(enchants != null) {
             for(int i=0;i<enchants.size();i++) {
@@ -214,8 +273,6 @@ public class KitItemManager {
         List<String> attributes = kitItem.getAttributes();
         item = ItemUtils.setAttributes(plugin,item, attributes);
 
-        ServerVersion serverVersion = PlayerKits2.serverVersion;
-
         //Item Flags
         meta = item.getItemMeta();
         List<String> flags = kitItem.getFlags();
@@ -262,6 +319,15 @@ public class KitItemManager {
             if(item.getCustomModelData() != 0) {
                 config.set(path+".custom_model_data", item.getCustomModelData());
             }
+
+            KitItemCustomModelComponentData customModelComponentData = item.getCustomModelComponentData();
+            if(customModelComponentData != null){
+                if(!customModelComponentData.getFlags().isEmpty()) config.set(path+".custom_model_component_data.flags",customModelComponentData.getFlags());
+                if(!customModelComponentData.getFloats().isEmpty()) config.set(path+".custom_model_component_data.floats",customModelComponentData.getFloats());
+                if(!customModelComponentData.getColors().isEmpty()) config.set(path+".custom_model_component_data.colors",customModelComponentData.getColors());
+                if(!customModelComponentData.getStrings().isEmpty()) config.set(path+".custom_model_component_data.strings",customModelComponentData.getStrings());
+            }
+
             if(item.getColor() != 0) {
                 config.set(path+".color", item.getColor());
             }
@@ -364,6 +430,29 @@ public class KitItemManager {
             List<String> attributes = config.contains(path+".attributes") ? config.getStringList(path+".attributes") : null;
             List<String> canPlace = config.contains(path+".can_place") ? config.getStringList(path+".can_place") : null;
             List<String> canDestroy = config.contains(path+".can_destroy") ? config.getStringList(path+".can_destroy") : null;
+
+            KitItemCustomModelComponentData customModelComponentData = null;
+            if(config.contains(path+".custom_model_component_data")) {
+                List<String> cFlags = new ArrayList<>();
+                List<String> cFloats = new ArrayList<>();
+                List<String> cColors = new ArrayList<>();
+                List<String> cStrings = new ArrayList<>();
+
+                if(config.contains(path+".custom_model_component_data.flags")) {
+                    cFlags = config.getStringList(path+".custom_model_component_data.flags");
+                }
+                if(config.contains(path+".custom_model_component_data.floats")) {
+                    cFloats = config.getStringList(path+".custom_model_component_data.floats");
+                }
+                if(config.contains(path+".custom_model_component_data.colors")) {
+                    cColors = config.getStringList(path+".custom_model_component_data.colors");
+                }
+                if(config.contains(path+".custom_model_component_data.strings")) {
+                    cStrings = config.getStringList(path+".custom_model_component_data.strings");
+                }
+
+                customModelComponentData = new KitItemCustomModelComponentData(cFlags,cColors,cFloats,cStrings);
+            }
 
             KitItemSkullData skullData = null;
             if(config.contains(path+".skull_data")) {
@@ -481,6 +570,7 @@ public class KitItemManager {
             kitItem.setBannerData(bannerData);
             kitItem.setBookData(bookData);
             kitItem.setTrimData(trimData);
+            kitItem.setCustomModelComponentData(customModelComponentData);
         }
 
         kitItem.setOffhand(offhand);

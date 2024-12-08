@@ -35,6 +35,7 @@ public class KitItem{
     private KitItemBannerData bannerData;
     private KitItemBookData bookData;
     private KitItemTrimData trimData;
+    private KitItemCustomModelComponentData customModelComponentData;
 
     private boolean offhand;
     private int previewSlot;
@@ -223,6 +224,14 @@ public class KitItem{
         this.trimData = trimData;
     }
 
+    public KitItemCustomModelComponentData getCustomModelComponentData() {
+        return customModelComponentData;
+    }
+
+    public void setCustomModelComponentData(KitItemCustomModelComponentData customModelComponentData) {
+        this.customModelComponentData = customModelComponentData;
+    }
+
     public boolean isOffhand() {
         return offhand;
     }
@@ -283,6 +292,7 @@ public class KitItem{
         kitItem.setBannerData(bannerData != null ? bannerData.clone() : null);
         kitItem.setBookData(bookData != null ? bookData.clone() : null);
         kitItem.setTrimData(trimData != null ? trimData.clone() : null);
+        kitItem.setCustomModelComponentData(customModelComponentData != null ? customModelComponentData.clone() : null);
 
         kitItem.setPreviewSlot(previewSlot);
         kitItem.setOffhand(offhand);
