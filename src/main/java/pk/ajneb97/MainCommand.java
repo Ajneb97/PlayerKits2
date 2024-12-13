@@ -114,7 +114,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit edit <kit> &8Edits a kit."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit give <kit> <player> &8Gives a kit to a player."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit delete <kit> &8Deletes a kit."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reset <kit> <player> &8Resets kit data for a player."));
+        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reset <kit> <player>/* &8Resets kit data for a player."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit preview <kit> &8Previews a kit."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit open <inventory> <player> &8Opens a specific inventory for a player."));
         sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reload &8Reloads the config."));
@@ -168,12 +168,17 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         String kitName = args[1];
         String playerName = args[2];
 
-        PlayerKitsMessageResult result = plugin.getPlayerDataManager().resetKitForPlayer(playerName,kitName);
+        PlayerKitsMessageResult result = plugin.getPlayerDataManager().resetKitForPlayer(playerName,kitName,playerName.equals("*"));
         if(result.isError()){
             msgManager.sendMessage(sender, result.getMessage(), true);
         }else{
-            msgManager.sendMessage(sender, messagesConfig.getString("kitResetCorrect")
-                    .replace("%kit%",kitName).replace("%player%",playerName), true);
+            if(playerName.equals("*")){
+                msgManager.sendMessage(sender, messagesConfig.getString("kitResetCorrectAll")
+                        .replace("%kit%",kitName), true);
+            }else{
+                msgManager.sendMessage(sender, messagesConfig.getString("kitResetCorrect")
+                        .replace("%kit%",kitName).replace("%player%",playerName), true);
+            }
         }
     }
 
@@ -428,6 +433,16 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                         if(args[2].isEmpty() || c.startsWith(args[2].toLowerCase())) {
                             completions.add(c);
                         }
+                    }
+                    return completions;
+                }else if(args[0].equalsIgnoreCase("reset")){
+                    for(Player p : Bukkit.getOnlinePlayers()) {
+                        if(args[2].isEmpty() || p.getName().toLowerCase().startsWith(args[2].toLowerCase())){
+                            completions.add(p.getName());
+                        }
+                    }
+                    if(args[2].isEmpty() || "*".startsWith(args[2].toLowerCase())) {
+                        completions.add("*");
                     }
                     return completions;
                 }

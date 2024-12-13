@@ -13,6 +13,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.edit.InventoryEditManager;
 import pk.ajneb97.model.inventory.InventoryPlayer;
+import pk.ajneb97.utils.InventoryUtils;
 
 public class InventoryEditListener implements Listener {
 
@@ -62,7 +63,7 @@ public class InventoryEditListener implements Listener {
                 return;
             }
 
-            if(event.getClickedInventory().equals(player.getOpenInventory().getTopInventory())) {
+            if(event.getClickedInventory().equals(InventoryUtils.getTopInventory(player))) {
                 invManager.clickInventory(inventoryPlayer,event.getCurrentItem(),event.getSlot(),clickType);
             }
         }

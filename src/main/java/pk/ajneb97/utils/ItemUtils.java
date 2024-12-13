@@ -3,6 +3,7 @@ package pk.ajneb97.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 
@@ -17,6 +18,8 @@ import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.EquipmentSlotGroup;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.*;
 import org.bukkit.inventory.meta.BookMeta.Generation;
@@ -348,7 +351,7 @@ public class ItemUtils {
 		}
 		
 		for(Pattern p : patterns) {
-			bannerPatterns.add(p.getColor().name()+";"+p.getPattern().name());
+			bannerPatterns.add(p.getColor().name()+";"+getBannerPatternName(p));
 		}
 		
 		if(bannerPatterns.isEmpty() && baseColor == null) {
@@ -376,7 +379,7 @@ public class ItemUtils {
 					String[] patternSplit = pattern.split(";");
 					String patternColor = patternSplit[0];
 					String patternName = patternSplit[1];
-					meta.addPattern(new Pattern(DyeColor.valueOf(patternColor),PatternType.valueOf(patternName)));
+					meta.addPattern(new Pattern(DyeColor.valueOf(patternColor),getBannerPatternByName(patternName)));
 				}
 				item.setItemMeta(meta);
 			}
@@ -394,7 +397,7 @@ public class ItemUtils {
 					String[] patternSplit = pattern.split(";");
 					String patternColor = patternSplit[0];
 					String patternName = patternSplit[1];
-					banner.addPattern(new Pattern(DyeColor.valueOf(patternColor),PatternType.valueOf(patternName)));
+					banner.addPattern(new Pattern(DyeColor.valueOf(patternColor),getBannerPatternByName(patternName)));
 				}
 			}
 			banner.update();
@@ -522,6 +525,9 @@ public class ItemUtils {
 			return plugin.getNmsManager().getAttributes(item);
 		}else {
 			//1.13+
+			ServerVersion serverVersion = PlayerKits2.serverVersion;
+			boolean newSystem = serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R1);
+
 			ItemMeta meta = item.getItemMeta();
 			if(meta.hasAttributeModifiers()) {
 				Multimap<Attribute,AttributeModifier> attributes = meta.getAttributeModifiers();
@@ -531,11 +537,18 @@ public class ItemUtils {
 				for(Attribute a : set) {
 					Collection<AttributeModifier> listModifiers = attributes.get(a);
 					for(AttributeModifier m : listModifiers) {
-						String line = a.name()+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getUniqueId();
-						if(m.getSlot() != null) {
-							line=line+";"+m.getSlot().name();
+						String line;
+						if(newSystem){
+							line = a.name()+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getKey().getNamespace()+":"+m.getKey().getKey();
+							line=line+";"+m.getSlotGroup().toString();
+						}else{
+							line = a.name()+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getUniqueId();
+							if(m.getSlot() != null) {
+								line=line+";"+m.getSlot().name();
+							}
+							line=line+";custom_name:"+m.getName();
 						}
-						line=line+";custom_name:"+m.getName();
+
 						attributeList.add(line);
 					}
 				}
@@ -555,42 +568,67 @@ public class ItemUtils {
 			return plugin.getNmsManager().setAttributes(item,attributes);
 		}else {
 			//1.13+
-			ItemMeta meta = item.getItemMeta();
-			for(String a : attributes) {
-				String[] sep = a.split(";");
-				String attribute = sep[0];
-				AttributeModifier.Operation op = AttributeModifier.Operation.valueOf(sep[1]);
-				double amount = Double.valueOf(sep[2]);
-				UUID uuid = UUID.fromString(sep[3]);
-				String customName = attribute;
-				for(int i=0;i<sep.length;i++){
-					if(sep[i].startsWith("custom_name:")){
-						customName = sep[i].replace("custom_name:","");
-					}
-				}
-				AttributeModifier modifier = null;
-				if(sep.length >= 5) {
-					if(!sep[4].startsWith("custom_name:")){
-						EquipmentSlot slot = EquipmentSlot.valueOf(sep[4]);
-						modifier = new AttributeModifier(uuid,customName,amount,op,slot);
+			ServerVersion serverVersion = PlayerKits2.serverVersion;
+			boolean newSystem = serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R1);
+
+			try{
+				ItemMeta meta = item.getItemMeta();
+				for(String a : attributes) {
+					String[] sep = a.split(";");
+					String attribute = sep[0];
+					AttributeModifier.Operation op = AttributeModifier.Operation.valueOf(sep[1]);
+					double amount = Double.valueOf(sep[2]);
+
+					AttributeModifier modifier = null;
+
+					if(newSystem){
+						String[] id = sep[3].split(":");
+						NamespacedKey namespacedKey = new NamespacedKey(id[0],id[1]);
+						modifier = new AttributeModifier(namespacedKey,amount,op,EquipmentSlotGroup.getByName(sep[4]));
 					}else{
-						modifier = new AttributeModifier(uuid,customName,amount,op);
+						String customName = attribute;
+						for(int i=0;i<sep.length;i++){
+							if(sep[i].startsWith("custom_name:")){
+								customName = sep[i].replace("custom_name:","");
+							}
+						}
+						UUID uuid = UUID.fromString(sep[3]);
+						if(sep.length >= 5) {
+							if(!sep[4].startsWith("custom_name:")){
+								EquipmentSlot slot = EquipmentSlot.valueOf(sep[4]);
+								modifier = new AttributeModifier(uuid,customName,amount,op,slot);
+							}else{
+								modifier = new AttributeModifier(uuid,customName,amount,op);
+							}
+						}else {
+							modifier = new AttributeModifier(uuid,customName,amount,op);
+						}
 					}
-				}else {
-					modifier = new AttributeModifier(uuid,customName,amount,op);
+
+					meta.addAttributeModifier(Attribute.valueOf(attribute), modifier);
 				}
 
-				meta.addAttributeModifier(Attribute.valueOf(attribute), modifier);
+				item.setItemMeta(meta);
+			}catch(Exception e){
+
 			}
-			
-			item.setItemMeta(meta);
 		}
 		return item;
 	}
 
-	public static void addDummyAttribute(ItemMeta meta){
-		AttributeModifier modifier = new AttributeModifier(UUID.randomUUID(),"",0,AttributeModifier.Operation.ADD_NUMBER,EquipmentSlot.FEET);
-		meta.addAttributeModifier(Attribute.GENERIC_GRAVITY, modifier);
+	// 1.21+ only
+	public static void addDummyAttribute(ItemMeta meta,PlayerKits2 plugin){
+		try{
+			AttributeModifier modifier = new AttributeModifier(new NamespacedKey(plugin,"dummy_attribute"),0,AttributeModifier.Operation.ADD_NUMBER,EquipmentSlotGroup.FEET);
+			ServerVersion serverVersion = PlayerKits2.serverVersion;
+			if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+				meta.addAttributeModifier(Attribute.GRAVITY, modifier);
+			}else{
+				meta.addAttributeModifier(getAttributeByName("GENERIC_GRAVITY"), modifier);
+			}
+		}catch(Exception ignored){
+
+		}
 	}
 	
 	public static KitItemBookData getBookData(ItemStack item){
@@ -700,6 +738,37 @@ public class ItemUtils {
 				meta.setTrim(armorTrim);
 				item.setItemMeta(meta);
 			}
+		}
+	}
+
+	private static String getBannerPatternName(Pattern p) {
+		try {
+			Object patternType = p.getPattern();
+			Method getPatternName = patternType.getClass().getMethod("name");
+			getPatternName.setAccessible(true);
+			return (String) getPatternName.invoke(patternType);
+		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static PatternType getBannerPatternByName(String name){
+		try {
+			Class<?> patternTypeClass = Class.forName("org.bukkit.block.banner.PatternType");
+			Method valueOf = patternTypeClass.getMethod("valueOf", String.class);
+			return (PatternType) valueOf.invoke(null,name);
+		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static Attribute getAttributeByName(String name){
+		try {
+			Class<?> attributeTypeClass = Class.forName("org.bukkit.attribute");
+			Method valueOf = attributeTypeClass.getMethod("valueOf", String.class);
+			return (Attribute) valueOf.invoke(null,name);
+		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }
