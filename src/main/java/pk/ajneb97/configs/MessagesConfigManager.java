@@ -58,6 +58,10 @@ public class MessagesConfigManager {
         Path pathConfig = Paths.get(configFile.getRoute());
         try{
             String text = new String(Files.readAllBytes(pathConfig));
+            if(!text.contains("kitResetCorrectAll:")){
+                getConfig().set("kitResetCorrectAll", "&aKit &7%kit% &areset for &7all players&a!");
+                saveConfig();
+            }
             if(!text.contains("commandOpenError:")){
                 getConfig().set("commandOpenError", "&cYou need to use: &7/kit open <inventory> <player>");
                 getConfig().set("inventoryNotExists", "&cThat inventory doesn't exists.");

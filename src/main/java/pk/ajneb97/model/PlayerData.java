@@ -132,6 +132,7 @@ public class PlayerData {
         for(int i=0;i<kits.size();i++){
             if(kits.get(i).getName().equals(kitName)){
                 kits.remove(i);
+                modified = true;
             }
         }
     }

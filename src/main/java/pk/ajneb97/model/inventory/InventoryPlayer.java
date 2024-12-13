@@ -51,7 +51,7 @@ public class InventoryPlayer {
     public void restoreSavedInventoryContents() {
         if(savedInventoryContents != null){
             player.getInventory().setContents(savedInventoryContents);
-            player.updateInventory();
+            //player.updateInventory();
             savedInventoryContents = null;
         }
     }

@@ -13,6 +13,7 @@ import pk.ajneb97.model.KitAction;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.InventoryItem;
+import pk.ajneb97.utils.InventoryUtils;
 import pk.ajneb97.utils.OtherUtils;
 
 import java.util.ArrayList;
@@ -104,7 +105,7 @@ public class InventoryEditDisplayManager {
     }
 
     public void saveKitItem(InventoryPlayer inventoryPlayer){
-        Inventory inv = inventoryPlayer.getPlayer().getOpenInventory().getTopInventory();
+        Inventory inv = InventoryUtils.getTopInventory(inventoryPlayer.getPlayer());
         if(inv != null) {
             ItemStack item = inv.getItem(13);
 
@@ -139,7 +140,7 @@ public class InventoryEditDisplayManager {
         if(event.getSlotType() == null || event.getClickedInventory() == null){
             return;
         }
-        if(event.getClickedInventory().equals(inventoryPlayer.getPlayer().getOpenInventory().getTopInventory())){
+        if(event.getClickedInventory().equals(InventoryUtils.getTopInventory(inventoryPlayer.getPlayer()))){
             //Top inventory
             //Cancel unless is slot 13
             if(slot != 13){

@@ -130,18 +130,29 @@ public class PlayerDataManager {
         }
     }
 
-    public PlayerKitsMessageResult resetKitForPlayer(String name, String kitName){
+    public PlayerKitsMessageResult resetKitForPlayer(String name, String kitName, boolean all){
         PlayerData playerData = getPlayerByName(name);
         FileConfiguration messagesConfig = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
-        if(playerData == null){
+        if(playerData == null && !all){
             return PlayerKitsMessageResult.error(messagesConfig.getString("playerDataNotFound")
                     .replace("%player%",name));
         }
 
-        playerData.resetKit(kitName);
-        playerData.setModified(true);
+        if(all){
+            for(PlayerData p : players){
+                p.resetKit(kitName);
+            }
+        }else{
+            playerData.resetKit(kitName);
+        }
+
         if(plugin.getMySQLConnection() != null){
-            plugin.getMySQLConnection().resetKit(playerData.getUuid(),kitName);
+            if(all){
+                plugin.getMySQLConnection().resetKit(null,kitName,true);
+            }else{
+                plugin.getMySQLConnection().resetKit(playerData.getUuid(),kitName,false);
+            }
+
         }
 
         return PlayerKitsMessageResult.success();
