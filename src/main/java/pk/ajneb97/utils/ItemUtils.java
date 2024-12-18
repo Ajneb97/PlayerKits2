@@ -539,7 +539,7 @@ public class ItemUtils {
 					for(AttributeModifier m : listModifiers) {
 						String line;
 						if(newSystem){
-							line = a.name()+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getKey().getNamespace()+":"+m.getKey().getKey();
+							line = getAttributeName(a)+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getKey().getNamespace()+":"+m.getKey().getKey();
 							line=line+";"+m.getSlotGroup().toString();
 						}else{
 							line = getAttributeName(a)+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getUniqueId();
@@ -621,7 +621,7 @@ public class ItemUtils {
 		try{
 			AttributeModifier modifier = new AttributeModifier(new NamespacedKey(plugin,"dummy_attribute"),0,AttributeModifier.Operation.ADD_NUMBER,EquipmentSlotGroup.FEET);
 			ServerVersion serverVersion = PlayerKits2.serverVersion;
-			if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+			if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R2)){
 				meta.addAttributeModifier(Attribute.GRAVITY, modifier);
 			}else{
 				meta.addAttributeModifier(getAttributeByName("GENERIC_GRAVITY"), modifier);
