@@ -262,10 +262,12 @@ public class KitItem{
         }
         lore.remove(lore.size()-1);
         lore.remove(lore.size()-1);
-        for(int i=0;i<nbt.size();i++){
-            if(nbt.get(i).startsWith("playerkits_offhand")){
-                nbt.remove(i);
-                return;
+        if(nbt != null){
+            for(int i=0;i<nbt.size();i++){
+                if(nbt.get(i).startsWith("playerkits_offhand")){
+                    nbt.remove(i);
+                    return;
+                }
             }
         }
     }

@@ -159,7 +159,20 @@ public class KitItemManager {
 
     public ItemStack createItemFromKitItem(KitItem kitItem,Player player){
         if(kitItem.getOriginalItem() != null){
-            return kitItem.getOriginalItem().clone();
+            ItemStack item = kitItem.getOriginalItem().clone();
+            // Placeholders on original item
+            ItemMeta meta = item.getItemMeta();
+            if(meta.hasDisplayName()){
+                String name = OtherUtils.replaceGlobalVariables(meta.getDisplayName(),player,plugin);
+                meta.setDisplayName(name);
+            }
+            if(meta.hasLore()){
+                List<String> lore = meta.getLore();
+                lore.replaceAll(text -> OtherUtils.replaceGlobalVariables(text, player, plugin));
+                meta.setLore(lore);
+            }
+            item.setItemMeta(meta);
+            return item;
         }
 
         ItemStack item = ItemUtils.createItemFromID(kitItem.getId());
