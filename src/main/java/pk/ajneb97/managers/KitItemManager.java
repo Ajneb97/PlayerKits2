@@ -113,6 +113,19 @@ public class KitItemManager {
                 }
             }
 
+            if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
+                if(meta.isHideTooltip()){
+                    kitItem.setHideTooltip(true);
+                }
+            }
+
+            if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R2)){
+                if(meta.hasTooltipStyle()){
+                    NamespacedKey key = meta.getTooltipStyle();
+                    kitItem.setTooltipStyle(key.getNamespace()+":"+key.getKey());
+                }
+            }
+
             if(meta instanceof LeatherArmorMeta) {
                 LeatherArmorMeta meta2 = (LeatherArmorMeta) meta;
                 kitItem.setColor(meta2.getColor().asRGB());
@@ -242,6 +255,20 @@ public class KitItemManager {
             }
         }
 
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
+            if(kitItem.isHideTooltip()){
+                meta.setHideTooltip(true);
+            }
+        }
+
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R2)){
+            String tooltipStyle = kitItem.getTooltipStyle();
+            if(tooltipStyle != null){
+                String[] sep = tooltipStyle.split(":");
+                meta.setTooltipStyle(new NamespacedKey(sep[0],sep[1]));
+            }
+        }
+
         item.setItemMeta(meta);
 
         //OTHER META
@@ -339,6 +366,13 @@ public class KitItemManager {
                 if(!customModelComponentData.getFloats().isEmpty()) config.set(path+".custom_model_component_data.floats",customModelComponentData.getFloats());
                 if(!customModelComponentData.getColors().isEmpty()) config.set(path+".custom_model_component_data.colors",customModelComponentData.getColors());
                 if(!customModelComponentData.getStrings().isEmpty()) config.set(path+".custom_model_component_data.strings",customModelComponentData.getStrings());
+            }
+
+            if(item.isHideTooltip()){
+                config.set(path+".hide_tooltip", true);
+            }
+            if(item.getTooltipStyle() != null){
+                config.set(path+".tooltip_style",item.getTooltipStyle());
             }
 
             if(item.getColor() != 0) {
@@ -467,6 +501,9 @@ public class KitItemManager {
                 customModelComponentData = new KitItemCustomModelComponentData(cFlags,cColors,cFloats,cStrings);
             }
 
+            boolean hideTooltip = config.getBoolean(path+".hide_tooltip");
+            String tooltipStyle = config.contains(path+".tooltip_style") ? config.getString(path+".tooltip_style") : null;
+
             KitItemSkullData skullData = null;
             if(config.contains(path+".skull_data")) {
                 String skullTexture = null;
@@ -584,6 +621,8 @@ public class KitItemManager {
             kitItem.setBookData(bookData);
             kitItem.setTrimData(trimData);
             kitItem.setCustomModelComponentData(customModelComponentData);
+            kitItem.setHideTooltip(hideTooltip);
+            kitItem.setTooltipStyle(tooltipStyle);
         }
 
         kitItem.setOffhand(offhand);

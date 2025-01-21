@@ -35,7 +35,10 @@ public class KitItem{
     private KitItemBannerData bannerData;
     private KitItemBookData bookData;
     private KitItemTrimData trimData;
-    private KitItemCustomModelComponentData customModelComponentData;
+    private KitItemCustomModelComponentData customModelComponentData; // 1.21.4+
+
+    private boolean hideTooltip; // 1.20.6+
+    private String tooltipStyle; // 1.21.2+
 
     private boolean offhand;
     private int previewSlot;
@@ -231,7 +234,21 @@ public class KitItem{
     public void setCustomModelComponentData(KitItemCustomModelComponentData customModelComponentData) {
         this.customModelComponentData = customModelComponentData;
     }
+    public boolean isHideTooltip() {
+        return hideTooltip;
+    }
 
+    public void setHideTooltip(boolean hideTooltip) {
+        this.hideTooltip = hideTooltip;
+    }
+
+    public String getTooltipStyle() {
+        return tooltipStyle;
+    }
+
+    public void setTooltipStyle(String tooltipStyle) {
+        this.tooltipStyle = tooltipStyle;
+    }
     public boolean isOffhand() {
         return offhand;
     }
@@ -295,6 +312,9 @@ public class KitItem{
         kitItem.setBookData(bookData != null ? bookData.clone() : null);
         kitItem.setTrimData(trimData != null ? trimData.clone() : null);
         kitItem.setCustomModelComponentData(customModelComponentData != null ? customModelComponentData.clone() : null);
+
+        kitItem.setHideTooltip(hideTooltip);
+        kitItem.setTooltipStyle(tooltipStyle);
 
         kitItem.setPreviewSlot(previewSlot);
         kitItem.setOffhand(offhand);
