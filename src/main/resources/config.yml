@@ -1,3 +1,4 @@
+clear_on_claim: true
 drop_items_if_full_inventory: false
 claim_kit_short_command: false
 close_inventory_on_claim: false
