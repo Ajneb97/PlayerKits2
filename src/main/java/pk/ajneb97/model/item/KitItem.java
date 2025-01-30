@@ -39,6 +39,7 @@ public class KitItem{
 
     private boolean hideTooltip; // 1.20.6+
     private String tooltipStyle; // 1.21.2+
+    private String model; // 1.21.4+
 
     private boolean offhand;
     private int previewSlot;
@@ -249,6 +250,15 @@ public class KitItem{
     public void setTooltipStyle(String tooltipStyle) {
         this.tooltipStyle = tooltipStyle;
     }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+
     public boolean isOffhand() {
         return offhand;
     }
@@ -318,6 +328,7 @@ public class KitItem{
 
         kitItem.setPreviewSlot(previewSlot);
         kitItem.setOffhand(offhand);
+        kitItem.setModel(model);
 
         return kitItem;
     }

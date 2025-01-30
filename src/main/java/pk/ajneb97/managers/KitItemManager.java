@@ -126,6 +126,13 @@ public class KitItemManager {
                 }
             }
 
+            if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+                if(meta.hasItemModel()){
+                    NamespacedKey key = meta.getItemModel();
+                    kitItem.setModel(key.getNamespace()+":"+key.getKey());
+                }
+            }
+
             if(meta instanceof LeatherArmorMeta) {
                 LeatherArmorMeta meta2 = (LeatherArmorMeta) meta;
                 kitItem.setColor(meta2.getColor().asRGB());
@@ -269,6 +276,14 @@ public class KitItemManager {
             }
         }
 
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+            String model = kitItem.getModel();
+            if(model != null){
+                String[] sep = model.split(":");
+                meta.setItemModel(new NamespacedKey(sep[0],sep[1]));
+            }
+        }
+
         item.setItemMeta(meta);
 
         //OTHER META
@@ -373,6 +388,9 @@ public class KitItemManager {
             }
             if(item.getTooltipStyle() != null){
                 config.set(path+".tooltip_style",item.getTooltipStyle());
+            }
+            if(item.getModel() != null){
+                config.set(path+".model",item.getModel());
             }
 
             if(item.getColor() != 0) {
@@ -503,6 +521,7 @@ public class KitItemManager {
 
             boolean hideTooltip = config.getBoolean(path+".hide_tooltip");
             String tooltipStyle = config.contains(path+".tooltip_style") ? config.getString(path+".tooltip_style") : null;
+            String model = config.contains(path+".model") ? config.getString(path+".model") : null;
 
             KitItemSkullData skullData = null;
             if(config.contains(path+".skull_data")) {
@@ -623,6 +642,7 @@ public class KitItemManager {
             kitItem.setCustomModelComponentData(customModelComponentData);
             kitItem.setHideTooltip(hideTooltip);
             kitItem.setTooltipStyle(tooltipStyle);
+            kitItem.setModel(model);
         }
 
         kitItem.setOffhand(offhand);
