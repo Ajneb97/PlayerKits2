@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+
 import pk.ajneb97.configs.MainConfigManager;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.Kit;
@@ -17,36 +18,25 @@ import pk.ajneb97.model.inventory.KitInventory;
 import pk.ajneb97.utils.PlayerUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-public class MainCommand implements CommandExecutor, TabCompleter {
+public final class MainCommand implements CommandExecutor, TabCompleter {
 
-    private PlayerKits2 plugin;
+    private final PlayerKits2 plugin;
+    private final MessagesManager msgManager;
+    private final FileConfiguration messagesConfig;
+
     public MainCommand(PlayerKits2 plugin) {
         this.plugin = plugin;
+        this.msgManager = plugin.getMessagesManager();
+        this.messagesConfig = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
     }
 
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        MessagesManager msgManager = plugin.getMessagesManager();
-        FileConfiguration messagesConfig = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
-
+    public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
         if (!(sender instanceof Player)) {
-            if (args.length >= 1) {
-                if (args[0].equalsIgnoreCase("reload")) {
-                    reload(sender,args,messagesConfig,msgManager);
-                }else if(args[0].equalsIgnoreCase("give")) {
-                    give(sender,args,messagesConfig,msgManager);
-                }else if(args[0].equalsIgnoreCase("delete")) {
-                    delete(sender,args,messagesConfig,msgManager);
-                }else if(args[0].equalsIgnoreCase("reset")) {
-                    reset(sender,args,messagesConfig,msgManager);
-                }else if(args[0].equalsIgnoreCase("migrate")) {
-                    migrate(sender,args,messagesConfig,msgManager);
-                }else if(args[0].equalsIgnoreCase("open")){
-                    open(sender,args,messagesConfig,msgManager);
-                }else{
-                    help(sender,msgManager,messagesConfig);
-                }
+            if (!executeCommon(sender, args)) {
+                help(sender);
             }
             return true;
         }
@@ -55,75 +45,101 @@ public class MainCommand implements CommandExecutor, TabCompleter {
 
         boolean claimKitShortCommand = plugin.getConfigsManager().getMainConfigManager().getConfig().getBoolean("claim_kit_short_command");
 
-        if(args.length >= 1){
-            if(args[0].equalsIgnoreCase("claim") && !claimKitShortCommand){
-                claim(player,args,messagesConfig,msgManager);
-            }else if(args[0].equalsIgnoreCase("preview")){
-                preview(player,args,messagesConfig,msgManager);
-            }else if(args[0].equalsIgnoreCase("create")){
-                create(player,args,messagesConfig,msgManager);
-            }else if(args[0].equalsIgnoreCase("give")) {
-                give(player,args,messagesConfig,msgManager);
-            }else if(args[0].equalsIgnoreCase("delete")) {
-                delete(player,args,messagesConfig,msgManager);
-            }else if(args[0].equalsIgnoreCase("reload")) {
-                reload(player,args,messagesConfig,msgManager);
-            }else if(args[0].equalsIgnoreCase("reset")) {
-                reset(sender,args,messagesConfig,msgManager);
-            }else if(args[0].equalsIgnoreCase("edit")) {
-                edit(player,args,messagesConfig,msgManager);
-            }else if(args[0].equalsIgnoreCase("verify")){
-                verify(player,messagesConfig,msgManager);
-            }else if(args[0].equalsIgnoreCase("migrate")) {
-                migrate(sender,args,messagesConfig,msgManager);
-            }else if(args[0].equalsIgnoreCase("open")){
-                open(sender,args,messagesConfig,msgManager);
-            }
-            else{
-                // /kit <kit> (short command)
-                if(claimKitShortCommand){
-                    claimKitShortCommand(player,messagesConfig,msgManager,args[0]);
-                    return true;
-                }else{
-                    help(sender,msgManager,messagesConfig);
-                }
-            }
-        }else{
+        if (executeCommon(sender, args)) {
+            return true;
+        }
+
+        if (args.length < 1) {
             // /kit
             if(plugin.getVerifyManager().isCriticalErrors()){
                 msgManager.sendMessage(player,messagesConfig.getString("pluginCriticalErrors"),true);
                 return true;
             }
             plugin.getInventoryManager().openInventory(new InventoryPlayer(player,"main_inventory"));
+            return true;
         }
 
-
+        switch (args[0].toLowerCase()) {
+            case "preview":
+                preview(player, args);
+                break;
+            case "create":
+                create(player, args);
+                break;
+            case "delete":
+                delete(sender, args);
+                break;
+            case "edit":
+                edit(player, args);
+                break;
+            case "verify":
+                verify(player);
+                break;
+            case "claim":
+                claim(player, args);
+                break;
+            default:
+                if(claimKitShortCommand){
+                    claimKitShortCommand(player,args[0]);
+                    break;
+                }
+                help(sender);
+                break;
+        }
         return true;
     }
 
-    public void help(CommandSender sender,MessagesManager msgManager,FileConfiguration messagesConfig){
+    private void help(final CommandSender sender){
         if(!PlayerUtils.isPlayerKitsAdmin(sender)){
             msgManager.sendMessage(sender,messagesConfig.getString("commandDoesNotExists"),true);
             return;
         }
-        sender.sendMessage(MessagesManager.getColoredMessage("&7[ [ &8[&bPlayerKits&a²&8] &7] ]"));
-        sender.sendMessage(MessagesManager.getColoredMessage(" "));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit &8Opens the GUI."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit claim <kit> &8Claims a kit outside the GUI."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit create <kit> (optional)original &8Creates a new kit using the items in your inventory."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit edit <kit> &8Edits a kit."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit give <kit> <player> &8Gives a kit to a player."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit delete <kit> &8Deletes a kit."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reset <kit> <player>/* &8Resets kit data for a player."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit preview <kit> &8Previews a kit."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit open <inventory> <player> &8Opens a specific inventory for a player."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reload &8Reloads the config."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit verify &8Checks the plugin for errors."));
-        sender.sendMessage(MessagesManager.getColoredMessage(" "));
-        sender.sendMessage(MessagesManager.getColoredMessage("&7[ [ &8[&bPlayerKits&a²&8] &7] ]"));
+        sender.sendMessage(
+            "\n §7[ [ §8[§bPlayerKits§a²§8] §7] ]" +
+            "\n " +
+            "\n §6/kit §8Opens the GUI." +
+            "\n §6/kit claim <kit> §8Claims a kit outside the GUI." +
+            "\n §6/kit create <kit> (optional)original §8Creates a new kit using the items in your inventory." +
+            "\n §6/kit edit <kit> §8Edits a kit." +
+            "\n §6/kit give <kit> <player> §8Gives a kit to a player." +
+            "\n §6/kit delete <kit> §8Deletes a kit." +
+            "\n §6/kit reset <kit> <player>/* §8Resets kit data for a player." +
+            "\n §6/kit preview <kit> §8Previews a kit." +
+            "\n §6/kit open <inventory> <player> §8Opens a specific inventory for a player." +
+            "\n §6/kit reload §8Reloads the config." +
+            "\n §6/kit verify §8Checks the plugin for errors." +
+            "\n " +
+            "\n §7[ [ §8[§bPlayerKits§a²§8] §7] ]"
+        );
     }
 
-    public void migrate(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
+    private boolean executeCommon(final CommandSender sender, final String[] args) {
+        if (args.length < 1) {
+            return false;
+        }
+        switch(args[0].toLowerCase()) {
+            case "reload":
+                reload(sender, args);
+                break;
+            case "give":
+                give(sender, args);
+                break;
+            case "reset":
+                reset(sender, args);
+                break;
+            case "migrate":
+                migrate(sender, args);
+                break;
+            case "open":
+                open(sender, args);
+                break;
+            default:
+                return false;
+        }
+        return true;
+    }
+
+    public void migrate(CommandSender sender,String[] args){
         if(!PlayerUtils.isPlayerKitsAdmin(sender)){
             msgManager.sendMessage(sender,messagesConfig.getString("noPermissions"),true);
             return;
@@ -132,7 +148,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         plugin.getMigrationManager().migrate(sender);
     }
 
-    public void verify(Player player,FileConfiguration messagesConfig,MessagesManager msgManager){
+    public void verify(Player player){
         if(!PlayerUtils.isPlayerKitsAdmin(player)){
             msgManager.sendMessage(player,messagesConfig.getString("noPermissions"),true);
             return;
@@ -140,7 +156,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         plugin.getVerifyManager().sendVerification(player);
     }
 
-    public void reload(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
+    public void reload(CommandSender sender,String[] args){
         if(!PlayerUtils.isPlayerKitsAdmin(sender)){
             msgManager.sendMessage(sender,messagesConfig.getString("noPermissions"),true);
             return;
@@ -153,7 +169,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         msgManager.sendMessage(sender,messagesConfig.getString("commandReload"),true);
     }
 
-    public void reset(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager) {
+    public void reset(CommandSender sender,String[] args) {
         // /kits reset <kit> <player>
         if(!PlayerUtils.isPlayerKitsAdmin(sender)) {
             msgManager.sendMessage(sender, messagesConfig.getString("noPermissions"), true);
@@ -182,7 +198,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    public void open(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager) {
+    public void open(CommandSender sender,String[] args) {
         // /kits open <inventory> <player>
         if(!PlayerUtils.isPlayerKitsAdmin(sender)) {
             msgManager.sendMessage(sender, messagesConfig.getString("noPermissions"), true);
@@ -213,7 +229,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         plugin.getInventoryManager().openInventory(inventoryPlayer);
     }
 
-    public void give(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
+    public void give(CommandSender sender,String[] args){
         // /kits give <kit> <player>
         if(!PlayerUtils.isPlayerKitsAdmin(sender)){
             msgManager.sendMessage(sender,messagesConfig.getString("noPermissions"),true);
@@ -243,7 +259,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    public void claim(Player player,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
+    public void claim(Player player,String[] args){
         // /kit claim <kit>
         if(args.length < 2){
             msgManager.sendMessage(player,messagesConfig.getString("commandClaimError"),true);
@@ -251,10 +267,10 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         }
 
         String kitName = args[1];
-        claimKitShortCommand(player,messagesConfig,msgManager,kitName);
+        claimKitShortCommand(player,kitName);
     }
 
-    public void preview(Player player,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
+    public void preview(Player player,String[] args){
         // /kit preview <kit>
         MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
         if(!mainConfigManager.isKitPreview()){
@@ -287,7 +303,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         plugin.getInventoryManager().openInventory(inventoryPlayer);
     }
 
-    public void claimKitShortCommand(Player player,FileConfiguration messagesConfig,MessagesManager msgManager,String kitName){
+    public void claimKitShortCommand(Player player,String kitName){
         // /kit <kit>
         PlayerKitsMessageResult result = plugin.getKitsManager().giveKit(player,kitName,new GiveKitInstructions());
         if(result.isError()){
@@ -305,7 +321,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    public void create(Player player,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
+    public void create(Player player,String[] args){
         // /kit create <kit> (optional)<original/configurable>
         if(!PlayerUtils.isPlayerKitsAdmin(player)){
             msgManager.sendMessage(player,messagesConfig.getString("noPermissions"),true);
@@ -332,7 +348,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         plugin.getKitsManager().createKit(args[1],player,saveOriginalItems);
     }
 
-    public void delete(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
+    public void delete(CommandSender sender,String[] args){
         // /kit delete <kit>
         if(!PlayerUtils.isPlayerKitsAdmin(sender)){
             msgManager.sendMessage(sender,messagesConfig.getString("noPermissions"),true);
@@ -347,7 +363,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         plugin.getKitsManager().deleteKit(args[1],sender);
     }
 
-    public void edit(Player player,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
+    public void edit(Player player,String[] args){
         // /kit edit <kit>
         if(!PlayerUtils.isPlayerKitsAdmin(player)){
             msgManager.sendMessage(player,messagesConfig.getString("noPermissions"),true);
@@ -456,7 +472,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         List<String> completions = new ArrayList<>();
         String argKit = args[argKitPos];
 
-        ArrayList<Kit> kits = plugin.getKitsManager().getKits();
+        Collection<Kit> kits = plugin.getKitsManager().getKits();
         for(Kit kit : kits) {
             if(argKit.isEmpty() || kit.getName().toLowerCase().startsWith(argKit.toLowerCase())) {
                 if(kit.playerHasPermission(sender)){

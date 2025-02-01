@@ -31,8 +31,9 @@ public class InventoryRequirementsManager {
             if(!meta.hasLore()){
                 return;
             }
-            List<String> lore = new ArrayList<>();
-            for(String line : meta.getLore()){
+            final List<String> metaLines = meta.getLore();
+            final List<String> lore = new ArrayList<>(metaLines.size());
+            for(final String line : metaLines){
                 if(line.equals("%kit_requirements_message%")){
                     lore.addAll(replaceRequirementsMessageVariable(kitName,player));
                 }else{

@@ -100,7 +100,7 @@ public class InventoryEditPositionManager {
         lore.add("&7You can go back by closing this inventory.");
         new InventoryItem(inventoryPlayer.getPlayer().getInventory(), 22, Material.COMPASS).name("&6&lInfo").lore(lore).ready();
         //inventoryPlayer.getPlayer().updateInventory();
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.getPlayers().put(inventoryPlayer.getPlayer().getUniqueId(), inventoryPlayer);
 
 
     }

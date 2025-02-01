@@ -83,7 +83,7 @@ public class InventoryEditKitItemsManager {
         }
 
         inventoryPlayer.getPlayer().openInventory(inv);
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.getPlayers().put(inventoryPlayer.getPlayer().getUniqueId(), inventoryPlayer);
     }
 
     public void clickOffHand(InventoryPlayer inventoryPlayer, Inventory inv, ItemStack clickedItem, int clickedSlot){

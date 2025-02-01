@@ -6,6 +6,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import lombok.Getter;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.Kit;
@@ -17,20 +19,25 @@ import pk.ajneb97.utils.InventoryItem;
 import pk.ajneb97.utils.OtherUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
+@Getter
 public class InventoryEditManager {
 
-    private PlayerKits2 plugin;
-    private ArrayList<InventoryPlayer> players;
-    private InventoryEditActionsManager inventoryEditActionsManager;
-    private InventoryEditDisplayManager inventoryEditDisplayManager;
-    private InventoryEditKitItemsManager inventoryEditKitItemsManager;
-    private InventoryEditPositionManager inventoryEditPositionManager;
-    private InventoryEditRequirementsManager inventoryEditRequirementsManager;
+    private final PlayerKits2 plugin;
+    private final Map<UUID, InventoryPlayer> players;
+    private final InventoryEditActionsManager inventoryEditActionsManager;
+    private final InventoryEditDisplayManager inventoryEditDisplayManager;
+    private final InventoryEditKitItemsManager inventoryEditKitItemsManager;
+    private final InventoryEditPositionManager inventoryEditPositionManager;
+    private final InventoryEditRequirementsManager inventoryEditRequirementsManager;
+
     public InventoryEditManager(PlayerKits2 plugin){
         this.plugin = plugin;
-        this.players = new ArrayList<>();
+        this.players = new HashMap<>();
         this.inventoryEditActionsManager = new InventoryEditActionsManager(plugin,this);
         this.inventoryEditDisplayManager = new InventoryEditDisplayManager(plugin,this);
         this.inventoryEditKitItemsManager = new InventoryEditKitItemsManager(plugin,this);
@@ -39,40 +46,11 @@ public class InventoryEditManager {
     }
 
     public InventoryPlayer getInventoryPlayer(Player player){
-        for(InventoryPlayer inventoryPlayer : players){
-            if(inventoryPlayer.getPlayer().equals(player)){
-                return inventoryPlayer;
-            }
-        }
-        return null;
-    }
-
-    public InventoryEditActionsManager getInventoryEditActionsManager() {
-        return inventoryEditActionsManager;
-    }
-
-    public InventoryEditDisplayManager getInventoryEditDisplayManager() {
-        return inventoryEditDisplayManager;
-    }
-
-    public InventoryEditKitItemsManager getInventoryEditKitItemsManager() {
-        return inventoryEditKitItemsManager;
-    }
-
-    public InventoryEditPositionManager getInventoryEditPositionManager() {
-        return inventoryEditPositionManager;
-    }
-
-    public ArrayList<InventoryPlayer> getPlayers() {
-        return players;
+        return players.get(player.getUniqueId());
     }
 
     public void removeInventoryPlayer(Player player){
-        for(int i=0;i<players.size();i++){
-            if(players.get(i).getPlayer().equals(player)){
-                players.remove(i);
-            }
-        }
+        players.remove(player.getUniqueId());
     }
 
     public void openInventory(InventoryPlayer inventoryPlayer) {
@@ -253,7 +231,7 @@ public class InventoryEditManager {
         new InventoryItem(inv, 24, Material.NETHER_BRICK).name("&eSet &6&lError Actions").lore(lore).ready();
 
         inventoryPlayer.getPlayer().openInventory(inv);
-        players.add(inventoryPlayer);
+        players.put(inventoryPlayer.getPlayer().getUniqueId(), inventoryPlayer);
     }
 
     public List<String> setActionItemLore(ArrayList<KitAction> actions,List<String> lore){
@@ -323,7 +301,7 @@ public class InventoryEditManager {
 
         player.closeInventory();
         inventoryPlayer.setInventoryName("edit_chat_cooldown");
-        players.add(inventoryPlayer);
+        players.put(player.getUniqueId(), inventoryPlayer);
     }
 
     public void setCooldown(InventoryPlayer inventoryPlayer,String message){

@@ -11,6 +11,7 @@ import pk.ajneb97.utils.InventoryUtils;
 import pk.ajneb97.utils.ItemUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class InventoryUpdateTaskManager {
 
@@ -35,7 +36,7 @@ public class InventoryUpdateTaskManager {
         PlayerDataManager playerDataManager = plugin.getPlayerDataManager();
         KitItemManager kitItemManager = plugin.getKitItemManager();
 
-        ArrayList<InventoryPlayer> players = inventoryManager.getPlayers();
+        Collection<InventoryPlayer> players = inventoryManager.getPlayers();
         for(InventoryPlayer player : players){
             Inventory inv = InventoryUtils.getTopInventory(player.getPlayer());
             if(inv == null){

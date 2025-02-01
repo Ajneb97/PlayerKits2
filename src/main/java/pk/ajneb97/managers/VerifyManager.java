@@ -4,7 +4,6 @@ import org.bukkit.entity.Player;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.KitAction;
-import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.inventory.ItemKitInventory;
 import pk.ajneb97.model.inventory.KitInventory;
 import pk.ajneb97.model.item.KitItem;
@@ -12,6 +11,7 @@ import pk.ajneb97.model.verify.*;
 import pk.ajneb97.utils.ItemUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class VerifyManager {
@@ -44,7 +44,7 @@ public class VerifyManager {
         this.criticalErrors = false;
 
         //CHECK KITS
-        ArrayList<Kit> kits = plugin.getKitsManager().getKits();
+        Collection<Kit> kits = plugin.getKitsManager().getKits();
         for(Kit kit : kits) {
             verifyKit(kit);
         }

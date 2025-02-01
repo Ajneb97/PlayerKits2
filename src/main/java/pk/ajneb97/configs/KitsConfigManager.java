@@ -9,7 +9,9 @@ import pk.ajneb97.model.KitRequirements;
 import pk.ajneb97.model.item.KitItem;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class KitsConfigManager {
     private ArrayList<CustomConfig> configFiles;
@@ -114,13 +116,13 @@ public class KitsConfigManager {
     }
 
     public void loadConfigs(){
-        ArrayList<Kit> kits = new ArrayList<Kit>();
+        Map<String, Kit> kits = new HashMap<>();
         for(CustomConfig configFile : configFiles){
             FileConfiguration config = configFile.getConfig();
 
             String name = configFile.getPath().replace(".yml","");
             Kit kit = getKitFromConfig(config,plugin,name,"");
-            kits.add(kit);
+            kits.put(name, kit);
         }
 
         plugin.getKitsManager().setKits(kits);

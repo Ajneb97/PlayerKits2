@@ -10,9 +10,6 @@ import pk.ajneb97.utils.PlayerUtils;
 public class PlayerKitsAPI {
 
     private static PlayerKits2 plugin;
-    public PlayerKitsAPI(PlayerKits2 plugin){
-        this.plugin = plugin;
-    }
 
     public static String getKitCooldown(Player player, String kitName){
         Kit kit = plugin.getKitsManager().getKitByName(kitName);
@@ -46,5 +43,13 @@ public class PlayerKitsAPI {
         }else{
             return "no";
         }
+    }
+
+    public static void load(PlayerKits2 plugin) {
+        PlayerKitsAPI.plugin = plugin;
+    }
+    
+    public static PlayerKits2 getPlugin() {
+        return plugin;
     }
 }

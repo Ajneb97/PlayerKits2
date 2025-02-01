@@ -1,7 +1,6 @@
 package pk.ajneb97.managers;
 
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -21,48 +20,29 @@ import pk.ajneb97.utils.ActionUtils;
 import pk.ajneb97.utils.OtherUtils;
 import pk.ajneb97.utils.PlayerUtils;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
-public class KitsManager {
+public final class KitsManager {
 
-    private PlayerKits2 plugin;
-    private ArrayList<Kit> kits;
-    public KitsManager(PlayerKits2 plugin){
-        this.plugin = plugin;
+    private final PlayerKits2 plugin = PlayerKits2.getInstance();
+    private Map<String, Kit> kits;
+
+    public Collection<Kit> getKits() {
+        return kits.values();
     }
 
-    public PlayerKits2 getPlugin() {
-        return plugin;
-    }
-
-    public void setPlugin(PlayerKits2 plugin) {
-        this.plugin = plugin;
-    }
-
-    public ArrayList<Kit> getKits() {
-        return kits;
-    }
-
-    public void setKits(ArrayList<Kit> kits) {
+    public void setKits(final Map<String, Kit> kits) {
         this.kits = kits;
     }
 
-    public Kit getKitByName(String name){
-        for(Kit kit : kits){
-            if(kit.getName().equals(name)){
-                return kit;
-            }
-        }
-        return null;
+    public Kit getKitByName(final String name){
+        return kits.get(name);
     }
 
-    public void removeKit(String name){
-        for(int i=0;i<kits.size();i++){
-            if(kits.get(i).getName().equals(name)){
-                kits.remove(i);
-                return;
-            }
-        }
+    public void removeKit(final String name){
+        kits.remove(name);
     }
 
     public void createKit(String kitName,Player player,boolean saveOriginalItems){
@@ -111,7 +91,7 @@ public class KitsManager {
         kit.setAutoArmor(hasArmor);
         kit.setSaveOriginalItems(saveOriginalItems);
 
-        kits.add(kit);
+        kits.put(kitName, kit);
         plugin.getConfigsManager().getKitsConfigManager().saveConfig(kit);
 
         msgManager.sendMessage(player,messagesFile.getString("kitCreated").replace("%kit%",kitName),true);
