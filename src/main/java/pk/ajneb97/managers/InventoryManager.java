@@ -1,7 +1,6 @@
 package pk.ajneb97.managers;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -24,22 +23,26 @@ import pk.ajneb97.utils.ItemUtils;
 import pk.ajneb97.utils.PlayerUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class InventoryManager {
 
     private PlayerKits2 plugin;
     private ArrayList<KitInventory> inventories;
-    private ArrayList<InventoryPlayer> players;
+    private Map<UUID, InventoryPlayer> players;
     private InventoryRequirementsManager inventoryRequirementsManager;
     public InventoryManager(PlayerKits2 plugin){
         this.plugin = plugin;
-        this.players = new ArrayList<>();
+        this.players = new HashMap<>();
         this.inventoryRequirementsManager = new InventoryRequirementsManager(plugin,this);
     }
 
-    public ArrayList<InventoryPlayer> getPlayers() {
-        return players;
+    public Collection<InventoryPlayer> getPlayers() {
+        return players.values();
     }
 
     public ArrayList<KitInventory> getInventories() {
@@ -64,20 +67,11 @@ public class InventoryManager {
     }
 
     public InventoryPlayer getInventoryPlayer(Player player){
-        for(InventoryPlayer inventoryPlayer : players){
-            if(inventoryPlayer.getPlayer().equals(player)){
-                return inventoryPlayer;
-            }
-        }
-        return null;
+        return players.get(player.getUniqueId());
     }
 
     public void removeInventoryPlayer(Player player){
-        for(int i=0;i<players.size();i++){
-            if(players.get(i).getPlayer().equals(player)){
-                players.remove(i);
-            }
-        }
+        players.remove(player.getUniqueId());
     }
 
     public void openInventory(InventoryPlayer inventoryPlayer){
@@ -143,7 +137,7 @@ public class InventoryManager {
 
 
         inventoryPlayer.getPlayer().openInventory(inv);
-        players.add(inventoryPlayer);
+        players.put(inventoryPlayer.getPlayer().getUniqueId(), inventoryPlayer);
     }
 
     public void setKitPreviewItems(Inventory inv,InventoryPlayer inventoryPlayer,KitInventory kitInventory){

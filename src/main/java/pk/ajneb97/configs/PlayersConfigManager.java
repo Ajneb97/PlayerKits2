@@ -7,6 +7,10 @@ import pk.ajneb97.model.PlayerDataKit;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class PlayersConfigManager {
     private ArrayList<CustomConfig> configFiles;
@@ -96,7 +100,7 @@ public class PlayersConfigManager {
     }
 
     public void loadConfigs(){
-        ArrayList<PlayerData> players = new ArrayList<>();
+        Map<UUID, PlayerData> players = new HashMap<>();
 
         for(CustomConfig configFile : configFiles) {
             FileConfiguration config = configFile.getConfig();
@@ -120,10 +124,10 @@ public class PlayersConfigManager {
                 }
             }
 
-            PlayerData playerData = new PlayerData(name,uuid);
+            PlayerData playerData = new PlayerData(name,UUID.fromString(uuid));
             playerData.setKits(playerDataKits);
 
-            players.add(playerData);
+            players.put(playerData.getUuid(), playerData);
         }
 
         plugin.getPlayerDataManager().setPlayers(players);
@@ -152,7 +156,7 @@ public class PlayersConfigManager {
     }
 
     public void saveConfigs(){
-        ArrayList<PlayerData> players = plugin.getPlayerDataManager().getPlayers();
+        Collection<PlayerData> players = plugin.getPlayerDataManager().getPlayers();
         for(PlayerData playerData : players) {
             if(playerData.isModified()){
                 saveConfig(playerData);

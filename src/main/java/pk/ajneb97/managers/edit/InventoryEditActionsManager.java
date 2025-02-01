@@ -92,7 +92,7 @@ public class InventoryEditActionsManager {
         }
 
         inventoryPlayer.getPlayer().openInventory(inv);
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.getPlayers().put(inventoryPlayer.getPlayer().getUniqueId(), inventoryPlayer);
     }
 
     public void removeAction(InventoryPlayer inventoryPlayer,int slot){
@@ -115,7 +115,7 @@ public class InventoryEditActionsManager {
         player.closeInventory();
         String type = inventoryPlayer.getInventoryName().replace("edit_actions_","");
         inventoryPlayer.setInventoryName("edit_chat_add_action_"+type);
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.getPlayers().put(inventoryPlayer.getPlayer().getUniqueId(), inventoryPlayer);
     }
 
     public void addAction(InventoryPlayer inventoryPlayer,String message){

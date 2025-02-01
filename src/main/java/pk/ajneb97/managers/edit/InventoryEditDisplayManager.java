@@ -101,7 +101,7 @@ public class InventoryEditDisplayManager {
         }
 
         inventoryPlayer.getPlayer().openInventory(inv);
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.getPlayers().put(inventoryPlayer.getPlayer().getUniqueId(), inventoryPlayer);
     }
 
     public void saveKitItem(InventoryPlayer inventoryPlayer){

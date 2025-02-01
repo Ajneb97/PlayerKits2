@@ -70,7 +70,7 @@ public class InventoryEditRequirementsManager {
         new InventoryItem(inv, 15, Material.REDSTONE).name("&eSet &6&lExtra Requirements").lore(lore).ready();
 
         inventoryPlayer.getPlayer().openInventory(inv);
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.getPlayers().put(inventoryPlayer.getPlayer().getUniqueId(), inventoryPlayer);
     }
 
     public void setOneTimeRequirements(InventoryPlayer inventoryPlayer){
@@ -91,7 +91,7 @@ public class InventoryEditRequirementsManager {
 
         player.closeInventory();
         inventoryPlayer.setInventoryName("edit_chat_price");
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.getPlayers().put(inventoryPlayer.getPlayer().getUniqueId(), inventoryPlayer);
     }
 
     public void setPrice(InventoryPlayer inventoryPlayer,String message){

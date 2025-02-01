@@ -4,6 +4,8 @@ package pk.ajneb97;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import lombok.Getter;
 import pk.ajneb97.api.ExpansionPlayerKits;
 import pk.ajneb97.api.PlayerKitsAPI;
 import pk.ajneb97.configs.ConfigsManager;
@@ -20,9 +22,13 @@ import pk.ajneb97.tasks.PlayerDataSaveTask;
 import pk.ajneb97.versions.NMSManager;
 import pk.ajneb97.utils.ServerVersion;
 
+@Getter
 public class PlayerKits2 extends JavaPlugin {
 
     public String version = getDescription().getVersion();
+
+    private static PlayerKits2 instance;
+
     public static String prefix;
     public static ServerVersion serverVersion;
 
@@ -44,15 +50,16 @@ public class PlayerKits2 extends JavaPlugin {
     private MySQLConnection mySQLConnection;
 
     public void onEnable(){
+        PlayerKits2.instance = this;
+
         setVersion();
         setPrefix();
-        registerCommands();
         registerEvents();
 
         this.kitItemManager = new KitItemManager(this);
         this.inventoryManager = new InventoryManager(this);
         this.inventoryEditManager = new InventoryEditManager(this);
-        this.kitsManager = new KitsManager(this);
+        this.kitsManager = new KitsManager();
         this.dependencyManager = new DependencyManager(this);
         this.nmsManager = new NMSManager(this);
         this.playerDataManager = new PlayerDataManager(this);
@@ -75,17 +82,20 @@ public class PlayerKits2 extends JavaPlugin {
             reloadPlayerDataSaveTask();
         }
 
-        PlayerKitsAPI api = new PlayerKitsAPI(this);
+        PlayerKitsAPI.load(this);
+
         if(getServer().getPluginManager().getPlugin("PlaceholderAPI") != null){
             new ExpansionPlayerKits(this).register();
         }
-        Metrics metrics = new Metrics(this,19795);
+        new Metrics(this,19795);
 
         Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(prefix+"&eHas been enabled! &fVersion: "+version));
         Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(prefix+"&eThanks for using my plugin!   &f~Ajneb97"));
 
         updateCheckerManager = new UpdateCheckerManager(version);
         updateMessage(updateCheckerManager.check());
+    
+        registerCommands();
     }
 
     public void onDisable(){
@@ -140,60 +150,8 @@ public class PlayerKits2 extends JavaPlugin {
         }
     }
 
-    public KitItemManager getKitItemManager() {
-        return kitItemManager;
-    }
-
-    public KitsManager getKitsManager() {
-        return kitsManager;
-    }
-
-    public MessagesManager getMessagesManager() {
-        return messagesManager;
-    }
-
     public void setMessagesManager(MessagesManager messagesManager) {
         this.messagesManager = messagesManager;
-    }
-
-    public ConfigsManager getConfigsManager() {
-        return configsManager;
-    }
-
-    public DependencyManager getDependencyManager() {
-        return dependencyManager;
-    }
-
-    public PlayerDataManager getPlayerDataManager() {
-        return playerDataManager;
-    }
-
-    public InventoryManager getInventoryManager() {
-        return inventoryManager;
-    }
-
-    public InventoryEditManager getInventoryEditManager() {
-        return inventoryEditManager;
-    }
-
-    public MySQLConnection getMySQLConnection() {
-        return mySQLConnection;
-    }
-
-    public NMSManager getNmsManager() {
-        return nmsManager;
-    }
-
-    public UpdateCheckerManager getUpdateCheckerManager() {
-        return updateCheckerManager;
-    }
-
-    public VerifyManager getVerifyManager() {
-        return verifyManager;
-    }
-
-    public MigrationManager getMigrationManager() {
-        return migrationManager;
     }
 
     public void updateMessage(UpdateCheckerResult result){
@@ -206,6 +164,9 @@ public class PlayerKits2 extends JavaPlugin {
         }else{
             Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(prefix+"&cError while checking update."));
         }
+    }
 
+    public static PlayerKits2 getInstance() {
+        return instance;
     }
 }

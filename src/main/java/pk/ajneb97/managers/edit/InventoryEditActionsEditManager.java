@@ -97,7 +97,7 @@ public class InventoryEditActionsEditManager {
 
 
         inventoryPlayer.getPlayer().openInventory(inv);
-        inventoryEditActionsManager.getInventoryEditManager().getPlayers().add(inventoryPlayer);
+        inventoryEditActionsManager.getInventoryEditManager().getPlayers().put(inventoryPlayer.getPlayer().getUniqueId(), inventoryPlayer);
     }
 
     public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, int slot, ClickType clickType){
@@ -148,7 +148,7 @@ public class InventoryEditActionsEditManager {
 
         player.closeInventory();
         inventoryPlayer.setInventoryName("edit_chat_action_slot_" + getType(inventoryPlayer) + "_" + getActionSlot(inventoryPlayer));
-        inventoryEditActionsManager.getInventoryEditManager().getPlayers().add(inventoryPlayer);
+        inventoryEditActionsManager.getInventoryEditManager().getPlayers().put(inventoryPlayer.getPlayer().getUniqueId(), inventoryPlayer);
     }
 
     public void editAction(InventoryPlayer inventoryPlayer,String message){
