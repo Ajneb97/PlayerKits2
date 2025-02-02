@@ -113,6 +113,26 @@ public class KitItemManager {
                 }
             }
 
+            if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
+                if(meta.isHideTooltip()){
+                    kitItem.setHideTooltip(true);
+                }
+            }
+
+            if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R2)){
+                if(meta.hasTooltipStyle()){
+                    NamespacedKey key = meta.getTooltipStyle();
+                    kitItem.setTooltipStyle(key.getNamespace()+":"+key.getKey());
+                }
+            }
+
+            if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+                if(meta.hasItemModel()){
+                    NamespacedKey key = meta.getItemModel();
+                    kitItem.setModel(key.getNamespace()+":"+key.getKey());
+                }
+            }
+
             if(meta instanceof LeatherArmorMeta) {
                 LeatherArmorMeta meta2 = (LeatherArmorMeta) meta;
                 kitItem.setColor(meta2.getColor().asRGB());
@@ -159,7 +179,20 @@ public class KitItemManager {
 
     public ItemStack createItemFromKitItem(KitItem kitItem,Player player){
         if(kitItem.getOriginalItem() != null){
-            return kitItem.getOriginalItem().clone();
+            ItemStack item = kitItem.getOriginalItem().clone();
+            // Placeholders on original item
+            ItemMeta meta = item.getItemMeta();
+            if(meta.hasDisplayName()){
+                String name = OtherUtils.replaceGlobalVariables(meta.getDisplayName(),player,plugin);
+                meta.setDisplayName(name);
+            }
+            if(meta.hasLore()){
+                List<String> lore = meta.getLore();
+                lore.replaceAll(text -> OtherUtils.replaceGlobalVariables(text, player, plugin));
+                meta.setLore(lore);
+            }
+            item.setItemMeta(meta);
+            return item;
         }
 
         ItemStack item = ItemUtils.createItemFromID(kitItem.getId());
@@ -226,6 +259,28 @@ public class KitItemManager {
                 int enchantLevel = Integer.parseInt(sep[1]);
 
                 meta.addEnchant(Enchantment.getByName(enchantName), enchantLevel, true);
+            }
+        }
+
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
+            if(kitItem.isHideTooltip()){
+                meta.setHideTooltip(true);
+            }
+        }
+
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R2)){
+            String tooltipStyle = kitItem.getTooltipStyle();
+            if(tooltipStyle != null){
+                String[] sep = tooltipStyle.split(":");
+                meta.setTooltipStyle(new NamespacedKey(sep[0],sep[1]));
+            }
+        }
+
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+            String model = kitItem.getModel();
+            if(model != null){
+                String[] sep = model.split(":");
+                meta.setItemModel(new NamespacedKey(sep[0],sep[1]));
             }
         }
 
@@ -326,6 +381,16 @@ public class KitItemManager {
                 if(!customModelComponentData.getFloats().isEmpty()) config.set(path+".custom_model_component_data.floats",customModelComponentData.getFloats());
                 if(!customModelComponentData.getColors().isEmpty()) config.set(path+".custom_model_component_data.colors",customModelComponentData.getColors());
                 if(!customModelComponentData.getStrings().isEmpty()) config.set(path+".custom_model_component_data.strings",customModelComponentData.getStrings());
+            }
+
+            if(item.isHideTooltip()){
+                config.set(path+".hide_tooltip", true);
+            }
+            if(item.getTooltipStyle() != null){
+                config.set(path+".tooltip_style",item.getTooltipStyle());
+            }
+            if(item.getModel() != null){
+                config.set(path+".model",item.getModel());
             }
 
             if(item.getColor() != 0) {
@@ -454,6 +519,10 @@ public class KitItemManager {
                 customModelComponentData = new KitItemCustomModelComponentData(cFlags,cColors,cFloats,cStrings);
             }
 
+            boolean hideTooltip = config.getBoolean(path+".hide_tooltip");
+            String tooltipStyle = config.contains(path+".tooltip_style") ? config.getString(path+".tooltip_style") : null;
+            String model = config.contains(path+".model") ? config.getString(path+".model") : null;
+
             KitItemSkullData skullData = null;
             if(config.contains(path+".skull_data")) {
                 String skullTexture = null;
@@ -571,6 +640,9 @@ public class KitItemManager {
             kitItem.setBookData(bookData);
             kitItem.setTrimData(trimData);
             kitItem.setCustomModelComponentData(customModelComponentData);
+            kitItem.setHideTooltip(hideTooltip);
+            kitItem.setTooltipStyle(tooltipStyle);
+            kitItem.setModel(model);
         }
 
         kitItem.setOffhand(offhand);
