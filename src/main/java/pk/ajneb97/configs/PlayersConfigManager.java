@@ -7,6 +7,9 @@ import pk.ajneb97.model.PlayerDataKit;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class PlayersConfigManager {
     private ArrayList<CustomConfig> configFiles;
@@ -96,12 +99,12 @@ public class PlayersConfigManager {
     }
 
     public void loadConfigs(){
-        ArrayList<PlayerData> players = new ArrayList<>();
+        Map<UUID, PlayerData> players = new HashMap<>();
 
         for(CustomConfig configFile : configFiles) {
             FileConfiguration config = configFile.getConfig();
 
-            String uuid = configFile.getPath().replace(".yml", "");
+            String uuidString = configFile.getPath().replace(".yml", "");
             String name = config.getString("name");
             ArrayList<PlayerDataKit> playerDataKits = new ArrayList<>();
 
@@ -120,10 +123,11 @@ public class PlayersConfigManager {
                 }
             }
 
-            PlayerData playerData = new PlayerData(name,uuid);
+            UUID uuid = UUID.fromString(uuidString);
+            PlayerData playerData = new PlayerData(uuid,name);
             playerData.setKits(playerDataKits);
 
-            players.add(playerData);
+            players.put(uuid,playerData);
         }
 
         plugin.getPlayerDataManager().setPlayers(players);
@@ -152,12 +156,16 @@ public class PlayersConfigManager {
     }
 
     public void saveConfigs(){
-        ArrayList<PlayerData> players = plugin.getPlayerDataManager().getPlayers();
-        for(PlayerData playerData : players) {
-            if(playerData.isModified()){
-                saveConfig(playerData);
+        Map<UUID, PlayerData> players = plugin.getPlayerDataManager().getPlayers();
+        boolean isMySQL = plugin.getConfigsManager().getMainConfigManager().isMySQL();
+        if(!isMySQL){
+            for(Map.Entry<UUID, PlayerData> entry : players.entrySet()) {
+                PlayerData playerData = entry.getValue();
+                if(playerData.isModified()){
+                    saveConfig(playerData);
+                }
+                playerData.setModified(false);
             }
-            playerData.setModified(false);
         }
     }
 

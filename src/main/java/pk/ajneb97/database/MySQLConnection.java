@@ -61,7 +61,7 @@ public class MySQLConnection {
     }
 
     public void loadData(){
-        ArrayList<PlayerData> players = new ArrayList<>();
+        Map<UUID, PlayerData> playerMap = new HashMap<>();
         try(Connection connection = getConnection()){
             PreparedStatement statement = connection.prepareStatement(
                     "SELECT playerkits_players.UUID, playerkits_players.PLAYER_NAME, " +
@@ -74,9 +74,8 @@ public class MySQLConnection {
 
             ResultSet result = statement.executeQuery();
 
-            Map<String, PlayerData> playerMap = new HashMap<>();
             while(result.next()){
-                String uuid = result.getString("UUID");
+                UUID uuid = UUID.fromString(result.getString("UUID"));
                 String playerName = result.getString("PLAYER_NAME");
                 String kitName = result.getString("NAME");
                 long cooldown = result.getLong("COOLDOWN");
@@ -84,11 +83,9 @@ public class MySQLConnection {
                 boolean bought = result.getBoolean("BOUGHT");
 
                 PlayerData player = playerMap.get(uuid);
-
                 if(player == null){
                     //Create and add it
-                    player = new PlayerData(playerName,uuid);
-                    players.add(player);
+                    player = new PlayerData(uuid,playerName);
                     playerMap.put(uuid, player);
                 }
 
@@ -104,7 +101,7 @@ public class MySQLConnection {
             e.printStackTrace();
         }
 
-        plugin.getPlayerDataManager().setPlayers(players);
+        plugin.getPlayerDataManager().setPlayers(playerMap);
     }
 
     public void createTables() {
@@ -153,14 +150,14 @@ public class MySQLConnection {
 
                     boolean firstFind = true;
                     while(result.next()){
+                        UUID uuid = UUID.fromString(result.getString("UUID"));
                         String playerName = result.getString("PLAYER_NAME");
                         String kitName = result.getString("NAME");
                         long cooldown = result.getLong("COOLDOWN");
                         boolean oneTime = result.getBoolean("ONE_TIME");
                         boolean bought = result.getBoolean("BOUGHT");
-                        if(firstFind){
-                            firstFind = false;
-                            player = new PlayerData(playerName,uuid);
+                        if(player == null){
+                            player = new PlayerData(uuid,playerName);
                         }
                         if(kitName != null){
                             PlayerDataKit playerDataKit = new PlayerDataKit(kitName);
@@ -194,7 +191,7 @@ public class MySQLConnection {
                             "INSERT INTO playerkits_players " +
                                     "(UUID, PLAYER_NAME) VALUE (?,?)");
 
-                    statement.setString(1, player.getUuid());
+                    statement.setString(1, player.getUuid().toString());
                     statement.setString(2, player.getName());
                     statement.executeUpdate();
 
@@ -221,7 +218,7 @@ public class MySQLConnection {
                                     "PLAYER_NAME=? WHERE UUID=?");
 
                     statement.setString(1, player.getName());
-                    statement.setString(2, player.getUuid());
+                    statement.setString(2, player.getUuid().toString());
                     statement.executeUpdate();
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -242,7 +239,7 @@ public class MySQLConnection {
                                 "INSERT INTO playerkits_players_kits " +
                                         "(UUID, NAME, COOLDOWN, ONE_TIME, BOUGHT) VALUE (?,?,?,?,?)");
 
-                        statement.setString(1, player.getUuid());
+                        statement.setString(1, player.getUuid().toString());
                         statement.setString(2, kit.getName());
                         statement.setLong(3, kit.getCooldown());
                         statement.setBoolean(4, kit.isOneTime());
@@ -256,7 +253,7 @@ public class MySQLConnection {
                         statement.setLong(1, kit.getCooldown());
                         statement.setBoolean(2, kit.isOneTime());
                         statement.setBoolean(3, kit.isBought());
-                        statement.setString(4, player.getUuid());
+                        statement.setString(4, player.getUuid().toString());
                         statement.setString(5, kit.getName());
                     }
                     statement.executeUpdate();

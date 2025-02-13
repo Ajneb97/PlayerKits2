@@ -286,10 +286,15 @@ public class KitsManager {
 
         boolean enoughSpace = freeSlots < inventoryKitItems;
         boolean dropItemsIfFullInventory = configFile.getBoolean("drop_items_if_full_inventory");
+        boolean clearInventory = kit.isClearInventory();
 
-        if(enoughSpace && !dropItemsIfFullInventory){
+        if(enoughSpace && !dropItemsIfFullInventory && !clearInventory){
             sendKitActions(kit.getErrorActions(),player,false);
             return PlayerKitsMessageResult.error(messagesFile.getString("noSpaceError"));
+        }
+
+        if(clearInventory){
+            player.getInventory().clear();
         }
 
         //Actions before

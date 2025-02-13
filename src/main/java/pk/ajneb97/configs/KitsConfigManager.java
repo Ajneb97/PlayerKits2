@@ -144,6 +144,7 @@ public class KitsConfigManager {
         config.set("one_time",kit.isOneTime());
         config.set("auto_armor",kit.isAutoArmor());
         config.set("permission_required",kit.isPermissionRequired());
+        config.set("clear_inventory",kit.isClearInventory());
         config.set("custom_permission",kit.getCustomPermission());
         config.set("save_original_items",kit.isSaveOriginalItems());
 
@@ -234,9 +235,10 @@ public class KitsConfigManager {
         String customPermission = config.contains(mainPath+"custom_permission") ? config.getString(mainPath+"custom_permission") : null;
         boolean autoArmor = config.contains(mainPath+"auto_armor") ? config.getBoolean(mainPath+"auto_armor") : false;
         boolean oneTime = config.contains(mainPath+"one_time") ? config.getBoolean(mainPath+"one_time") : false;
+        boolean clearInventory = config.contains(mainPath+"clear_inventory") ? config.getBoolean(mainPath+"clear_inventory") : false;
         boolean saveOriginalItems = config.contains(mainPath+"save_original_items") ? config.getBoolean(mainPath+"save_original_items") : false;
 
-        ArrayList<KitItem> items = new ArrayList<KitItem>();
+        ArrayList<KitItem> items = new ArrayList<>();
         if(config.contains(mainPath+"items")){
             for(String key : config.getConfigurationSection(mainPath+"items").getKeys(false)){
                 KitItem item = kitItemManager.getKitItemFromConfig(config,mainPath+"items."+key);
@@ -273,6 +275,7 @@ public class KitsConfigManager {
         kit.setAutoArmor(autoArmor);
         kit.setOneTime(oneTime);
         kit.setPermissionRequired(permissionRequired);
+        kit.setClearInventory(clearInventory);
         kit.setCustomPermission(customPermission);
         kit.setItems(items);
         kit.setClaimActions(claimActions);

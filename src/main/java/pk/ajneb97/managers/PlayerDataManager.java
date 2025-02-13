@@ -8,65 +8,68 @@ import pk.ajneb97.model.internal.PlayerKitsMessageResult;
 import pk.ajneb97.utils.OtherUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class PlayerDataManager {
 
     private PlayerKits2 plugin;
-    private ArrayList<PlayerData> players;
+    private Map<UUID, PlayerData> players;
+    private Map<String,UUID> playerNames;
 
     public PlayerDataManager(PlayerKits2 plugin){
         this.plugin = plugin;
+        this.playerNames = new HashMap<>();
     }
 
-    public ArrayList<PlayerData> getPlayers() {
+    public Map<UUID,PlayerData> getPlayers() {
         return players;
     }
 
-    public void setPlayers(ArrayList<PlayerData> players) {
+    public void setPlayers(Map<UUID,PlayerData> players) {
         this.players = players;
+        for(Map.Entry<UUID, PlayerData> entry : players.entrySet()){
+            playerNames.put(entry.getValue().getName(),entry.getKey());
+        }
     }
 
-    private PlayerData getPlayer(Player player,boolean create){
-        for(PlayerData playerData : players){
-            if(playerData.getUuid().equals(player.getUniqueId().toString())){
-                return playerData;
-            }
-        }
-
-        if(create){
-            PlayerData playerData = new PlayerData(player.getName(),player.getUniqueId().toString());
-            playerData.setModified(true);
-            players.add(playerData);
-            return playerData;
-        }
-        return null;
+    public void addPlayer(PlayerData p){
+        players.put(p.getUuid(),p);
+        playerNames.put(p.getName(), p.getUuid());
     }
 
-    public PlayerData getPlayerByUUID(String uuid){
-        for(PlayerData player : players){
-            if(player.getUuid().equals(uuid)){
-                return player;
-            }
+    public PlayerData getPlayer(Player player, boolean create){
+        PlayerData playerData = players.get(player.getUniqueId());
+        if(playerData == null && create){
+            playerData = new PlayerData(player.getUniqueId(),player.getName());
+            addPlayer(playerData);
         }
-        return null;
+        return playerData;
     }
 
-    public void removePlayerByUUID(String uuid){
-        for(int i=0;i<players.size();i++){
-            if(players.get(i).getUuid().equals(uuid)){
-                players.remove(i);
-                return;
-            }
+    private void updatePlayerName(String oldName,String newName,UUID uuid){
+        if(oldName != null){
+            playerNames.remove(oldName);
         }
+        playerNames.put(newName,uuid);
+    }
+
+    public PlayerData getPlayerByUUID(UUID uuid){
+        return players.get(uuid);
+    }
+
+    private UUID getPlayerUUID(String name){
+        return playerNames.get(name);
     }
 
     public PlayerData getPlayerByName(String name){
-        for(PlayerData player : players){
-            if(player.getName() != null && player.getName().equals(name)){
-                return player;
-            }
-        }
-        return null;
+        UUID uuid = getPlayerUUID(name);
+        return players.get(uuid);
+    }
+
+    public void removePlayerByUUID(UUID uuid){
+        players.remove(uuid);
     }
 
     public void setKitCooldown(Player player,String kitName,long cooldown){
@@ -79,7 +82,7 @@ public class PlayerDataManager {
     }
 
     public long getKitCooldown(Player player,String kitName){
-        PlayerData playerData = getPlayerByUUID(player.getUniqueId().toString());
+        PlayerData playerData = getPlayerByUUID(player.getUniqueId());
         if(playerData == null){
             return 0;
         }else{
@@ -104,7 +107,7 @@ public class PlayerDataManager {
     }
 
     public boolean isKitOneTime(Player player,String kitName){
-        PlayerData playerData = getPlayerByUUID(player.getUniqueId().toString());
+        PlayerData playerData = getPlayerByUUID(player.getUniqueId());
         if(playerData == null){
             return false;
         }else{
@@ -122,7 +125,7 @@ public class PlayerDataManager {
     }
 
     public boolean isKitBought(Player player,String kitName){
-        PlayerData playerData = getPlayerByUUID(player.getUniqueId().toString());
+        PlayerData playerData = getPlayerByUUID(player.getUniqueId());
         if(playerData == null){
             return false;
         }else{
@@ -139,8 +142,8 @@ public class PlayerDataManager {
         }
 
         if(all){
-            for(PlayerData p : players){
-                p.resetKit(kitName);
+            for(Map.Entry<UUID, PlayerData> entry : players.entrySet()){
+                entry.getValue().resetKit(kitName);
             }
         }else{
             playerData.resetKit(kitName);
@@ -150,7 +153,7 @@ public class PlayerDataManager {
             if(all){
                 plugin.getMySQLConnection().resetKit(null,kitName,true);
             }else{
-                plugin.getMySQLConnection().resetKit(playerData.getUuid(),kitName,false);
+                plugin.getMySQLConnection().resetKit(playerData.getUuid().toString(),kitName,false);
             }
 
         }
@@ -162,33 +165,35 @@ public class PlayerDataManager {
         // Create or update data
         if(plugin.getMySQLConnection() != null){
             MySQLConnection mySQLConnection = plugin.getMySQLConnection();
-            String uuid = player.getUniqueId().toString();
-            mySQLConnection.getPlayer(uuid, playerData -> {
+            UUID uuid = player.getUniqueId();
+            mySQLConnection.getPlayer(uuid.toString(), playerData -> {
                 removePlayerByUUID(uuid); //Remove data if already exists
                 if(playerData != null) {
-                    players.add(playerData);
+                    addPlayer(playerData);
                     //Update name if different
-                    if(!playerData.getName().equals(player.getName())){
+                    if (!playerData.getName().equals(player.getName())) {
+                        updatePlayerName(playerData.getName(), player.getName(), player.getUniqueId());
                         playerData.setName(player.getName());
                         mySQLConnection.updatePlayerName(playerData);
                     }
                 }else {
-                    playerData = new PlayerData(player.getName(),uuid);
-                    players.add(playerData);
+                    playerData = new PlayerData(uuid, player.getName());
+                    addPlayer(playerData);
 
                     //Create if it doesn't exist
                     mySQLConnection.createPlayer(playerData, () -> plugin.getKitsManager().giveFirstJoinKit(player));
                 }
             });
         }else{
-            PlayerData playerData = getPlayerByUUID(player.getUniqueId().toString());
+            PlayerData playerData = getPlayer(player,false);
             if(playerData == null){
-                playerData = new PlayerData(player.getName(),player.getUniqueId().toString());
+                playerData = new PlayerData(player.getUniqueId(),player.getName());
                 playerData.setModified(true);
-                players.add(playerData);
+                addPlayer(playerData);
                 plugin.getKitsManager().giveFirstJoinKit(player);
             }else{
                 if(playerData.getName() == null || !playerData.getName().equals(player.getName())){
+                    updatePlayerName(playerData.getName(),player.getName(),player.getUniqueId());
                     playerData.setName(player.getName());
                     playerData.setModified(true);
                 }
