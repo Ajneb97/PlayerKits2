@@ -161,6 +161,14 @@ public class KitsManager {
             return PlayerKitsMessageResult.error(messagesFile.getString("kitDoesNotExists").replace("%kit%",kitName));
         }
 
+        if (configFile.getBoolean("clear_on_claim")){
+            player.getInventory().clear();
+            player.getInventory().setHelmet(new ItemStack (Material.AIR));
+            player.getInventory().setChestplate(new ItemStack (Material.AIR));
+            player.getInventory().setLeggings(new ItemStack (Material.AIR));
+            player.getInventory().setBoots(new ItemStack (Material.AIR));
+        }a
+
         //Check properties
         if(!giveKitInstructions.isFromCommand()){
             //Permission
