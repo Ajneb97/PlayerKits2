@@ -50,3 +50,18 @@ mysql_database:
   username: root
   password: root
   database: database
+  driver_properties:
+    autoReconnect: true
+    leakDetectionThreshold: true
+    verifyServerCertificate: false
+    useSSL: false
+  hikari_config:
+    connection_timeout: 5000
+    keepalive_time: null
+    max_lifetime: null
+    idle_timeout: null
+    leak_detection_threshold: null
+    maximum_pool_size: null
+    minimum_idle: null
+    validation_timeout: null
+    initialization_fail_timeout: null
