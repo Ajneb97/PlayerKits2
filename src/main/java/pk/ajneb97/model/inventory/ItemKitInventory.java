@@ -10,10 +10,10 @@ public class ItemKitInventory {
     private String slotsString;
     private KitItem item;
     private String openInventory;
-    private List<String> commands;
+    private List<String> clickActions;
     private String type;
 
-    public ItemKitInventory(String slotsString, KitItem item, String openInventory, List<String> commands, String type) {
+    public ItemKitInventory(String slotsString, KitItem item, String openInventory, List<String> clickActions, String type) {
         slots = new ArrayList<>();
         this.slotsString = slotsString;
         String[] slotsSep = slotsString.split(";");
@@ -32,7 +32,7 @@ public class ItemKitInventory {
 
         this.item = item;
         this.openInventory = openInventory;
-        this.commands = commands;
+        this.clickActions = clickActions;
         this.type = type;
     }
 
@@ -60,14 +60,6 @@ public class ItemKitInventory {
         this.openInventory = openInventory;
     }
 
-    public List<String> getCommands() {
-        return commands;
-    }
-
-    public void setCommands(List<String> commands) {
-        this.commands = commands;
-    }
-
     public String getType() {
         return type;
     }
@@ -82,5 +74,13 @@ public class ItemKitInventory {
 
     public void setSlotsString(String slotsString) {
         this.slotsString = slotsString;
+    }
+
+    public List<String> getClickActions() {
+        return clickActions;
+    }
+
+    public void setClickActions(List<String> clickActions) {
+        this.clickActions = clickActions;
     }
 }

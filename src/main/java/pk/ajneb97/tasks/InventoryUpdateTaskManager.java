@@ -31,7 +31,6 @@ public class InventoryUpdateTaskManager {
     public void execute(){
         InventoryManager inventoryManager = plugin.getInventoryManager();
         KitsManager kitsManager = plugin.getKitsManager();
-        MessagesManager msgManager = plugin.getMessagesManager();
         PlayerDataManager playerDataManager = plugin.getPlayerDataManager();
         KitItemManager kitItemManager = plugin.getKitItemManager();
 
@@ -51,7 +50,7 @@ public class InventoryUpdateTaskManager {
                 String kitName = ItemUtils.getTagStringItem(plugin,item,"playerkits_kit");
                 if(kitName != null){
                     inventoryManager.setKit(kitName,player.getPlayer(),inv,i,kitsManager,
-                            playerDataManager,kitItemManager,msgManager);
+                            playerDataManager,kitItemManager);
                 }
             }
         }

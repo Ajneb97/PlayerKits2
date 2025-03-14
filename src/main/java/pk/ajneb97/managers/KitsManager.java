@@ -377,12 +377,19 @@ public class KitsManager {
     }
 
     public void executeAction(Player player,String actionText){
+        if(actionText.equals("close_inventory")){
+            ActionUtils.closeInventory(player);
+            return;
+        }
         int indexFirst = actionText.indexOf(" ");
         String actionType = actionText.substring(0,indexFirst).replace(":","");
         String actionLine = actionText.substring(indexFirst+1);
         actionLine = OtherUtils.replaceGlobalVariables(actionLine,player,plugin);
 
         switch(actionType){
+            case "message":
+                ActionUtils.message(player,actionLine);
+                break;
             case "console_command":
                 ActionUtils.consoleCommand(actionLine);
                 break;

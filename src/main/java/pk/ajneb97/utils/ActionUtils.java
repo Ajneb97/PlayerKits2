@@ -18,6 +18,10 @@ import java.util.ArrayList;
 
 public class ActionUtils {
 
+    public static void message(Player player,String actionLine) {
+        player.sendMessage(MessagesManager.getColoredMessage(actionLine));
+    }
+
     public static void consoleCommand(String actionLine){
         ConsoleCommandSender sender = Bukkit.getConsoleSender();
         Bukkit.dispatchCommand(sender, actionLine);
@@ -128,5 +132,9 @@ public class ActionUtils {
         fireworkMeta.setPower(power);
         firework.setFireworkMeta(fireworkMeta);
         firework.setMetadata("playerkits", new FixedMetadataValue(plugin, "no_damage"));
+    }
+
+    public static void closeInventory(Player player) {
+        player.closeInventory();
     }
 }

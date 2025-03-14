@@ -154,7 +154,7 @@ public class MigrationManager {
             }
         }
 
-        playersConfigManager.reloadConfigs();
+        playersConfigManager.configure();
     }
 
     public KitItem getDisplayItem(YamlConfiguration config,String path){

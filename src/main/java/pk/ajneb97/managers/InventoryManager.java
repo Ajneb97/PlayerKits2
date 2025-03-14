@@ -20,10 +20,12 @@ import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.inventory.ItemKitInventory;
 import pk.ajneb97.model.inventory.KitInventory;
 import pk.ajneb97.model.item.KitItem;
+import pk.ajneb97.utils.ActionUtils;
 import pk.ajneb97.utils.ItemUtils;
 import pk.ajneb97.utils.PlayerUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class InventoryManager {
@@ -94,7 +96,6 @@ public class InventoryManager {
         KitItemManager kitItemManager = plugin.getKitItemManager();
         KitsManager kitsManager = plugin.getKitsManager();
         PlayerDataManager playerDataManager = plugin.getPlayerDataManager();
-        MessagesManager msgManager = plugin.getMessagesManager();
 
         //Add items for all inventories
         for(ItemKitInventory itemInventory : items){
@@ -102,7 +103,7 @@ public class InventoryManager {
                 String type = itemInventory.getType();
                 if(type != null && type.startsWith("kit: ")){
                     setKit(type.replace("kit: ",""),inventoryPlayer.getPlayer(),inv,slot,kitsManager
-                            ,playerDataManager,kitItemManager,msgManager);
+                            ,playerDataManager,kitItemManager);
                     continue;
                 }
 
@@ -119,18 +120,7 @@ public class InventoryManager {
                 if(openInventory != null) {
                     item = ItemUtils.setTagStringItem(plugin,item, "playerkits_open_inventory", openInventory);
                 }
-                List<String> commands = itemInventory.getCommands();
-                if(commands != null && !commands.isEmpty()) {
-                    String commandList = "";
-                    for(int i=0;i<commands.size();i++) {
-                        if(i==commands.size()-1) {
-                            commandList=commandList+commands.get(i);
-                        }else {
-                            commandList=commandList+commands.get(i)+"|";
-                        }
-                    }
-                    item = ItemUtils.setTagStringItem(plugin,item, "playerkits_item_commands", commandList);
-                }
+                item = setItemActions(itemInventory,item);
 
                 inv.setItem(slot,item);
             }
@@ -144,6 +134,22 @@ public class InventoryManager {
 
         inventoryPlayer.getPlayer().openInventory(inv);
         players.add(inventoryPlayer);
+    }
+
+    private ItemStack setItemActions(ItemKitInventory itemInventory, ItemStack item) {
+        List<String> clickActions = itemInventory.getClickActions();
+        if(clickActions != null && !clickActions.isEmpty()) {
+            String actionsList = "";
+            for(int i=0;i<clickActions.size();i++) {
+                if(i==clickActions.size()-1) {
+                    actionsList=actionsList+clickActions.get(i);
+                }else {
+                    actionsList=actionsList+clickActions.get(i)+"|";
+                }
+            }
+            item = ItemUtils.setTagStringItem(plugin, item, "playerkits_item_actions", actionsList);
+        }
+        return item;
     }
 
     public void setKitPreviewItems(Inventory inv,InventoryPlayer inventoryPlayer,KitInventory kitInventory){
@@ -188,15 +194,15 @@ public class InventoryManager {
             return;
         }
 
+        String itemActions = ItemUtils.getTagStringItem(plugin,item,"playerkits_item_actions");
+        if(itemActions != null){
+            clickOnActionItem(inventoryPlayer,itemActions);
+        }
+
         String openInventory = ItemUtils.getTagStringItem(plugin,item,"playerkits_open_inventory");
         if(openInventory != null){
             clickOnOpenInventoryItem(inventoryPlayer,openInventory);
             return;
-        }
-
-        String itemCommands = ItemUtils.getTagStringItem(plugin,item,"playerkits_item_commands");
-        if(itemCommands != null){
-            clickOnCommandItem(inventoryPlayer,itemCommands);
         }
 
         //Requirements inventory
@@ -289,8 +295,18 @@ public class InventoryManager {
         }
     }
 
+    public void clickOnActionItem(InventoryPlayer inventoryPlayer,String itemActions) {
+        String[] sep = itemActions.split("\\|");
+
+        KitsManager kitsManager = plugin.getKitsManager();
+        Player player = inventoryPlayer.getPlayer();
+        for(String action : sep){
+            kitsManager.executeAction(player,action);
+        }
+    }
+
     public void setKit(String kitName, Player player, Inventory inv, int slot, KitsManager kitsManager, PlayerDataManager playerDataManager
-        ,KitItemManager kitItemManager,MessagesManager msgManager){
+        ,KitItemManager kitItemManager){
         Kit kit = kitsManager.getKitByName(kitName);
         if(kit == null){
             return;
