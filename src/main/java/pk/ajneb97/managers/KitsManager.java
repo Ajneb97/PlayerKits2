@@ -192,7 +192,8 @@ public class KitsManager {
             //Requirements - Buy
             KitRequirements kitRequirements = kit.getRequirements();
             if(!giveKitInstructions.isIgnoreRequirements() && kitRequirements != null &&
-                    (kitRequirements.getPrice() != 0 || !kitRequirements.getExtraRequirements().isEmpty())){
+                    (kitRequirements.getPrice() != 0 || !kitRequirements.getExtraRequirements().isEmpty())
+                    && !PlayerUtils.hasCostBypassPermission(player, kitName)){
                 if(!(kitRequirements.isOneTimeRequirements() && playerDataManager.isKitBought(player,kit.getName()))){
                     if(!giveKitInstructions.isRequirementsSatisfied()){
                         //Player must buy it first
@@ -202,7 +203,7 @@ public class KitsManager {
                     }
 
                     //Check price
-                    if(!passPrice(kitRequirements.getPrice(),player)){
+                    if(!passPrice(kitRequirements.getPrice(),player, kitName)){
                         sendKitActions(kit.getErrorActions(),player,false);
                         return PlayerKitsMessageResult.error(messagesFile.getString("requirementsError"));
                     }
@@ -341,7 +342,8 @@ public class KitsManager {
 
             //Requirements - Buy
             KitRequirements kitRequirements = kit.getRequirements();
-            if(!giveKitInstructions.isIgnoreRequirements() && kitRequirements != null && giveKitInstructions.isRequirementsSatisfied()){
+            if(!giveKitInstructions.isIgnoreRequirements() && kitRequirements != null && giveKitInstructions.isRequirementsSatisfied()
+                    && !PlayerUtils.hasCostBypassPermission(player, kitName)){
                 //Check price and update balance
                 double price = kitRequirements.getPrice();
                 Economy economy = plugin.getDependencyManager().getVaultEconomy();
@@ -425,6 +427,18 @@ public class KitsManager {
             Economy economy = plugin.getDependencyManager().getVaultEconomy();
             if(economy != null){
                 if(economy.getBalance(player) < price){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean passPrice(double price,Player player, String kitName){
+        if(price != 0){
+            Economy economy = plugin.getDependencyManager().getVaultEconomy();
+            if(economy != null){
+                if(economy.getBalance(player) < price  && !PlayerUtils.hasCostBypassPermission(player, kitName)){
                     return false;
                 }
             }
