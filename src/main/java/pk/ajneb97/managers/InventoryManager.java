@@ -107,7 +107,7 @@ public class InventoryManager {
                     continue;
                 }
 
-                ItemStack item = kitItemManager.createItemFromKitItem(itemInventory.getItem(),inventoryPlayer.getPlayer());
+                ItemStack item = kitItemManager.createItemFromKitItem(itemInventory.getItem(),inventoryPlayer.getPlayer(),null);
 
                 if(inventoryPlayer.getInventoryName().equals("buy_requirements_inventory")){
                     inventoryRequirementsManager.configureRequirementsItem(item,inventoryPlayer.getKitName(),inventoryPlayer.getPlayer());
@@ -173,7 +173,7 @@ public class InventoryManager {
 
         int slot = 0;
         for(KitItem kitItem : allItems){
-            ItemStack item = kitItemManager.createItemFromKitItem(kitItem,inventoryPlayer.getPlayer());
+            ItemStack item = kitItemManager.createItemFromKitItem(kitItem,inventoryPlayer.getPlayer(),kit);
             if(kitItem.getPreviewSlot() != -1){
                 inv.setItem(kitItem.getPreviewSlot(),item);
             }else{
@@ -344,7 +344,7 @@ public class InventoryManager {
             kitItem = kit.getDisplayItemDefault();
         }
 
-        ItemStack item = kitItemManager.createItemFromKitItem(kitItem,player);
+        ItemStack item = kitItemManager.createItemFromKitItem(kitItem,player,kit);
         kitItemManager.replaceVariables(item,variablesToReplace);
 
         item = ItemUtils.setTagStringItem(plugin,item, "playerkits_kit", kitName);

@@ -17,6 +17,7 @@ public class Kit {
     private ArrayList<KitAction> claimActions;
     private ArrayList<KitAction> errorActions;
     private boolean saveOriginalItems;
+    private boolean allowPlaceholdersOnOriginalItems;
 
     private KitItem displayItemDefault;
     private KitItem displayItemNoPermission;
@@ -170,6 +171,14 @@ public class Kit {
 
     public void setClearInventory(boolean clearInventory) {
         this.clearInventory = clearInventory;
+    }
+
+    public boolean isAllowPlaceholdersOnOriginalItems() {
+        return allowPlaceholdersOnOriginalItems;
+    }
+
+    public void setAllowPlaceholdersOnOriginalItems(boolean allowPlaceholdersOnOriginalItems) {
+        this.allowPlaceholdersOnOriginalItems = allowPlaceholdersOnOriginalItems;
     }
 
     public boolean playerHasPermission(CommandSender player){

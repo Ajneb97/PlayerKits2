@@ -302,7 +302,7 @@ public class KitsManager {
 
         //Give kit items
         for(KitItem kitItem : items){
-            ItemStack item = kitItemManager.createItemFromKitItem(kitItem,player);
+            ItemStack item = kitItemManager.createItemFromKitItem(kitItem,player,kit);
 
             if(itemHelmet != null && kitItem.equals(itemHelmet)){
                 playerInventory.setHelmet(item);

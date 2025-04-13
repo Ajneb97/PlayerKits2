@@ -147,6 +147,7 @@ public class KitsConfigManager {
         config.set("clear_inventory",kit.isClearInventory());
         config.set("custom_permission",kit.getCustomPermission());
         config.set("save_original_items",kit.isSaveOriginalItems());
+        config.set("allow_placeholders_on_original_items",kit.isAllowPlaceholdersOnOriginalItems());
 
         KitItemManager kitItemManager = plugin.getKitItemManager();
         int currentPos = 1;
@@ -237,6 +238,7 @@ public class KitsConfigManager {
         boolean oneTime = config.contains(mainPath+"one_time") ? config.getBoolean(mainPath+"one_time") : false;
         boolean clearInventory = config.contains(mainPath+"clear_inventory") ? config.getBoolean(mainPath+"clear_inventory") : false;
         boolean saveOriginalItems = config.contains(mainPath+"save_original_items") ? config.getBoolean(mainPath+"save_original_items") : false;
+        boolean allowPlaceholdersOnOriginalItems = config.contains(mainPath+"allow_placeholders_on_original_items") ? config.getBoolean(mainPath+"allow_placeholders_on_original_items") : false;
 
         ArrayList<KitItem> items = new ArrayList<>();
         if(config.contains(mainPath+"items")){
@@ -287,6 +289,7 @@ public class KitsConfigManager {
         kit.setDisplayItemOneTimeRequirements(displayItemOneTimeRequirements);
         kit.setRequirements(kitRequirements);
         kit.setSaveOriginalItems(saveOriginalItems);
+        kit.setAllowPlaceholdersOnOriginalItems(allowPlaceholdersOnOriginalItems);
 
         return kit;
     }

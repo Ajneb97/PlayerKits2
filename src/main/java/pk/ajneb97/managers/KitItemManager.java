@@ -13,6 +13,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.internal.KitVariable;
 import pk.ajneb97.model.item.*;
 import pk.ajneb97.utils.ItemUtils;
@@ -177,21 +178,23 @@ public class KitItemManager {
         return kitItem;
     }
 
-    public ItemStack createItemFromKitItem(KitItem kitItem,Player player){
+    public ItemStack createItemFromKitItem(KitItem kitItem, Player player, Kit kit){
         if(kitItem.getOriginalItem() != null){
             ItemStack item = kitItem.getOriginalItem().clone();
-            // Placeholders on original item
-            ItemMeta meta = item.getItemMeta();
-            if(meta.hasDisplayName()){
-                String name = OtherUtils.replaceGlobalVariables(meta.getDisplayName(),player,plugin);
-                meta.setDisplayName(name);
+            if(kit.isAllowPlaceholdersOnOriginalItems()){
+                // Placeholders on original item
+                ItemMeta meta = item.getItemMeta();
+                if(meta.hasDisplayName()){
+                    String name = OtherUtils.replaceGlobalVariables(meta.getDisplayName(),player,plugin);
+                    meta.setDisplayName(name);
+                }
+                if(meta.hasLore()){
+                    List<String> lore = meta.getLore();
+                    lore.replaceAll(text -> OtherUtils.replaceGlobalVariables(text, player, plugin));
+                    meta.setLore(lore);
+                }
+                item.setItemMeta(meta);
             }
-            if(meta.hasLore()){
-                List<String> lore = meta.getLore();
-                lore.replaceAll(text -> OtherUtils.replaceGlobalVariables(text, player, plugin));
-                meta.setLore(lore);
-            }
-            item.setItemMeta(meta);
             return item;
         }
 
@@ -334,7 +337,7 @@ public class KitItemManager {
         if(flags != null) {
             for(String flag : flags) {
                 if (flag.equals("HIDE_ATTRIBUTES") && plugin.getDependencyManager().isPaper() &&
-                        serverVersion.serverVersionGreaterEqualThan(serverVersion, ServerVersion.v1_21_R1)) {
+                        serverVersion.serverVersionGreaterEqualThan(serverVersion, ServerVersion.v1_20_R4)) {
                     //Fix PAPER HIDE_ATTRIBUTES
                     ItemUtils.addDummyAttribute(meta,plugin);
                 }
