@@ -35,6 +35,11 @@ public class KitItem{
     private KitItemBannerData bannerData;
     private KitItemBookData bookData;
     private KitItemTrimData trimData;
+    private KitItemCustomModelComponentData customModelComponentData; // 1.21.4+
+
+    private boolean hideTooltip; // 1.20.6+
+    private String tooltipStyle; // 1.21.2+
+    private String model; // 1.21.4+
 
     private boolean offhand;
     private int previewSlot;
@@ -223,6 +228,37 @@ public class KitItem{
         this.trimData = trimData;
     }
 
+    public KitItemCustomModelComponentData getCustomModelComponentData() {
+        return customModelComponentData;
+    }
+
+    public void setCustomModelComponentData(KitItemCustomModelComponentData customModelComponentData) {
+        this.customModelComponentData = customModelComponentData;
+    }
+    public boolean isHideTooltip() {
+        return hideTooltip;
+    }
+
+    public void setHideTooltip(boolean hideTooltip) {
+        this.hideTooltip = hideTooltip;
+    }
+
+    public String getTooltipStyle() {
+        return tooltipStyle;
+    }
+
+    public void setTooltipStyle(String tooltipStyle) {
+        this.tooltipStyle = tooltipStyle;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+
     public boolean isOffhand() {
         return offhand;
     }
@@ -253,10 +289,12 @@ public class KitItem{
         }
         lore.remove(lore.size()-1);
         lore.remove(lore.size()-1);
-        for(int i=0;i<nbt.size();i++){
-            if(nbt.get(i).startsWith("playerkits_offhand")){
-                nbt.remove(i);
-                return;
+        if(nbt != null){
+            for(int i=0;i<nbt.size();i++){
+                if(nbt.get(i).startsWith("playerkits_offhand")){
+                    nbt.remove(i);
+                    return;
+                }
             }
         }
     }
@@ -283,9 +321,14 @@ public class KitItem{
         kitItem.setBannerData(bannerData != null ? bannerData.clone() : null);
         kitItem.setBookData(bookData != null ? bookData.clone() : null);
         kitItem.setTrimData(trimData != null ? trimData.clone() : null);
+        kitItem.setCustomModelComponentData(customModelComponentData != null ? customModelComponentData.clone() : null);
+
+        kitItem.setHideTooltip(hideTooltip);
+        kitItem.setTooltipStyle(tooltipStyle);
 
         kitItem.setPreviewSlot(previewSlot);
         kitItem.setOffhand(offhand);
+        kitItem.setModel(model);
 
         return kitItem;
     }

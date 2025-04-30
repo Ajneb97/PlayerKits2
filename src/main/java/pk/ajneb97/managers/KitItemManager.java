@@ -12,7 +12,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.internal.KitVariable;
 import pk.ajneb97.model.item.*;
 import pk.ajneb97.utils.ItemUtils;
@@ -20,6 +22,7 @@ import pk.ajneb97.utils.OtherUtils;
 import pk.ajneb97.utils.ServerVersion;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class KitItemManager {
 
@@ -77,7 +80,59 @@ public class KitItemManager {
             }
 
             if(OtherUtils.isNew() && meta.hasCustomModelData()) {
-                kitItem.setCustomModelData(meta.getCustomModelData());
+                if(!serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+                    kitItem.setCustomModelData(meta.getCustomModelData());
+                }
+            }
+
+            if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+                if(meta.hasCustomModelData()){
+                    CustomModelDataComponent customModelDataComponent = meta.getCustomModelDataComponent();
+
+                    List<String> customModelDataComponentFlagsList = customModelDataComponent.getFlags()
+                            .stream()
+                            .map(String::valueOf)
+                            .collect(Collectors.toList());
+
+                    List<String> customModelDataComponentColorsList = customModelDataComponent.getColors()
+                            .stream()
+                            .map(color -> String.valueOf(color.asRGB()))
+                            .collect(Collectors.toList());
+
+                    List<String> customModelDataComponentFloatsList = customModelDataComponent.getFloats()
+                            .stream()
+                            .map(String::valueOf)
+                            .collect(Collectors.toList());
+
+                    List<String> customModelDataComponentStringsList = new ArrayList<>(customModelDataComponent.getStrings());
+
+                    kitItem.setCustomModelComponentData(new KitItemCustomModelComponentData(
+                            customModelDataComponentFlagsList,
+                            customModelDataComponentColorsList,
+                            customModelDataComponentFloatsList,
+                            customModelDataComponentStringsList
+                    ));
+                }
+            }
+
+            if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
+                if(meta.isHideTooltip()){
+                    kitItem.setHideTooltip(true);
+                }
+            }
+
+            if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R2)){
+                if(meta.hasTooltipStyle()){
+                    NamespacedKey key = meta.getTooltipStyle();
+                    kitItem.setTooltipStyle(key.getNamespace()+":"+key.getKey());
+                }
+            }
+
+            if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+                if(meta.hasItemModel()){
+                    NamespacedKey key = meta.getItemModel();
+                    kitItem.setModel(key.getNamespace()+":"+key.getKey());
+                }
             }
 
             if(meta instanceof LeatherArmorMeta) {
@@ -124,9 +179,24 @@ public class KitItemManager {
         return kitItem;
     }
 
-    public ItemStack createItemFromKitItem(KitItem kitItem,Player player){
+    public ItemStack createItemFromKitItem(KitItem kitItem, Player player, Kit kit){
         if(kitItem.getOriginalItem() != null){
-            return kitItem.getOriginalItem().clone();
+            ItemStack item = kitItem.getOriginalItem().clone();
+            if(kit.isAllowPlaceholdersOnOriginalItems()){
+                // Placeholders on original item
+                ItemMeta meta = item.getItemMeta();
+                if(meta.hasDisplayName()){
+                    String name = OtherUtils.replaceGlobalVariables(meta.getDisplayName(),player,plugin);
+                    meta.setDisplayName(name);
+                }
+                if(meta.hasLore()){
+                    List<String> lore = meta.getLore();
+                    lore.replaceAll(text -> OtherUtils.replaceGlobalVariables(text, player, plugin));
+                    meta.setLore(lore);
+                }
+                item.setItemMeta(meta);
+            }
+            return item;
         }
 
         ItemStack item = ItemUtils.createItemFromID(kitItem.getId());
@@ -160,6 +230,31 @@ public class KitItemManager {
             meta.setCustomModelData(customModelData);
         }
 
+        ServerVersion serverVersion = PlayerKits2.serverVersion;
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+            KitItemCustomModelComponentData kitItemCustomModelComponentData = kitItem.getCustomModelComponentData();
+            if(kitItemCustomModelComponentData != null){
+                CustomModelDataComponent customModelDataComponent = meta.getCustomModelDataComponent();
+
+                List<String> cFloats = kitItemCustomModelComponentData.getFloats();
+                List<String> cColors = kitItemCustomModelComponentData.getColors();
+                List<String> cFlags = kitItemCustomModelComponentData.getFlags();
+                List<String> cStrings = kitItemCustomModelComponentData.getStrings();
+
+                customModelDataComponent.setFlags(cFlags.stream()
+                        .map(Boolean::parseBoolean)
+                        .collect(Collectors.toList()));
+                customModelDataComponent.setFloats(cFloats.stream()
+                        .map(Float::parseFloat)
+                        .collect(Collectors.toList()));
+                customModelDataComponent.setColors(cColors.stream()
+                        .map(rgb -> Color.fromRGB(Integer.parseInt(rgb)))
+                        .collect(Collectors.toList()));
+                customModelDataComponent.setStrings(new ArrayList<>(cStrings));
+                meta.setCustomModelDataComponent(customModelDataComponent);
+            }
+        }
+
         List<String> enchants = kitItem.getEnchants();
         if(enchants != null) {
             for(int i=0;i<enchants.size();i++) {
@@ -168,6 +263,28 @@ public class KitItemManager {
                 int enchantLevel = Integer.parseInt(sep[1]);
 
                 meta.addEnchant(Enchantment.getByName(enchantName), enchantLevel, true);
+            }
+        }
+
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
+            if(kitItem.isHideTooltip()){
+                meta.setHideTooltip(true);
+            }
+        }
+
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R2)){
+            String tooltipStyle = kitItem.getTooltipStyle();
+            if(tooltipStyle != null){
+                String[] sep = tooltipStyle.split(":");
+                meta.setTooltipStyle(new NamespacedKey(sep[0],sep[1]));
+            }
+        }
+
+        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
+            String model = kitItem.getModel();
+            if(model != null){
+                String[] sep = model.split(":");
+                meta.setItemModel(new NamespacedKey(sep[0],sep[1]));
             }
         }
 
@@ -215,15 +332,13 @@ public class KitItemManager {
         List<String> attributes = kitItem.getAttributes();
         item = ItemUtils.setAttributes(plugin,item, attributes);
 
-        ServerVersion serverVersion = PlayerKits2.serverVersion;
-
         //Item Flags
         meta = item.getItemMeta();
         List<String> flags = kitItem.getFlags();
         if(flags != null) {
             for(String flag : flags) {
                 if (flag.equals("HIDE_ATTRIBUTES") && plugin.getDependencyManager().isPaper() &&
-                        serverVersion.serverVersionGreaterEqualThan(serverVersion, ServerVersion.v1_21_R1)) {
+                        serverVersion.serverVersionGreaterEqualThan(serverVersion, ServerVersion.v1_20_R4)) {
                     //Fix PAPER HIDE_ATTRIBUTES
                     ItemUtils.addDummyAttribute(meta,plugin);
                 }
@@ -283,6 +398,25 @@ public class KitItemManager {
             if(item.getCustomModelData() != 0) {
                 config.set(path+".custom_model_data", item.getCustomModelData());
             }
+
+            KitItemCustomModelComponentData customModelComponentData = item.getCustomModelComponentData();
+            if(customModelComponentData != null){
+                if(!customModelComponentData.getFlags().isEmpty()) config.set(path+".custom_model_component_data.flags",customModelComponentData.getFlags());
+                if(!customModelComponentData.getFloats().isEmpty()) config.set(path+".custom_model_component_data.floats",customModelComponentData.getFloats());
+                if(!customModelComponentData.getColors().isEmpty()) config.set(path+".custom_model_component_data.colors",customModelComponentData.getColors());
+                if(!customModelComponentData.getStrings().isEmpty()) config.set(path+".custom_model_component_data.strings",customModelComponentData.getStrings());
+            }
+
+            if(item.isHideTooltip()){
+                config.set(path+".hide_tooltip", true);
+            }
+            if(item.getTooltipStyle() != null){
+                config.set(path+".tooltip_style",item.getTooltipStyle());
+            }
+            if(item.getModel() != null){
+                config.set(path+".model",item.getModel());
+            }
+
             if(item.getColor() != 0) {
                 config.set(path+".color", item.getColor());
             }
@@ -385,6 +519,33 @@ public class KitItemManager {
             List<String> attributes = config.contains(path+".attributes") ? config.getStringList(path+".attributes") : null;
             List<String> canPlace = config.contains(path+".can_place") ? config.getStringList(path+".can_place") : null;
             List<String> canDestroy = config.contains(path+".can_destroy") ? config.getStringList(path+".can_destroy") : null;
+
+            KitItemCustomModelComponentData customModelComponentData = null;
+            if(config.contains(path+".custom_model_component_data")) {
+                List<String> cFlags = new ArrayList<>();
+                List<String> cFloats = new ArrayList<>();
+                List<String> cColors = new ArrayList<>();
+                List<String> cStrings = new ArrayList<>();
+
+                if(config.contains(path+".custom_model_component_data.flags")) {
+                    cFlags = config.getStringList(path+".custom_model_component_data.flags");
+                }
+                if(config.contains(path+".custom_model_component_data.floats")) {
+                    cFloats = config.getStringList(path+".custom_model_component_data.floats");
+                }
+                if(config.contains(path+".custom_model_component_data.colors")) {
+                    cColors = config.getStringList(path+".custom_model_component_data.colors");
+                }
+                if(config.contains(path+".custom_model_component_data.strings")) {
+                    cStrings = config.getStringList(path+".custom_model_component_data.strings");
+                }
+
+                customModelComponentData = new KitItemCustomModelComponentData(cFlags,cColors,cFloats,cStrings);
+            }
+
+            boolean hideTooltip = config.getBoolean(path+".hide_tooltip");
+            String tooltipStyle = config.contains(path+".tooltip_style") ? config.getString(path+".tooltip_style") : null;
+            String model = config.contains(path+".model") ? config.getString(path+".model") : null;
 
             KitItemSkullData skullData = null;
             if(config.contains(path+".skull_data")) {
@@ -502,6 +663,10 @@ public class KitItemManager {
             kitItem.setBannerData(bannerData);
             kitItem.setBookData(bookData);
             kitItem.setTrimData(trimData);
+            kitItem.setCustomModelComponentData(customModelComponentData);
+            kitItem.setHideTooltip(hideTooltip);
+            kitItem.setTooltipStyle(tooltipStyle);
+            kitItem.setModel(model);
         }
 
         kitItem.setOffhand(offhand);

@@ -12,9 +12,15 @@ import pk.ajneb97.libs.actionbar.ActionBarAPI;
 import pk.ajneb97.libs.titles.TitleAPI;
 import pk.ajneb97.managers.MessagesManager;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 public class ActionUtils {
+
+    public static void message(Player player,String actionLine) {
+        player.sendMessage(MessagesManager.getColoredMessage(actionLine));
+    }
 
     public static void consoleCommand(String actionLine){
         ConsoleCommandSender sender = Bukkit.getConsoleSender();
@@ -31,7 +37,7 @@ public class ActionUtils {
         int volume = 0;
         float pitch = 0;
         try {
-            sound = Sound.valueOf(sep[0]);
+            sound = getSoundByName(sep[0]);
             volume = Integer.valueOf(sep[1]);
             pitch = Float.valueOf(sep[2]);
         }catch(Exception e ) {
@@ -41,6 +47,16 @@ public class ActionUtils {
         }
 
         player.playSound(player.getLocation(), sound, volume, pitch);
+    }
+
+    private static Sound getSoundByName(String name){
+        try {
+            Class<?> soundTypeClass = Class.forName("org.bukkit.Sound");
+            Method valueOf = soundTypeClass.getMethod("valueOf", String.class);
+            return (Sound) valueOf.invoke(null,name);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void actionbar(Player player, String actionLine, PlayerKits2 plugin){
@@ -116,5 +132,9 @@ public class ActionUtils {
         fireworkMeta.setPower(power);
         firework.setFireworkMeta(fireworkMeta);
         firework.setMetadata("playerkits", new FixedMetadataValue(plugin, "no_damage"));
+    }
+
+    public static void closeInventory(Player player) {
+        player.closeInventory();
     }
 }

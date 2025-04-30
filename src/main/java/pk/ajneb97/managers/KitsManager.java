@@ -49,7 +49,7 @@ public class KitsManager {
 
     public Kit getKitByName(String name){
         for(Kit kit : kits){
-            if(kit.getName().equalsIgnoreCase(name)){
+            if(kit.getName().equals(name)){
                 return kit;
             }
         }
@@ -286,10 +286,15 @@ public class KitsManager {
 
         boolean enoughSpace = freeSlots < inventoryKitItems;
         boolean dropItemsIfFullInventory = configFile.getBoolean("drop_items_if_full_inventory");
+        boolean clearInventory = kit.isClearInventory();
 
-        if(enoughSpace && !dropItemsIfFullInventory){
+        if(enoughSpace && !dropItemsIfFullInventory && !clearInventory){
             sendKitActions(kit.getErrorActions(),player,false);
             return PlayerKitsMessageResult.error(messagesFile.getString("noSpaceError"));
+        }
+
+        if(clearInventory){
+            player.getInventory().clear();
         }
 
         //Actions before
@@ -297,7 +302,7 @@ public class KitsManager {
 
         //Give kit items
         for(KitItem kitItem : items){
-            ItemStack item = kitItemManager.createItemFromKitItem(kitItem,player);
+            ItemStack item = kitItemManager.createItemFromKitItem(kitItem,player,kit);
 
             if(itemHelmet != null && kitItem.equals(itemHelmet)){
                 playerInventory.setHelmet(item);
@@ -372,12 +377,19 @@ public class KitsManager {
     }
 
     public void executeAction(Player player,String actionText){
+        if(actionText.equals("close_inventory")){
+            ActionUtils.closeInventory(player);
+            return;
+        }
         int indexFirst = actionText.indexOf(" ");
         String actionType = actionText.substring(0,indexFirst).replace(":","");
         String actionLine = actionText.substring(indexFirst+1);
         actionLine = OtherUtils.replaceGlobalVariables(actionLine,player,plugin);
 
         switch(actionType){
+            case "message":
+                ActionUtils.message(player,actionLine);
+                break;
             case "console_command":
                 ActionUtils.consoleCommand(actionLine);
                 break;

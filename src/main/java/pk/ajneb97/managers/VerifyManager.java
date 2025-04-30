@@ -112,7 +112,8 @@ public class VerifyManager {
             String actionName = actionText[0];
             if(actionName.equals("console_command:") || actionName.equals("player_command:")
                     || actionName.equals("playsound:") || actionName.equals("actionbar:")
-                    || actionName.equals("title:") || actionName.equals("firework:")){
+                    || actionName.equals("title:") || actionName.equals("firework:")
+                    || actionName.equals("close_inventory") || actionName.equals("message:")){
                 continue;
             }
             errors.add(new PKKitActionError(kitName+".yml",action.getAction(),false,kitName,actionGroup,(i+1)+""));

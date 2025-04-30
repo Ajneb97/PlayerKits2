@@ -70,7 +70,7 @@ public class InventoryEditKitItemsManager {
         KitItemManager kitItemManager = plugin.getKitItemManager();
         int slot = 0;
         for(KitItem kitItem : items){
-            ItemStack item = kitItemManager.createItemFromKitItem(kitItem, null); //Player null means variables will be showed
+            ItemStack item = kitItemManager.createItemFromKitItem(kitItem, null, kit); //Player null means variables will be showed
 
             int finalSlot = kitItem.getPreviewSlot() != -1 ? kitItem.getPreviewSlot() : slot;
 

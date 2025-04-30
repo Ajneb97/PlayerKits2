@@ -533,16 +533,16 @@ public class ItemUtils {
 				Multimap<Attribute,AttributeModifier> attributes = meta.getAttributeModifiers();
 				Set<Attribute> set = attributes.keySet();
 
-				List<String> attributeList = new ArrayList<String>();
+				List<String> attributeList = new ArrayList<>();
 				for(Attribute a : set) {
 					Collection<AttributeModifier> listModifiers = attributes.get(a);
 					for(AttributeModifier m : listModifiers) {
 						String line;
 						if(newSystem){
-							line = a.name()+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getKey().getNamespace()+":"+m.getKey().getKey();
+							line = getAttributeName(a)+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getKey().getNamespace()+":"+m.getKey().getKey();
 							line=line+";"+m.getSlotGroup().toString();
 						}else{
-							line = a.name()+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getUniqueId();
+							line = getAttributeName(a)+";"+m.getOperation().name()+";"+m.getAmount()+";"+m.getUniqueId();
 							if(m.getSlot() != null) {
 								line=line+";"+m.getSlot().name();
 							}
@@ -605,7 +605,7 @@ public class ItemUtils {
 						}
 					}
 
-					meta.addAttributeModifier(Attribute.valueOf(attribute), modifier);
+					meta.addAttributeModifier(getAttributeByName(attribute), modifier);
 				}
 
 				item.setItemMeta(meta);
@@ -618,8 +618,17 @@ public class ItemUtils {
 
 	// 1.21+ only
 	public static void addDummyAttribute(ItemMeta meta,PlayerKits2 plugin){
-		AttributeModifier modifier = new AttributeModifier(new NamespacedKey(plugin,"dummy_attribute"),0,AttributeModifier.Operation.ADD_NUMBER,EquipmentSlotGroup.FEET);
-		meta.addAttributeModifier(Attribute.GENERIC_GRAVITY, modifier);
+		try{
+			AttributeModifier modifier = new AttributeModifier(new NamespacedKey(plugin,"dummy_attribute"),0,AttributeModifier.Operation.ADD_NUMBER,EquipmentSlotGroup.FEET);
+			ServerVersion serverVersion = PlayerKits2.serverVersion;
+			if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R2)){
+				meta.addAttributeModifier(Attribute.GRAVITY, modifier);
+			}else{
+				meta.addAttributeModifier(getAttributeByName("GENERIC_GRAVITY"), modifier);
+			}
+		}catch(Exception ignored){
+
+		}
 	}
 	
 	public static KitItemBookData getBookData(ItemStack item){
@@ -749,6 +758,25 @@ public class ItemUtils {
 			Method valueOf = patternTypeClass.getMethod("valueOf", String.class);
 			return (PatternType) valueOf.invoke(null,name);
 		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static Attribute getAttributeByName(String name){
+		try {
+			Class<?> attributeTypeClass = Class.forName("org.bukkit.attribute.Attribute");
+			Field field = attributeTypeClass.getField(name);
+			return (Attribute) field.get(null);
+		} catch (IllegalAccessException | ClassNotFoundException | NoSuchFieldException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static String getAttributeName(Object attribute){
+		try {
+			Class<?> attributeTypeClass = Class.forName("org.bukkit.attribute.Attribute");
+			return (String)attributeTypeClass.getMethod("name").invoke(attribute);
+		} catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
 	}
