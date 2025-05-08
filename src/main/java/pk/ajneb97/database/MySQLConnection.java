@@ -1,6 +1,8 @@
 package pk.ajneb97.database;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
@@ -18,11 +20,6 @@ public class MySQLConnection {
 
     private PlayerKits2 plugin;
     private HikariConnection connection;
-    private String host;
-    private String database;
-    private String username;
-    private String password;
-    private int port;
 
     public MySQLConnection(PlayerKits2 plugin){
         this.plugin = plugin;
@@ -31,12 +28,9 @@ public class MySQLConnection {
     public void setupMySql(){
         FileConfiguration config = plugin.getConfigsManager().getMainConfigManager().getConfig();
         try {
-            host = config.getString("mysql_database.host");
-            port = Integer.valueOf(config.getString("mysql_database.port"));
-            database = config.getString("mysql_database.database");
-            username = config.getString("mysql_database.username");
-            password = config.getString("mysql_database.password");
-            connection = new HikariConnection(host,port,database,username,password);
+            ConfigurationSection section = config.getConfigurationSection("mysql_database");
+            if (section == null) section = new MemoryConfiguration();
+            connection = new HikariConnection(section);
             connection.getHikari().getConnection();
             createTables();
             loadData();
@@ -48,7 +42,7 @@ public class MySQLConnection {
 
 
     public String getDatabase() {
-        return this.database;
+        return connection.getDatabase();
     }
 
     public Connection getConnection() {
