@@ -63,7 +63,13 @@ public class MainConfigManager {
         Path pathConfig = Paths.get(configFile.getRoute());
         try{
             String text = new String(Files.readAllBytes(pathConfig));
-
+            if(!text.contains("verifyServerCertificate:")){
+                getConfig().set("mysql_database.pool.connectionTimeout",5000);
+                getConfig().set("mysql_database.advanced.verifyServerCertificate",false);
+                getConfig().set("mysql_database.advanced.useSSL",true);
+                getConfig().set("mysql_database.advanced.allowPublicKeyRetrieval",true);
+                configFile.saveConfig();
+            }
             if(!text.contains("new_kit_default_save_mode_original:")){
                 getConfig().set("new_kit_default_save_mode_original", true);
                 configFile.saveConfig();
