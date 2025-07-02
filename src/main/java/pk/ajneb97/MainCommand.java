@@ -398,7 +398,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 commands.add("verify");commands.add("migrate");commands.add("open");
             }
             for(String c : commands) {
-                if(args[0].isEmpty() || c.startsWith(args[0].toLowerCase())) {
+                if(args[0].isEmpty() || c.toLowerCase().startsWith(args[0].toLowerCase())) {
                     completions.add(c);
                 }
             }
