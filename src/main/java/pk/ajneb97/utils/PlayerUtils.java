@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import pk.ajneb97.PlayerKits2;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,7 +14,8 @@ import java.util.Arrays;
 public class PlayerUtils {
 
     public static ItemStack[] getAllInventoryContents(Player player){
-        if(Bukkit.getVersion().contains("1.8")) {
+        ServerVersion serverVersion = PlayerKits2.serverVersion;
+        if(!serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_9_R1)) {
             ItemStack[] contents = new ItemStack[40];
 
             int slot = 0;
@@ -36,7 +38,9 @@ public class PlayerUtils {
     public static int getUsedSlots(Player player){
         //ItemStack[] contents = getAllInventoryContents(player);
         ItemStack[] contents = null;
-        if(Bukkit.getVersion().contains("1.8")) {
+        ServerVersion serverVersion = PlayerKits2.serverVersion;
+        if(!serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_9_R1)) {
+            // 1.8
             contents = player.getInventory().getContents();
         }else{
             contents = player.getInventory().getStorageContents();

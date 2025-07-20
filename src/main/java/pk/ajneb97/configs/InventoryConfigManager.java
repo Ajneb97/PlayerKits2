@@ -2,6 +2,7 @@ package pk.ajneb97.configs;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.configs.model.CommonConfig;
 import pk.ajneb97.managers.KitItemManager;
 import pk.ajneb97.model.inventory.ItemKitInventory;
 import pk.ajneb97.model.inventory.KitInventory;
@@ -13,12 +14,12 @@ import java.util.List;
 public class InventoryConfigManager {
 
     private PlayerKits2 plugin;
-    private CustomConfig configFile;
+    private CommonConfig configFile;
 
 
     public InventoryConfigManager(PlayerKits2 plugin){
         this.plugin = plugin;
-        this.configFile = new CustomConfig("inventory.yml",plugin,null, false);
+        this.configFile = new CommonConfig("inventory.yml",plugin,null, false);
         this.configFile.registerConfig();
         if(this.configFile.isFirstTime() && OtherUtils.isLegacy()){
             checkAndFix();

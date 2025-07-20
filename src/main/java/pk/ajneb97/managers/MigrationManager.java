@@ -111,7 +111,7 @@ public class MigrationManager {
             return;
         }
 
-        kitsConfigManager.reloadConfigs();
+        kitsConfigManager.loadConfigs();
         plugin.getVerifyManager().verify();
     }
 

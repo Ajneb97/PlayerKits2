@@ -61,7 +61,7 @@ public class ConfigsManager {
         if(!inventoryConfigManager.reloadConfig()){
             return false;
         }
-        kitsConfigManager.reloadConfigs();
+        kitsConfigManager.loadConfigs();
         if(plugin.getMySQLConnection() == null){
             plugin.reloadPlayerDataSaveTask();
         }

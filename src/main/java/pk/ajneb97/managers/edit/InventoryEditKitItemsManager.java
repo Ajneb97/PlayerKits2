@@ -13,10 +13,7 @@ import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.item.KitItem;
-import pk.ajneb97.utils.InventoryItem;
-import pk.ajneb97.utils.InventoryUtils;
-import pk.ajneb97.utils.ItemUtils;
-import pk.ajneb97.utils.OtherUtils;
+import pk.ajneb97.utils.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +84,8 @@ public class InventoryEditKitItemsManager {
     }
 
     public void clickOffHand(InventoryPlayer inventoryPlayer, Inventory inv, ItemStack clickedItem, int clickedSlot){
-        if(Bukkit.getVersion().contains("1.8")){
+        ServerVersion serverVersion = PlayerKits2.serverVersion;
+        if(!serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_9_R1)) {
             inventoryPlayer.getPlayer().sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&cOffhand only works on 1.9+."));
             return;
         }

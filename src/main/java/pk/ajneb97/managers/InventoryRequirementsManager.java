@@ -1,7 +1,6 @@
 package pk.ajneb97.managers;
 
 import me.clip.placeholderapi.PlaceholderAPI;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -98,11 +97,7 @@ public class InventoryRequirementsManager {
 
     public void requirementsInventoryBuy(InventoryPlayer inventoryPlayer){
         Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
-        KitRequirements requirements = kit.getRequirements();
-        DependencyManager dependencyManager = plugin.getDependencyManager();
-        boolean isPlaceholderAPI = dependencyManager.isPlaceholderAPI();
         Player player = inventoryPlayer.getPlayer();
-        FileConfiguration messages = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
         MessagesManager msgManager = plugin.getMessagesManager();
 
         //Buy - Unlock
@@ -110,6 +105,11 @@ public class InventoryRequirementsManager {
         PlayerKitsMessageResult result = kitsManager.giveKit(player,inventoryPlayer.getKitName(),
                 new GiveKitInstructions(false,true,false,false));
         if(!result.isError()){
+            if(plugin.getConfigsManager().getMainConfigManager().isCloseInventoryOnClaim()){
+                player.closeInventory();
+                return;
+            }
+
             //Everything is good, open previous inventory.
             requirementsInventoryCancel(inventoryPlayer);
         }else{

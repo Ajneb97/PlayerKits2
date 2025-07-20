@@ -2,6 +2,7 @@ package pk.ajneb97.configs;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.configs.model.CommonConfig;
 import pk.ajneb97.model.Kit;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.nio.file.Paths;
 public class MainConfigManager {
 
     private PlayerKits2 plugin;
-    private CustomConfig configFile;
+    private CommonConfig configFile;
 
     //Options
     private Kit newKitDefault;
@@ -28,7 +29,7 @@ public class MainConfigManager {
 
     public MainConfigManager(PlayerKits2 plugin){
         this.plugin = plugin;
-        this.configFile = new CustomConfig("config.yml",plugin,null, false);
+        this.configFile = new CommonConfig("config.yml",plugin,null, false);
         this.configFile.registerConfig();
         checkUpdate();
     }

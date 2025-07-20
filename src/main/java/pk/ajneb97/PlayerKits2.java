@@ -140,6 +140,7 @@ public class PlayerKits2 extends JavaPlugin {
                 break;
             case "1.21.6":
             case "1.21.7":
+            case "1.21.8":
                 serverVersion = ServerVersion.v1_21_R5;
                 break;
             default:

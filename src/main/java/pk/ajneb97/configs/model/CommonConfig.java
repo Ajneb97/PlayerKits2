@@ -1,12 +1,14 @@
-package pk.ajneb97.configs;
+package pk.ajneb97.configs.model;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import pk.ajneb97.PlayerKits2;
-import java.io.*;
 
-public class CustomConfig {
+import java.io.File;
+import java.io.IOException;
+
+public class CommonConfig {
 
     private String fileName;
     private FileConfiguration fileConfiguration = null;
@@ -17,7 +19,7 @@ public class CustomConfig {
     private boolean newFile;
     private boolean isFirstTime;
 
-    public CustomConfig(String fileName, PlayerKits2 plugin, String folderName, boolean newFile){
+    public CommonConfig(String fileName, PlayerKits2 plugin, String folderName, boolean newFile){
         this.fileName = fileName;
         this.plugin = plugin;
         this.newFile = newFile;
