@@ -236,6 +236,8 @@ public class KitsManager {
         KitItem itemBoots = null;
         KitItem itemOffhand = null;
 
+        boolean clearInventory = kit.isClearInventory();
+
         PlayerInventory playerInventory = player.getInventory();
         for(KitItem item : items){
             if(kit.isAutoArmor()){
@@ -245,34 +247,39 @@ public class KitsManager {
                 }
 
                 //Check if the item must be put in the player equipment
-                if((id.contains("_HELMET") || id.contains("PLAYER_HEAD") || id.contains("SKULL_ITEM")) && itemHelmet == null && (playerInventory.getHelmet() == null
-                    || playerInventory.getHelmet().getType().equals(Material.AIR))){
-                    itemHelmet = item;
-                    freeSlots++;
-                    continue;
-                }else if((id.contains("_CHESTPLATE") || id.contains("ELYTRA")) && itemChestplate == null && (playerInventory.getChestplate() == null
-                        || playerInventory.getChestplate().getType().equals(Material.AIR))){
-                    itemChestplate = item;
-                    freeSlots++;
-                    continue;
-                }else if(id.contains("_LEGGINGS") && itemLeggings == null && (playerInventory.getLeggings() == null
-                        || playerInventory.getLeggings().getType().equals(Material.AIR))){
-                    itemLeggings = item;
-                    freeSlots++;
-                    continue;
-                }else if(id.contains("_BOOTS") && itemBoots == null && (playerInventory.getBoots() == null
-                        || playerInventory.getBoots().getType().equals(Material.AIR))){
-                    itemBoots = item;
-                    freeSlots++;
-                    continue;
+                if((id.contains("_HELMET") || id.contains("PLAYER_HEAD") || id.contains("SKULL_ITEM")) && itemHelmet == null){
+                    if(playerInventory.getHelmet() == null || playerInventory.getHelmet().getType().equals(Material.AIR) || clearInventory){
+                        itemHelmet = item;
+                        freeSlots++;
+                        continue;
+                    }
+                }else if((id.contains("_CHESTPLATE") || id.contains("ELYTRA")) && itemChestplate == null){
+                    if(playerInventory.getChestplate() == null || playerInventory.getChestplate().getType().equals(Material.AIR) || clearInventory){
+                        itemChestplate = item;
+                        freeSlots++;
+                        continue;
+                    }
+                }else if(id.contains("_LEGGINGS") && itemLeggings == null){
+                    if(playerInventory.getLeggings() == null || playerInventory.getLeggings().getType().equals(Material.AIR) || clearInventory){
+                        itemLeggings = item;
+                        freeSlots++;
+                        continue;
+                    }
+                }else if(id.contains("_BOOTS") && itemBoots == null){
+                    if(playerInventory.getBoots() == null || playerInventory.getBoots().getType().equals(Material.AIR) || clearInventory){
+                        itemBoots = item;
+                        freeSlots++;
+                        continue;
+                    }
                 }
             }
 
-            if(item.isOffhand() && itemOffhand == null && (playerInventory.getItemInOffHand() == null
-                || playerInventory.getItemInOffHand().getType().equals(Material.AIR))){
-                itemOffhand = item;
-                freeSlots++;
-                continue;
+            if(item.isOffhand() && itemOffhand == null){
+                if(playerInventory.getItemInOffHand() == null || playerInventory.getItemInOffHand().getType().equals(Material.AIR) || clearInventory){
+                    itemOffhand = item;
+                    freeSlots++;
+                    continue;
+                }
             }
 
             inventoryKitItems++;
@@ -286,7 +293,6 @@ public class KitsManager {
 
         boolean enoughSpace = freeSlots < inventoryKitItems;
         boolean dropItemsIfFullInventory = configFile.getBoolean("drop_items_if_full_inventory");
-        boolean clearInventory = kit.isClearInventory();
 
         if(enoughSpace && !dropItemsIfFullInventory && !clearInventory){
             sendKitActions(kit.getErrorActions(),player,false);
