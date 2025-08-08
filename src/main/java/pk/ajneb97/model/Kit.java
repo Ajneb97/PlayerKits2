@@ -1,7 +1,6 @@
 package pk.ajneb97.model;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.PlayerUtils;
 
@@ -11,12 +10,14 @@ public class Kit {
     private String name;
     private int cooldown;
     private boolean permissionRequired;
+    private boolean clearInventory;
     private String customPermission;
     private boolean oneTime;
     private ArrayList<KitItem> items;
     private ArrayList<KitAction> claimActions;
     private ArrayList<KitAction> errorActions;
     private boolean saveOriginalItems;
+    private boolean allowPlaceholdersOnOriginalItems;
 
     private KitItem displayItemDefault;
     private KitItem displayItemNoPermission;
@@ -164,6 +165,22 @@ public class Kit {
         this.saveOriginalItems = saveOriginalItems;
     }
 
+    public boolean isClearInventory() {
+        return clearInventory;
+    }
+
+    public void setClearInventory(boolean clearInventory) {
+        this.clearInventory = clearInventory;
+    }
+
+    public boolean isAllowPlaceholdersOnOriginalItems() {
+        return allowPlaceholdersOnOriginalItems;
+    }
+
+    public void setAllowPlaceholdersOnOriginalItems(boolean allowPlaceholdersOnOriginalItems) {
+        this.allowPlaceholdersOnOriginalItems = allowPlaceholdersOnOriginalItems;
+    }
+
     public boolean playerHasPermission(CommandSender player){
         if(permissionRequired){
             if(customPermission != null){
@@ -178,6 +195,7 @@ public class Kit {
     public void setDefaults(Kit defaultKit){
         cooldown = defaultKit.getCooldown();
         oneTime = defaultKit.isOneTime();
+        clearInventory = defaultKit.isClearInventory();
         permissionRequired = defaultKit.isPermissionRequired();
         if(defaultKit.getClaimActions() != null){
             ArrayList<KitAction> actions = new ArrayList<>();

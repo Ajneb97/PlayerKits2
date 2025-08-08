@@ -11,7 +11,7 @@ commandCreateError: "&cYou need to use: &7/kit create <name> (optional)original/
 commandDeleteError: "&cYou need to use: &7/kit delete <name>"
 commandResetError: "&cYou need to use: &7/kit reset <kit> <player>"
 commandEditError: "&cYou need to use: &7/kit edit <kit>"
-commandPreviewError: "&cYou need to use: &7/kit preview <kit>"
+commandPreviewError: "&cYou need to use: &7/kit preview <kit> (optional)<player>"
 commandOpenError: "&cYou need to use: &7/kit open <inventory> <player>"
 commandDoesNotExists: "&cThat command doesn't exists."
 playerNotOnline: "&cPlayer &7%player% &cis not online."
@@ -40,5 +40,7 @@ cooldownPlaceholderReady: "&a&lReady!"
 pluginCriticalErrors: "&cThe plugin has detected some errors. Check them using &7/kit verify"
 kitPreviewDisabled: "&cKit preview is disabled."
 inventoryNotExists: "&cThat inventory doesn't exists."
+onlyPlayerCommand: "&cOnly a player can use this command."
+commandPreviewOtherCorrect: "&aPreviewing kit &7%kit% &ato &e%player%&a."
 
 

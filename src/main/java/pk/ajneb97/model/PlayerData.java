@@ -1,20 +1,29 @@
 package pk.ajneb97.model;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class PlayerData {
 
     private String name;
-    private String uuid;
+    private UUID uuid;
 
     private ArrayList<PlayerDataKit> kits;
     private boolean modified;
 
-    public PlayerData(String name,String uuid){
+    public PlayerData(UUID uuid, String name){
         this.name = name;
         this.uuid = uuid;
-        this.kits = new ArrayList<PlayerDataKit>();
+        this.kits = new ArrayList<>();
         this.modified = false;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public String getName() {
@@ -23,14 +32,6 @@ public class PlayerData {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
     }
 
     public ArrayList<PlayerDataKit> getKits() {

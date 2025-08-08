@@ -2,6 +2,7 @@ package pk.ajneb97.configs;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.configs.model.CommonConfig;
 import pk.ajneb97.managers.MessagesManager;
 
 import java.io.IOException;
@@ -12,11 +13,11 @@ import java.nio.file.Paths;
 public class MessagesConfigManager {
 
     private PlayerKits2 plugin;
-    private CustomConfig configFile;
+    private CommonConfig configFile;
 
     public MessagesConfigManager(PlayerKits2 plugin){
         this.plugin = plugin;
-        this.configFile = new CustomConfig("messages.yml",plugin,null, false);
+        this.configFile = new CommonConfig("messages.yml",plugin,null, false);
         this.configFile.registerConfig();
         checkUpdate();
     }
@@ -58,6 +59,11 @@ public class MessagesConfigManager {
         Path pathConfig = Paths.get(configFile.getRoute());
         try{
             String text = new String(Files.readAllBytes(pathConfig));
+            if(!text.contains("commandPreviewOtherCorrect:")){
+                getConfig().set("onlyPlayerCommand", "&cOnly a player can use this command.");
+                getConfig().set("commandPreviewOtherCorrect", "&aPreviewing kit &7%kit% &ato &e%player%&a.");
+                saveConfig();
+            }
             if(!text.contains("kitResetCorrectAll:")){
                 getConfig().set("kitResetCorrectAll", "&aKit &7%kit% &areset for &7all players&a!");
                 saveConfig();

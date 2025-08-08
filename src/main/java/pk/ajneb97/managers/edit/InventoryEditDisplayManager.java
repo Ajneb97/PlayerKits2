@@ -97,7 +97,7 @@ public class InventoryEditDisplayManager {
         new InventoryItem(inv, 26, Material.EMERALD_BLOCK).name("&6&lSave Item").lore(lore).ready();
 
         if(kitItem != null && kitItem.getId() != null){
-            inv.setItem(13,plugin.getKitItemManager().createItemFromKitItem(kitItem, inventoryPlayer.getPlayer()));
+            inv.setItem(13,plugin.getKitItemManager().createItemFromKitItem(kitItem, inventoryPlayer.getPlayer(), kit));
         }
 
         inventoryPlayer.getPlayer().openInventory(inv);

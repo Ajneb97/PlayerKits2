@@ -2,114 +2,41 @@ package pk.ajneb97.configs;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.configs.model.CommonConfig;
 import pk.ajneb97.model.PlayerData;
 import pk.ajneb97.model.PlayerDataKit;
-
-import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
-public class PlayersConfigManager {
-    private ArrayList<CustomConfig> configFiles;
-    private String folderName;
-    private PlayerKits2 plugin;
+public class PlayersConfigManager extends DataFolderConfigManager{
 
     public PlayersConfigManager(PlayerKits2 plugin, String folderName){
-        this.plugin = plugin;
-        this.folderName = folderName;
-        this.configFiles = new ArrayList<>();
+        super(plugin, folderName);
     }
 
-    public void configure() {
-        createFolder();
-        reloadConfigs();
+    @Override
+    public void createFiles() {
+
     }
 
-    public void reloadConfigs(){
-        this.configFiles = new ArrayList<>();
-        registerConfigFiles();
-        loadConfigs();
-    }
-
-    public void createFolder(){
-        File folder;
-        try {
-            folder = new File(plugin.getDataFolder() + File.separator + folderName);
-            if(!folder.exists()){
-                folder.mkdirs();
-            }
-        } catch(SecurityException e) {
-            folder = null;
-        }
-    }
-
-    public void saveConfigFiles() {
-        for(int i=0;i<configFiles.size();i++) {
-            configFiles.get(i).saveConfig();
-        }
-    }
-
-    public void registerConfigFiles(){
-        String path = plugin.getDataFolder() + File.separator + folderName;
-        File folder = new File(path);
-        File[] listOfFiles = folder.listFiles();
-        for (int i=0;i<listOfFiles.length;i++) {
-            if(listOfFiles[i].isFile()) {
-                String pathName = listOfFiles[i].getName();
-                CustomConfig config = new CustomConfig(pathName, plugin, folderName, true);
-                config.registerConfig();
-                configFiles.add(config);
-            }
-        }
-    }
-
-    public ArrayList<CustomConfig> getConfigs(){
-        return this.configFiles;
-    }
-
-    public boolean fileAlreadyRegistered(String pathName) {
-        for(int i=0;i<configFiles.size();i++) {
-            if(configFiles.get(i).getPath().equals(pathName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public CustomConfig getConfigFile(String pathName) {
-        for(int i=0;i<configFiles.size();i++) {
-            if(configFiles.get(i).getPath().equals(pathName)) {
-                return configFiles.get(i);
-            }
-        }
-        return null;
-    }
-
-    public boolean registerConfigFile(String pathName) {
-        if(!fileAlreadyRegistered(pathName)) {
-            CustomConfig config = new CustomConfig(pathName, plugin, folderName, true);
-            config.registerConfig();
-            configFiles.add(config);
-            return true;
-        }else {
-            return false;
-        }
-    }
-
+    @Override
     public void loadConfigs(){
-        ArrayList<PlayerData> players = new ArrayList<>();
+        Map<UUID, PlayerData> players = new HashMap<>();
 
-        for(CustomConfig configFile : configFiles) {
-            FileConfiguration config = configFile.getConfig();
-
-            String uuid = configFile.getPath().replace(".yml", "");
+        ArrayList<CommonConfig> configs = getConfigs();
+        for(CommonConfig commonConfig : configs){
+            FileConfiguration config = commonConfig.getConfig();
+            String uuidString = commonConfig.getPath().replace(".yml", "");
             String name = config.getString("name");
             ArrayList<PlayerDataKit> playerDataKits = new ArrayList<>();
 
-            if(config.contains("kits")){
-                for(String key : config.getConfigurationSection("kits").getKeys(false)){
-                    long cooldown = config.getLong("kits."+key+".cooldown");
-                    boolean oneTime = config.getBoolean("kits."+key+".one_time");
-                    boolean bought = config.getBoolean("kits."+key+".bought");
+            if (config.contains("kits")) {
+                for (String key : config.getConfigurationSection("kits").getKeys(false)) {
+                    long cooldown = config.getLong("kits." + key + ".cooldown");
+                    boolean oneTime = config.getBoolean("kits." + key + ".one_time");
+                    boolean bought = config.getBoolean("kits." + key + ".bought");
 
                     PlayerDataKit playerDataKit = new PlayerDataKit(key);
                     playerDataKit.setCooldown(cooldown);
@@ -120,10 +47,11 @@ public class PlayersConfigManager {
                 }
             }
 
-            PlayerData playerData = new PlayerData(name,uuid);
+            UUID uuid = UUID.fromString(uuidString);
+            PlayerData playerData = new PlayerData(uuid, name);
             playerData.setKits(playerDataKits);
 
-            players.add(playerData);
+            players.put(uuid, playerData);
         }
 
         plugin.getPlayerDataManager().setPlayers(players);
@@ -131,11 +59,7 @@ public class PlayersConfigManager {
 
     public void saveConfig(PlayerData playerData){
         String playerName = playerData.getName();
-        CustomConfig playerConfig = getConfigFile(playerData.getUuid()+".yml");
-        if(playerConfig == null) {
-            registerConfigFile(playerData.getUuid()+".yml");
-            playerConfig = getConfigFile(playerData.getUuid()+".yml");
-        }
+        CommonConfig playerConfig = getConfigFile(playerData.getUuid()+".yml");
         FileConfiguration config = playerConfig.getConfig();
 
         config.set("name", playerName);
@@ -151,13 +75,18 @@ public class PlayersConfigManager {
         playerConfig.saveConfig();
     }
 
+    @Override
     public void saveConfigs(){
-        ArrayList<PlayerData> players = plugin.getPlayerDataManager().getPlayers();
-        for(PlayerData playerData : players) {
-            if(playerData.isModified()){
-                saveConfig(playerData);
+        Map<UUID, PlayerData> players = plugin.getPlayerDataManager().getPlayers();
+        boolean isMySQL = plugin.getConfigsManager().getMainConfigManager().isMySQL();
+        if(!isMySQL){
+            for(Map.Entry<UUID, PlayerData> entry : players.entrySet()) {
+                PlayerData playerData = entry.getValue();
+                if(playerData.isModified()){
+                    saveConfig(playerData);
+                }
+                playerData.setModified(false);
             }
-            playerData.setModified(false);
         }
     }
 

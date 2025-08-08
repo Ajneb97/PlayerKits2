@@ -13,6 +13,7 @@ import pk.ajneb97.model.item.KitItemSkullData;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MigrationManager {
 
@@ -107,7 +108,7 @@ public class MigrationManager {
             return;
         }
 
-        kitsConfigManager.reloadConfigs();
+        kitsConfigManager.loadConfigs();
         plugin.getVerifyManager().verify();
     }
 
@@ -127,7 +128,7 @@ public class MigrationManager {
                 try {
                     String path = "Players."+uuid;
                     String name = config.getString(path+".name");
-                    PlayerData playerData = new PlayerData(name,uuid);
+                    PlayerData playerData = new PlayerData(UUID.fromString(uuid),name);
                     for(String kitName : config.getConfigurationSection(path).getKeys(false)){
                         if(kitName.equals("name")){
                            continue;
@@ -150,7 +151,7 @@ public class MigrationManager {
             }
         }
 
-        playersConfigManager.reloadConfigs();
+        playersConfigManager.configure();
     }
 
     public KitItem getDisplayItem(YamlConfiguration config,String path){

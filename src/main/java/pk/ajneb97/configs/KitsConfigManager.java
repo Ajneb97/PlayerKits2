@@ -2,6 +2,7 @@ package pk.ajneb97.configs;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.configs.model.CommonConfig;
 import pk.ajneb97.managers.KitItemManager;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.KitAction;
@@ -11,111 +12,25 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KitsConfigManager {
-    private ArrayList<CustomConfig> configFiles;
-    private String folderName;
-    private PlayerKits2 plugin;
+public class KitsConfigManager extends DataFolderConfigManager{
 
     public KitsConfigManager(PlayerKits2 plugin, String folderName){
-        this.plugin = plugin;
-        this.folderName = folderName;
-        this.configFiles = new ArrayList<>();
+        super(plugin, folderName);
     }
 
-    public void configure() {
-        createFolder();
-        reloadConfigs();
+    @Override
+    public void createFiles() {
+        new CommonConfig("diamond.yml",plugin,folderName,false).registerConfig();
+        new CommonConfig("iron.yml",plugin,folderName,false).registerConfig();
+        new CommonConfig("food.yml",plugin,folderName,false).registerConfig();
     }
 
-    public void reloadConfigs(){
-        this.configFiles = new ArrayList<>();
-        registerConfigFiles();
-        loadConfigs();
-    }
-
-    public void createFolder(){
-        File folder;
-        try {
-            folder = new File(plugin.getDataFolder() + File.separator + folderName);
-            if(!folder.exists()){
-                folder.mkdirs();
-                createDefaultConfigs();
-            }
-        } catch(SecurityException e) {
-            folder = null;
-        }
-    }
-
-    public void createDefaultConfigs(){
-        new CustomConfig("diamond.yml",plugin,folderName,false).registerConfig();
-        new CustomConfig("iron.yml",plugin,folderName,false).registerConfig();
-        new CustomConfig("food.yml",plugin,folderName,false).registerConfig();
-    }
-
-    public void saveConfigFiles() {
-        for(int i=0;i<configFiles.size();i++) {
-            configFiles.get(i).saveConfig();
-        }
-    }
-
-    public void registerConfigFiles(){
-        String path = plugin.getDataFolder() + File.separator + folderName;
-        File folder = new File(path);
-        File[] listOfFiles = folder.listFiles();
-        for (int i=0;i<listOfFiles.length;i++) {
-            if(listOfFiles[i].isFile()) {
-                String pathName = listOfFiles[i].getName();
-                CustomConfig config = new CustomConfig(pathName, plugin, folderName, true);
-                config.registerConfig();
-                configFiles.add(config);
-            }
-        }
-    }
-
-    public ArrayList<CustomConfig> getConfigs(){
-        return this.configFiles;
-    }
-
-    public boolean fileAlreadyRegistered(String pathName) {
-        for(int i=0;i<configFiles.size();i++) {
-            if(configFiles.get(i).getPath().equals(pathName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public CustomConfig getConfigFile(String pathName) {
-        for(int i=0;i<configFiles.size();i++) {
-            if(configFiles.get(i).getPath().equals(pathName)) {
-                return configFiles.get(i);
-            }
-        }
-        return null;
-    }
-
-    public boolean registerConfigFile(String pathName) {
-        if(!fileAlreadyRegistered(pathName)) {
-            CustomConfig config = new CustomConfig(pathName, plugin, folderName, true);
-            config.registerConfig();
-            configFiles.add(config);
-            return true;
-        }else {
-            return false;
-        }
-    }
-
-    public void removeConfigKit(String path) {
-        for(int i=0;i<configFiles.size();i++) {
-            if(configFiles.get(i).getPath().equals(path)) {
-                configFiles.remove(i);
-            }
-        }
-    }
-
+    @Override
     public void loadConfigs(){
-        ArrayList<Kit> kits = new ArrayList<Kit>();
-        for(CustomConfig configFile : configFiles){
+        ArrayList<Kit> kits = new ArrayList<>();
+
+        ArrayList<CommonConfig> configFiles = getConfigs();
+        for(CommonConfig configFile : configFiles){
             FileConfiguration config = configFile.getConfig();
 
             String name = configFile.getPath().replace(".yml","");
@@ -126,17 +41,14 @@ public class KitsConfigManager {
         plugin.getKitsManager().setKits(kits);
     }
 
+    @Override
     public void saveConfigs(){
 
     }
 
     public void saveConfig(Kit kit){
         String kitName = kit.getName();
-        CustomConfig kitConfig = getConfigFile(kitName+".yml");
-        if(kitConfig == null) {
-            registerConfigFile(kitName+".yml");
-            kitConfig = getConfigFile(kitName+".yml");
-        }
+        CommonConfig kitConfig = getConfigFile(kitName+".yml");
 
         FileConfiguration config = kitConfig.getConfig();
 
@@ -144,8 +56,10 @@ public class KitsConfigManager {
         config.set("one_time",kit.isOneTime());
         config.set("auto_armor",kit.isAutoArmor());
         config.set("permission_required",kit.isPermissionRequired());
+        config.set("clear_inventory",kit.isClearInventory());
         config.set("custom_permission",kit.getCustomPermission());
         config.set("save_original_items",kit.isSaveOriginalItems());
+        config.set("allow_placeholders_on_original_items",kit.isAllowPlaceholdersOnOriginalItems());
 
         KitItemManager kitItemManager = plugin.getKitItemManager();
         int currentPos = 1;
@@ -215,15 +129,8 @@ public class KitsConfigManager {
     }
 
     public void removeKitFile(String kitName){
-        CustomConfig kitConfig = getConfigFile(kitName+".yml");
-        if(kitConfig == null){
-            return;
-        }
-
-        File file = new File(plugin.getDataFolder()+File.separator+folderName,kitConfig.getPath());
+        File file = new File(plugin.getDataFolder()+File.separator+folderName,kitName+".yml");
         file.delete();
-
-        removeConfigKit(kitConfig.getPath());
     }
 
     // mainPath must include a "." at the end
@@ -234,9 +141,11 @@ public class KitsConfigManager {
         String customPermission = config.contains(mainPath+"custom_permission") ? config.getString(mainPath+"custom_permission") : null;
         boolean autoArmor = config.contains(mainPath+"auto_armor") ? config.getBoolean(mainPath+"auto_armor") : false;
         boolean oneTime = config.contains(mainPath+"one_time") ? config.getBoolean(mainPath+"one_time") : false;
+        boolean clearInventory = config.contains(mainPath+"clear_inventory") ? config.getBoolean(mainPath+"clear_inventory") : false;
         boolean saveOriginalItems = config.contains(mainPath+"save_original_items") ? config.getBoolean(mainPath+"save_original_items") : false;
+        boolean allowPlaceholdersOnOriginalItems = config.contains(mainPath+"allow_placeholders_on_original_items") ? config.getBoolean(mainPath+"allow_placeholders_on_original_items") : false;
 
-        ArrayList<KitItem> items = new ArrayList<KitItem>();
+        ArrayList<KitItem> items = new ArrayList<>();
         if(config.contains(mainPath+"items")){
             for(String key : config.getConfigurationSection(mainPath+"items").getKeys(false)){
                 KitItem item = kitItemManager.getKitItemFromConfig(config,mainPath+"items."+key);
@@ -273,6 +182,7 @@ public class KitsConfigManager {
         kit.setAutoArmor(autoArmor);
         kit.setOneTime(oneTime);
         kit.setPermissionRequired(permissionRequired);
+        kit.setClearInventory(clearInventory);
         kit.setCustomPermission(customPermission);
         kit.setItems(items);
         kit.setClaimActions(claimActions);
@@ -284,6 +194,7 @@ public class KitsConfigManager {
         kit.setDisplayItemOneTimeRequirements(displayItemOneTimeRequirements);
         kit.setRequirements(kitRequirements);
         kit.setSaveOriginalItems(saveOriginalItems);
+        kit.setAllowPlaceholdersOnOriginalItems(allowPlaceholdersOnOriginalItems);
 
         return kit;
     }

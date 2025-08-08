@@ -2,32 +2,29 @@ package pk.ajneb97.configs;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.configs.model.CommonConfig;
 import pk.ajneb97.managers.KitItemManager;
 import pk.ajneb97.model.inventory.ItemKitInventory;
 import pk.ajneb97.model.inventory.KitInventory;
 import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.OtherUtils;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 public class InventoryConfigManager {
 
     private PlayerKits2 plugin;
-    private CustomConfig configFile;
+    private CommonConfig configFile;
 
 
     public InventoryConfigManager(PlayerKits2 plugin){
         this.plugin = plugin;
-        this.configFile = new CustomConfig("inventory.yml",plugin,null, false);
+        this.configFile = new CommonConfig("inventory.yml",plugin,null, false);
         this.configFile.registerConfig();
         if(this.configFile.isFirstTime() && OtherUtils.isLegacy()){
             checkAndFix();
         }
+        checkClickCommands();
     }
 
     public void checkAndFix(){
@@ -39,6 +36,38 @@ public class InventoryConfigManager {
         configFile.saveConfig();
     }
 
+    public void checkClickCommands(){
+        boolean needsSave = false;
+        FileConfiguration config = configFile.getConfig();
+        if(config.contains("inventories")) {
+            for (String key : config.getConfigurationSection("inventories").getKeys(false)) {
+                for(String slotString : config.getConfigurationSection("inventories."+key).getKeys(false)) {
+                    String path = "inventories."+key+"."+slotString;
+                    if(config.contains(path+".click_commands")){
+                        List<String> clickActions = new ArrayList<>();
+                        List<String> clickCommands = config.getStringList(path+".click_commands");
+                        for(String c : clickCommands){
+                            if(c.startsWith("msg %player% ")) {
+                                String text = c.replace("msg %player% ", "");
+                                clickActions.add("message: "+text);
+                            }else if(c.equals("close_inventory")){
+                                clickActions.add(c);
+                            }else{
+                                clickActions.add("console_command: "+c);
+                            }
+                        }
+                        config.set(path+".click_actions",clickActions);
+                        needsSave = true;
+                    }
+                }
+            }
+        }
+
+        if(needsSave){
+            configFile.saveConfig();
+        }
+    }
+
     public void configure(){
         FileConfiguration config = configFile.getConfig();
 
@@ -46,7 +75,7 @@ public class InventoryConfigManager {
         KitItemManager kitItemManager = plugin.getKitItemManager();
         if(config.contains("inventories")) {
             for(String key : config.getConfigurationSection("inventories").getKeys(false)) {
-                int slots = Integer.valueOf(config.getString("inventories."+key+".slots"));
+                int slots = config.getInt("inventories."+key+".slots");
                 String title = config.getString("inventories."+key+".title");
 
                 List<ItemKitInventory> items = new ArrayList<>();
@@ -61,13 +90,13 @@ public class InventoryConfigManager {
                         String openInventory = config.contains(path+".open_inventory") ?
                                 config.getString(path+".open_inventory") : null;
 
-                        List<String> commands = config.contains(path+".click_commands") ?
-                                config.getStringList(path+".click_commands") : null;
+                        List<String> clickActions = config.contains(path+".click_actions") ?
+                                config.getStringList(path+".click_actions") : null;
 
                         String type = config.contains(path+".type") ?
                                 config.getString(path+".type") : null;
 
-                        ItemKitInventory itemCraft = new ItemKitInventory(slotString,item,openInventory,commands,type);
+                        ItemKitInventory itemCraft = new ItemKitInventory(slotString,item,openInventory,clickActions,type);
                         items.add(itemCraft);
                     }
                 }
@@ -108,8 +137,8 @@ public class InventoryConfigManager {
                 if(item.getOpenInventory() != null){
                     config.set(path+".open_inventory",item.getOpenInventory());
                 }
-                if(item.getCommands() != null && !item.getCommands().isEmpty()){
-                    config.set(path+".click_commands",item.getCommands());
+                if(item.getClickActions() != null && !item.getClickActions().isEmpty()){
+                    config.set(path+".click_actions",item.getClickActions());
                 }
             }
         }
@@ -128,21 +157,4 @@ public class InventoryConfigManager {
     public FileConfiguration getConfig(){
         return configFile.getConfig();
     }
-
-    public void checkUpdate(){
-        Path pathConfig = Paths.get(configFile.getRoute());
-        try{
-            String text = new String(Files.readAllBytes(pathConfig));
-            /*
-            if(!text.contains("register_commands:")){
-                List<String> commands = new ArrayList<>();
-                getConfig().set("Config.register_commands", commands);
-                saveConfig();
-            }
-            */
-        }catch(IOException e){
-            e.printStackTrace();
-        }
-    }
-
 }

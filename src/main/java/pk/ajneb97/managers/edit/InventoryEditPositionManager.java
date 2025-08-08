@@ -51,7 +51,7 @@ public class InventoryEditPositionManager {
                         if(kit == null){
                             continue;
                         }
-                        ItemStack item = kitItemManager.createItemFromKitItem(kit.getDisplayItemDefault(),null);
+                        ItemStack item = kitItemManager.createItemFromKitItem(kit.getDisplayItemDefault(),null,kit);
                         //Check if it is the same kit
                         if(kitName.equals(inventoryPlayer.getKitName())){
                             ItemMeta meta = item.getItemMeta();
@@ -77,7 +77,7 @@ public class InventoryEditPositionManager {
                     continue;
                 }
 
-                ItemStack item = kitItemManager.createItemFromKitItem(itemInventory.getItem(),inventoryPlayer.getPlayer());
+                ItemStack item = kitItemManager.createItemFromKitItem(itemInventory.getItem(),inventoryPlayer.getPlayer(),null);
                 String openInventory = itemInventory.getOpenInventory();
                 if(openInventory != null) {
                     item = ItemUtils.setTagStringItem(plugin,item, "playerkits_open_inventory", openInventory);
