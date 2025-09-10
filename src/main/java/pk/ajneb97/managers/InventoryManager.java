@@ -2,7 +2,6 @@ package pk.ajneb97.managers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -283,14 +282,14 @@ public class InventoryManager {
 
     public void clickOnCommandItem(InventoryPlayer inventoryPlayer,String itemCommands){
         String[] sep = itemCommands.split("\\|");
-        ConsoleCommandSender sender = Bukkit.getConsoleSender();
         for(String c : sep) {
             if(c.startsWith("msg %player% ")) {
                 inventoryPlayer.getPlayer().sendMessage(MessagesManager.getColoredMessage(c.replace("msg %player% ", "")));
             }else if(c.equals("close_inventory")){
                 inventoryPlayer.getPlayer().closeInventory();
             }else{
-                Bukkit.dispatchCommand(sender, c.replace("%player%", inventoryPlayer.getPlayer().getName()));
+                String command = c.replace("%player%", inventoryPlayer.getPlayer().getName());
+                ActionUtils.consoleCommand(plugin, command);
             }
         }
     }
