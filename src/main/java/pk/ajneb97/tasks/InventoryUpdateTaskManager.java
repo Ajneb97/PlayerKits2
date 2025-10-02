@@ -50,7 +50,7 @@ public class InventoryUpdateTaskManager {
                 String kitName = ItemUtils.getTagStringItem(plugin,item,"playerkits_kit");
                 if(kitName != null){
                     inventoryManager.setKit(kitName,player.getPlayer(),inv,i,kitsManager,
-                            playerDataManager,kitItemManager);
+                            playerDataManager,kitItemManager,item);
                 }
             }
         }
