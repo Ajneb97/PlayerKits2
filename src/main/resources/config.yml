@@ -1,4 +1,5 @@
 drop_items_if_full_inventory: false
+send_as_mail_if_full_inventory: false #It requires LTItemMail (https://jenkins.nobookie.net.br/job/LTItemMail/)
 claim_kit_short_command: false
 close_inventory_on_claim: false
 kit_preview: true

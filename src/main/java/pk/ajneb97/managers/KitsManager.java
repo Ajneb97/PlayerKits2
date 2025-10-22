@@ -1,13 +1,21 @@
 package pk.ajneb97.managers;
 
-import net.milkbowl.vault.economy.Economy;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+
+import br.net.gmj.nobookie.LTItemMail.api.LTItemMailAPI;
+import br.net.gmj.nobookie.LTItemMail.api.entity.LTPlayer;
+import net.milkbowl.vault.economy.Economy;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.configs.MainConfigManager;
 import pk.ajneb97.model.Kit;
@@ -20,8 +28,6 @@ import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.ActionUtils;
 import pk.ajneb97.utils.OtherUtils;
 import pk.ajneb97.utils.PlayerUtils;
-import java.util.ArrayList;
-import java.util.List;
 
 public class KitsManager {
 
@@ -293,8 +299,9 @@ public class KitsManager {
 
         boolean enoughSpace = freeSlots < inventoryKitItems;
         boolean dropItemsIfFullInventory = configFile.getBoolean("drop_items_if_full_inventory");
+        boolean sendItemsAsMailIfFullInventory = configFile.getBoolean("send_as_mail_if_full_inventory");
 
-        if(enoughSpace && !dropItemsIfFullInventory && !clearInventory){
+        if(enoughSpace && !dropItemsIfFullInventory && !sendItemsAsMailIfFullInventory && !clearInventory){
             sendKitActions(kit.getErrorActions(),player,false);
             return PlayerKitsMessageResult.error(messagesFile.getString("noSpaceError"));
         }
@@ -306,6 +313,9 @@ public class KitsManager {
         //Actions before
         sendKitActions(kit.getClaimActions(),player,true);
 
+        //Prepare mail
+        LinkedList<ItemStack> mail = new LinkedList<>();
+        
         //Give kit items
         for(KitItem kitItem : items){
             ItemStack item = kitItemManager.createItemFromKitItem(kitItem,player,kit);
@@ -321,13 +331,16 @@ public class KitsManager {
             }else if(itemOffhand != null && kitItem.equals(itemOffhand)){
                 playerInventory.setItemInOffHand(item);
             }else{
-                if(playerInventory.firstEmpty() == -1 && dropItemsIfFullInventory){
-                    player.getWorld().dropItemNaturally(player.getLocation(), item);
-                }else{
-                    playerInventory.addItem(item);
-                }
+                if(playerInventory.firstEmpty() == -1) {
+                	if(dropItemsIfFullInventory){
+	                    player.getWorld().dropItemNaturally(player.getLocation(), item);
+	                } else if(sendItemsAsMailIfFullInventory && Bukkit.getPluginManager().getPlugin("LTItemMail") != null) mail.add(item);
+                } else playerInventory.addItem(item);
             }
         }
+        
+        //Send items as mail
+        if(mail.size() > 0) LTItemMailAPI.sendSpecialMail(LTPlayer.fromName(player.getName()), mail, ChatColor.translateAlternateColorCodes('&', messagesFile.getString("kitSent").replace("%kit%", kit.getName())));
 
         //Actions after
         sendKitActions(kit.getClaimActions(),player,false);
