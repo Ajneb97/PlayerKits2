@@ -340,7 +340,7 @@ public class KitsManager {
         }
         
         //Send items as mail
-        if(mail.size() > 0) LTItemMailAPI.sendSpecialMail(LTPlayer.fromName(player.getName()), mail, ChatColor.translateAlternateColorCodes('&', messagesFile.getString("kitSent").replace("%kit%", kit.getName())));
+        if(mail.size() > 0) LTItemMailAPI.get(plugin).sendSpecialMail(LTPlayer.fromName(player.getName()), mail, ChatColor.translateAlternateColorCodes('&', messagesFile.getString("kitSent").replace("%kit%", kit.getName())));
 
         //Actions after
         sendKitActions(kit.getClaimActions(),player,false);
