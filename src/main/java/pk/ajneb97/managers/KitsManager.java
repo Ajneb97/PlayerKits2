@@ -299,7 +299,7 @@ public class KitsManager {
 
         boolean enoughSpace = freeSlots < inventoryKitItems;
         boolean dropItemsIfFullInventory = configFile.getBoolean("drop_items_if_full_inventory");
-        boolean sendItemsAsMailIfFullInventory = configFile.getBoolean("send_as_mail_if_full_inventory");
+        boolean sendItemsAsMailIfFullInventory = configFile.getBoolean("send_as_mail_if_full_inventory") && Bukkit.getPluginManager().getPlugin("LTItemMail") != null;
 
         if(enoughSpace && !dropItemsIfFullInventory && !sendItemsAsMailIfFullInventory && !clearInventory){
             sendKitActions(kit.getErrorActions(),player,false);
@@ -334,7 +334,7 @@ public class KitsManager {
                 if(playerInventory.firstEmpty() == -1) {
                 	if(dropItemsIfFullInventory){
 	                    player.getWorld().dropItemNaturally(player.getLocation(), item);
-	                } else if(sendItemsAsMailIfFullInventory && Bukkit.getPluginManager().getPlugin("LTItemMail") != null) mail.add(item);
+	                } else if(sendItemsAsMailIfFullInventory) mail.add(item);
                 } else playerInventory.addItem(item);
             }
         }
