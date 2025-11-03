@@ -27,7 +27,7 @@ public class InventoryEditRequirementsManager {
 
     public void openInventory(InventoryPlayer inventoryPlayer) {
         inventoryPlayer.setInventoryName("edit_requirements");
-        Inventory inv = Bukkit.createInventory(null, 27, MessagesManager.getColoredMessage("&9Editing Kit"));
+        Inventory inv = Bukkit.createInventory(null, 27, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
 
         //Set Go Back
         new InventoryItem(inv, 18, Material.ARROW).name("&eGo Back").ready();
@@ -87,7 +87,7 @@ public class InventoryEditRequirementsManager {
 
     public void clickPrice(InventoryPlayer inventoryPlayer){
         Player player = inventoryPlayer.getPlayer();
-        player.sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&7Write the new price of the kit."));
+        player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&7Write the new price of the kit."));
 
         player.closeInventory();
         inventoryPlayer.setInventoryName("edit_chat_price");
@@ -112,7 +112,7 @@ public class InventoryEditRequirementsManager {
                 return;
             }
         }catch(Exception e){}
-        player.sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&cYou must use a valid number."));
+        player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&cYou must use a valid number."));
     }
 
     public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, int slot, ClickType clickType) {

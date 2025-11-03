@@ -1,6 +1,10 @@
 package pk.ajneb97.managers;
 
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -30,15 +34,36 @@ public class InventoryRequirementsManager {
             if(!meta.hasLore()){
                 return;
             }
-            List<String> lore = new ArrayList<>();
-            for(String line : meta.getLore()){
-                if(line.equals("%kit_requirements_message%")){
-                    lore.addAll(replaceRequirementsMessageVariable(kitName,player));
-                }else{
-                    lore.add(line);
+
+            if(plugin.getConfigsManager().getMainConfigManager().isUseMiniMessage()){
+                List<Component> newLore = new ArrayList<>();
+                PlainTextComponentSerializer plainSerializer = PlainTextComponentSerializer.plainText();
+                for(Component line : meta.lore()){
+                    String plainText = plainSerializer.serialize(line);
+                    if(plainText.contains("%kit_requirements_message%")){
+                        List<String> message = replaceRequirementsMessageVariable(kitName,player);
+                        for(String m : message){
+                            newLore.add(MiniMessage.miniMessage().deserialize(m).decoration(TextDecoration.ITALIC, false));
+                        }
+                    }else{
+                        newLore.add(line);
+                    }
                 }
+                meta.lore(newLore);
+            }else{
+                List<String> lore = new ArrayList<>();
+                for(String line : meta.getLore()){
+                    if(line.equals("%kit_requirements_message%")){
+                        List<String> message = replaceRequirementsMessageVariable(kitName,player);
+                        for(String m : message){
+                            lore.add(MessagesManager.getLegacyColoredMessage(m));
+                        }
+                    }else{
+                        lore.add(line);
+                    }
+                }
+                meta.setLore(lore);
             }
-            meta.setLore(lore);
             item.setItemMeta(meta);
         }
     }
@@ -88,7 +113,6 @@ public class InventoryRequirementsManager {
                 line = PlaceholderAPI.setPlaceholders(player, line);
             }
 
-            line = MessagesManager.getColoredMessage(line);
             requirementsMessage.set(i, line);
         }
 

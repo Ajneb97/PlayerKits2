@@ -26,6 +26,7 @@ public class MainConfigManager {
     private String newKitDefaultInventory;
     private boolean isMySQL;
     private boolean updateNotify;
+    private boolean useMiniMessage;
 
     public MainConfigManager(PlayerKits2 plugin){
         this.plugin = plugin;
@@ -45,6 +46,7 @@ public class MainConfigManager {
         isMySQL = config.getBoolean("mysql_database.enabled");
         updateNotify = config.getBoolean("update_notify");
         claimKitShortCommand = config.getBoolean("claim_kit_short_command");
+        useMiniMessage = config.getBoolean("use_minimessage");
         newKitDefaultSaveModeOriginal = config.getBoolean("new_kit_default_save_mode_original");
     }
 
@@ -64,6 +66,10 @@ public class MainConfigManager {
         Path pathConfig = Paths.get(configFile.getRoute());
         try{
             String text = new String(Files.readAllBytes(pathConfig));
+            if(!text.contains("use_minimessage:")){
+                getConfig().set("use_minimessage",false);
+                configFile.saveConfig();
+            }
             if(!text.contains("verifyServerCertificate:")){
                 getConfig().set("mysql_database.pool.connectionTimeout",5000);
                 getConfig().set("mysql_database.advanced.verifyServerCertificate",false);
@@ -118,5 +124,9 @@ public class MainConfigManager {
 
     public boolean isNewKitDefaultSaveModeOriginal() {
         return newKitDefaultSaveModeOriginal;
+    }
+
+    public boolean isUseMiniMessage() {
+        return useMiniMessage;
     }
 }

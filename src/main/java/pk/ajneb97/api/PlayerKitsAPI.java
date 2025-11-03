@@ -14,6 +14,10 @@ public class PlayerKitsAPI {
         this.plugin = plugin;
     }
 
+    public static PlayerKits2 getPlugin() {
+        return plugin;
+    }
+
     public static String getKitCooldown(Player player, String kitName){
         Kit kit = plugin.getKitsManager().getKitByName(kitName);
         MessagesManager messagesManager = plugin.getMessagesManager();

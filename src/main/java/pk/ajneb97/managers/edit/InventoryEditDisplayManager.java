@@ -30,7 +30,7 @@ public class InventoryEditDisplayManager {
 
     public void openInventory(InventoryPlayer inventoryPlayer, String type) {
         inventoryPlayer.setInventoryName("edit_display_" + type);
-        Inventory inv = Bukkit.createInventory(null, 27, MessagesManager.getColoredMessage("&9Editing Kit"));
+        Inventory inv = Bukkit.createInventory(null, 27, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
 
         //Decoration
         ArrayList<Integer> slots = new ArrayList<>();
@@ -157,7 +157,7 @@ public class InventoryEditDisplayManager {
                     }
                 }else if(slot == 26){
                     saveKitItem(inventoryPlayer);
-                    inventoryPlayer.getPlayer().sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&aDisplay item saved."));
+                    inventoryPlayer.getPlayer().sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&aDisplay item saved."));
                 }
             }
         }

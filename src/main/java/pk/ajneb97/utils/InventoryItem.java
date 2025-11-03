@@ -38,13 +38,13 @@ public class InventoryItem {
 	}
 	
 	public InventoryItem name(String name) {
-		meta.setDisplayName(MessagesManager.getColoredMessage(name));
+		meta.setDisplayName(MessagesManager.getLegacyColoredMessage(name));
 		return this;
 	}
 	
 	public InventoryItem lore(List<String> lore) {
 		for(int i=0;i<lore.size();i++) {
-			lore.set(i, MessagesManager.getColoredMessage(lore.get(i)));
+			lore.set(i, MessagesManager.getLegacyColoredMessage(lore.get(i)));
 		}
 		meta.setLore(lore);
 		return this;

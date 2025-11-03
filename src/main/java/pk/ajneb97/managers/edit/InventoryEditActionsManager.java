@@ -31,7 +31,7 @@ public class InventoryEditActionsManager {
 
     public void openInventory(InventoryPlayer inventoryPlayer,String type) {
         inventoryPlayer.setInventoryName("edit_actions_"+type);
-        Inventory inv = Bukkit.createInventory(null, 54, MessagesManager.getColoredMessage("&9Editing Kit"));
+        Inventory inv = Bukkit.createInventory(null, 54, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
 
         //Decoration
         for(int i=45;i<=52;i++){
@@ -69,18 +69,18 @@ public class InventoryEditActionsManager {
             String displayItem = kitAction.getDisplayItem() != null ? "&aYES" : "&cNO";
 
             lore = new ArrayList<>();
-            lore.add(MessagesManager.getColoredMessage("&f")+kitAction.getAction());
+            lore.add(MessagesManager.getLegacyColoredMessage("&f")+kitAction.getAction());
             lore.add("");
-            lore.add(MessagesManager.getColoredMessage("&7Execute before giving kit items? "+executeBeforeItems));
-            lore.add(MessagesManager.getColoredMessage("&7Count as item? "+countAsItem));
-            lore.add(MessagesManager.getColoredMessage("&7Has display item? "+displayItem));
+            lore.add(MessagesManager.getLegacyColoredMessage("&7Execute before giving kit items? "+executeBeforeItems));
+            lore.add(MessagesManager.getLegacyColoredMessage("&7Count as item? "+countAsItem));
+            lore.add(MessagesManager.getLegacyColoredMessage("&7Has display item? "+displayItem));
             lore.add("");
-            lore.add(MessagesManager.getColoredMessage("&a&lLEFT CLICK &ato edit"));
-            lore.add(MessagesManager.getColoredMessage("&c&lRIGHT CLICK &cto remove"));
+            lore.add(MessagesManager.getLegacyColoredMessage("&a&lLEFT CLICK &ato edit"));
+            lore.add(MessagesManager.getLegacyColoredMessage("&c&lRIGHT CLICK &cto remove"));
 
             ItemStack item = new ItemStack(Material.PAPER);
             ItemMeta meta = item.getItemMeta();
-            meta.setDisplayName(MessagesManager.getColoredMessage("&7Action &e#"+(slot+1)));
+            meta.setDisplayName(MessagesManager.getLegacyColoredMessage("&7Action &e#"+(slot+1)));
             meta.setLore(lore);
             item.setItemMeta(meta);
             inv.setItem(slot,item);
@@ -109,8 +109,8 @@ public class InventoryEditActionsManager {
 
     public void clickAddAction(InventoryPlayer inventoryPlayer){
         Player player = inventoryPlayer.getPlayer();
-        player.sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&7Write the new action to add."));
-        player.sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&fCheck all actions on the wiki: &bhttps://ajneb97.gitbook.io/playerkits-2/actions"));
+        player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&7Write the new action to add."));
+        player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&fCheck all actions on the wiki: &bhttps://ajneb97.gitbook.io/playerkits-2/actions"));
 
         player.closeInventory();
         String type = inventoryPlayer.getInventoryName().replace("edit_actions_","");

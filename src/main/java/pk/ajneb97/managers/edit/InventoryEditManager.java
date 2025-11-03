@@ -77,7 +77,7 @@ public class InventoryEditManager {
 
     public void openInventory(InventoryPlayer inventoryPlayer) {
         inventoryPlayer.setInventoryName("edit_main_inventory");
-        Inventory inv = Bukkit.createInventory(null, 45, MessagesManager.getColoredMessage("&9Editing Kit"));
+        Inventory inv = Bukkit.createInventory(null, 45, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
 
         Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
 
@@ -217,9 +217,9 @@ public class InventoryEditManager {
         for(KitItem kitItem : kit.getItems()){
             if(kitItem.getOriginalItem() != null){
                 ItemStack originalItem = kitItem.getOriginalItem();
-                lore.add(MessagesManager.getColoredMessage("&8- &fx"+originalItem.getAmount()+" "+originalItem.getType()));
+                lore.add(MessagesManager.getLegacyColoredMessage("&8- &fx"+originalItem.getAmount()+" "+originalItem.getType()));
             }else{
-                lore.add(MessagesManager.getColoredMessage("&8- &fx"+kitItem.getAmount()+" "+kitItem.getId()));
+                lore.add(MessagesManager.getLegacyColoredMessage("&8- &fx"+kitItem.getAmount()+" "+kitItem.getId()));
             }
             max--;
             if(max <= 0){
@@ -259,7 +259,7 @@ public class InventoryEditManager {
     public List<String> setActionItemLore(ArrayList<KitAction> actions,List<String> lore){
         int max = 20;
         if(actions.isEmpty()){
-            lore.add(MessagesManager.getColoredMessage("&cNONE"));
+            lore.add(MessagesManager.getLegacyColoredMessage("&cNONE"));
         }else{
             for(KitAction kitAction : actions){
                 String actionLine = kitAction.getAction();
@@ -281,9 +281,9 @@ public class InventoryEditManager {
 
                 for(int i=0;i<separatedActionLine.size();i++){
                     if(i == 0){
-                        lore.add(MessagesManager.getColoredMessage("&8- &f")+separatedActionLine.get(i));
+                        lore.add(MessagesManager.getLegacyColoredMessage("&8- &f")+separatedActionLine.get(i));
                     }else{
-                        lore.add(MessagesManager.getColoredMessage("&f")+separatedActionLine.get(i));
+                        lore.add(MessagesManager.getLegacyColoredMessage("&f")+separatedActionLine.get(i));
                     }
                 }
 
@@ -319,7 +319,7 @@ public class InventoryEditManager {
 
     public void clickCooldown(InventoryPlayer inventoryPlayer){
         Player player = inventoryPlayer.getPlayer();
-        player.sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&7Write the new cooldown of the kit (in seconds)."));
+        player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&7Write the new cooldown of the kit (in seconds)."));
 
         player.closeInventory();
         inventoryPlayer.setInventoryName("edit_chat_cooldown");
@@ -339,7 +339,7 @@ public class InventoryEditManager {
                 return;
             }
         }catch(Exception e){}
-        player.sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&cYou must use a valid number."));
+        player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&cYou must use a valid number."));
     }
 
     public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, int slot, ClickType clickType) {

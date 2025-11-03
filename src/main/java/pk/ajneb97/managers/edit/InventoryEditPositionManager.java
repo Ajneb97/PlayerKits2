@@ -1,5 +1,6 @@
 package pk.ajneb97.managers.edit;
 
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
@@ -9,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.configs.MainConfigManager;
 import pk.ajneb97.managers.*;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.internal.KitVariable;
@@ -34,8 +36,13 @@ public class InventoryEditPositionManager {
     public void openInventory(InventoryPlayer inventoryPlayer,String positionInventory) {
         KitInventory kitInventory = plugin.getInventoryManager().getInventory(positionInventory);
 
-        Inventory inv = Bukkit.createInventory(null,kitInventory.getSlots(),
-                MessagesManager.getColoredMessage(kitInventory.getTitle()));
+        Inventory inv;
+        MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
+        if(mainConfigManager.isUseMiniMessage()){
+            inv = Bukkit.createInventory(null,kitInventory.getSlots(), MiniMessage.miniMessage().deserialize(kitInventory.getTitle()));
+        }else{
+            inv = Bukkit.createInventory(null,kitInventory.getSlots(), MessagesManager.getLegacyColoredMessage(kitInventory.getTitle()));
+        }
 
         List<ItemKitInventory> items = kitInventory.getItems();
         KitItemManager kitItemManager = plugin.getKitItemManager();
@@ -57,8 +64,8 @@ public class InventoryEditPositionManager {
                             ItemMeta meta = item.getItemMeta();
                             List<String> extraLore = new ArrayList<>();
                             extraLore.add(" ");
-                            extraLore.add(MessagesManager.getColoredMessage("&a&lTHIS IS THE CURRENT POSITION OF"));
-                            extraLore.add(MessagesManager.getColoredMessage("&a&lTHE KIT."));
+                            extraLore.add(MessagesManager.getLegacyColoredMessage("&a&lTHIS IS THE CURRENT POSITION OF"));
+                            extraLore.add(MessagesManager.getLegacyColoredMessage("&a&lTHE KIT."));
                             List<String> itemLore = new ArrayList<>();
                             if(meta.hasLore()){
                                 itemLore = new ArrayList<>(meta.getLore());
@@ -130,7 +137,7 @@ public class InventoryEditPositionManager {
             if(item == null || item.getType().equals(Material.AIR)){
                 //Update position
                 setPosition(inventoryPlayer,slot);
-                inventoryPlayer.getPlayer().sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&aKit position updated."));
+                inventoryPlayer.getPlayer().sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&aKit position updated."));
                 return;
             }
 
@@ -139,7 +146,7 @@ public class InventoryEditPositionManager {
                 openInventory(inventoryPlayer,openInventory);
                 return;
             }
-            inventoryPlayer.getPlayer().sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&cThis position is occupied."));
+            inventoryPlayer.getPlayer().sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&cThis position is occupied."));
         }
     }
 

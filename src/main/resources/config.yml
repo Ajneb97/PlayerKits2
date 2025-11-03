@@ -43,6 +43,7 @@ new_kit_default_values:
         - HIDE_ATTRIBUTES
 player_data_save_time: 300
 update_notify: true
+use_minimessage: false
 mysql_database:
   enabled: false
   host: localhost

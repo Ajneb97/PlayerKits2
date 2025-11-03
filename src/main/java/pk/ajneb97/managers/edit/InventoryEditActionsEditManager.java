@@ -30,7 +30,7 @@ public class InventoryEditActionsEditManager {
 
     public void openInventory(InventoryPlayer inventoryPlayer, String type, int actionSlot) {
         inventoryPlayer.setInventoryName("edit_action_slot_" + type + "_" + actionSlot);
-        Inventory inv = Bukkit.createInventory(null, 27, MessagesManager.getColoredMessage("&9Editing Kit"));
+        Inventory inv = Bukkit.createInventory(null, 27, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
 
         //Set Go Back
         new InventoryItem(inv, 18, Material.ARROW).name("&eGo Back").ready();
@@ -40,13 +40,13 @@ public class InventoryEditActionsEditManager {
 
         //Set Edit Action
         List<String> lore = new ArrayList<>();
-        lore.add(MessagesManager.getColoredMessage("&7Click to change the action."));
+        lore.add(MessagesManager.getLegacyColoredMessage("&7Click to change the action."));
         lore.add("");
-        lore.add(MessagesManager.getColoredMessage("&7Current:"));
-        lore.add(MessagesManager.getColoredMessage("&f") + kitAction.getAction());
+        lore.add(MessagesManager.getLegacyColoredMessage("&7Current:"));
+        lore.add(MessagesManager.getLegacyColoredMessage("&f") + kitAction.getAction());
         ItemStack item = new ItemStack(Material.PAPER);
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(MessagesManager.getColoredMessage("&6&lEdit Action"));
+        meta.setDisplayName(MessagesManager.getLegacyColoredMessage("&6&lEdit Action"));
         meta.setLore(lore);
         item.setItemMeta(meta);
         inv.setItem(10, item);
@@ -143,8 +143,8 @@ public class InventoryEditActionsEditManager {
 
     public void clickEditAction(InventoryPlayer inventoryPlayer){
         Player player = inventoryPlayer.getPlayer();
-        player.sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&7Write the new action to set."));
-        player.sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&fCheck all actions on the wiki: &bhttps://ajneb97.gitbook.io/playerkits-2/actions"));
+        player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&7Write the new action to set."));
+        player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&fCheck all actions on the wiki: &bhttps://ajneb97.gitbook.io/playerkits-2/actions"));
 
         player.closeInventory();
         inventoryPlayer.setInventoryName("edit_chat_action_slot_" + getType(inventoryPlayer) + "_" + getActionSlot(inventoryPlayer));
