@@ -108,21 +108,21 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             msgManager.sendMessage(sender,messagesConfig.getString("commandDoesNotExists"),true);
             return;
         }
-        sender.sendMessage(MessagesManager.getColoredMessage("&7[ [ &8[&bPlayerKits&a²&8] &7] ]"));
-        sender.sendMessage(MessagesManager.getColoredMessage(" "));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit &8Opens the GUI."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit claim <kit> &8Claims a kit outside the GUI."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit create <kit> (optional)original &8Creates a new kit using the items in your inventory."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit edit <kit> &8Edits a kit."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit give <kit> <player> &8Gives a kit to a player."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit delete <kit> &8Deletes a kit."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reset <kit> <player>/* &8Resets kit data for a player."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit preview <kit> (optional)<player> &8Previews a kit."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit open <inventory> <player> &8Opens a specific inventory for a player."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit reload &8Reloads the config."));
-        sender.sendMessage(MessagesManager.getColoredMessage("&6/kit verify &8Checks the plugin for errors."));
-        sender.sendMessage(MessagesManager.getColoredMessage(" "));
-        sender.sendMessage(MessagesManager.getColoredMessage("&7[ [ &8[&bPlayerKits&a²&8] &7] ]"));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&7[ [ &8[&bPlayerKits&a²&8] &7] ]"));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage(" "));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit &8Opens the GUI."));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit claim <kit> &8Claims a kit outside the GUI."));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit create <kit> (optional)original &8Creates a new kit using the items in your inventory."));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit edit <kit> &8Edits a kit."));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit give <kit> <player> &8Gives a kit to a player."));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit delete <kit> &8Deletes a kit."));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit reset <kit> <player>/* &8Resets kit data for a player."));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit preview <kit> (optional)<player> &8Previews a kit."));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit open <inventory> <player> &8Opens a specific inventory for a player."));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit reload &8Reloads the config."));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit verify &8Checks the plugin for errors."));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage(" "));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&7[ [ &8[&bPlayerKits&a²&8] &7] ]"));
     }
 
     public void migrate(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
@@ -149,7 +149,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         }
 
         if(!plugin.getConfigsManager().reload()){
-            sender.sendMessage(PlayerKits2.prefix+MessagesManager.getColoredMessage(" &cThere was an error reloading the config, check the console."));
+            sender.sendMessage(PlayerKits2.prefix+MessagesManager.getLegacyColoredMessage(" &cThere was an error reloading the config, check the console."));
             return;
         }
         msgManager.sendMessage(sender,messagesConfig.getString("commandReload"),true);

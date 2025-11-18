@@ -1,5 +1,6 @@
 package pk.ajneb97.utils;
 
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.EntityType;
@@ -8,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.api.PlayerKitsAPI;
 import pk.ajneb97.libs.actionbar.ActionBarAPI;
 import pk.ajneb97.libs.titles.TitleAPI;
 import pk.ajneb97.managers.MessagesManager;
@@ -20,7 +22,11 @@ import java.util.ArrayList;
 public class ActionUtils {
 
     public static void message(Player player,String actionLine) {
-        player.sendMessage(MessagesManager.getColoredMessage(actionLine));
+        if(PlayerKitsAPI.getPlugin().getConfigsManager().getMainConfigManager().isUseMiniMessage()){
+            player.sendMessage(MiniMessage.miniMessage().deserialize(actionLine));
+        }else{
+            player.sendMessage(MessagesManager.getLegacyColoredMessage(actionLine));
+        }
     }
 
     public static void consoleCommand(PlayerKits2 plugin, String actionLine){
@@ -45,7 +51,7 @@ public class ActionUtils {
             pitch = Float.valueOf(sep[2]);
         }catch(Exception e ) {
             Bukkit.getConsoleSender().sendMessage(PlayerKits2.prefix+
-                    MessagesManager.getColoredMessage("&7Sound Name: &c"+sep[0]+" &7is not valid. Change it in the config!"));
+                    MessagesManager.getLegacyColoredMessage("&7Sound Name: &c"+sep[0]+" &7is not valid. Change it in the config!"));
             return;
         }
 

@@ -29,7 +29,7 @@ public class InventoryEditKitItemsManager {
 
     public void openInventory(InventoryPlayer inventoryPlayer){
         inventoryPlayer.setInventoryName("edit_items");
-        Inventory inv = Bukkit.createInventory(null, 54, MessagesManager.getColoredMessage("&9Editing Kit"));
+        Inventory inv = Bukkit.createInventory(null, 54, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
 
         //Decoration
         for(int i=46;i<=52;i++){
@@ -86,7 +86,7 @@ public class InventoryEditKitItemsManager {
     public void clickOffHand(InventoryPlayer inventoryPlayer, Inventory inv, ItemStack clickedItem, int clickedSlot){
         ServerVersion serverVersion = PlayerKits2.serverVersion;
         if(!serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_9_R1)) {
-            inventoryPlayer.getPlayer().sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&cOffhand only works on 1.9+."));
+            inventoryPlayer.getPlayer().sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&cOffhand only works on 1.9+."));
             return;
         }
         String offhand = ItemUtils.getTagStringItem(plugin,clickedItem,"playerkits_offhand");
@@ -119,7 +119,7 @@ public class InventoryEditKitItemsManager {
     public void setItemOffHand(Inventory inv,ItemStack item,int slot){
         List<String> offHandLore = new ArrayList<>();
         offHandLore.add(" ");
-        offHandLore.add(MessagesManager.getColoredMessage("&c&lRIGHT CLICK &cto remove from offhand"));
+        offHandLore.add(MessagesManager.getLegacyColoredMessage("&c&lRIGHT CLICK &cto remove from offhand"));
         ItemMeta meta = item.getItemMeta();
         List<String> itemLore = new ArrayList<>();
         if(meta.hasLore()){
@@ -191,7 +191,7 @@ public class InventoryEditKitItemsManager {
                     inventoryEditManager.openInventory(inventoryPlayer);
                 }else if(slot == 53){
                     saveKitItems(inventoryPlayer);
-                    inventoryPlayer.getPlayer().sendMessage(MessagesManager.getColoredMessage(PlayerKits2.prefix+"&aKit Items saved."));
+                    inventoryPlayer.getPlayer().sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&aKit Items saved."));
                 }
             }else if(clickType.isRightClick()){
                 event.setCancelled(true);

@@ -81,8 +81,8 @@ public class PlayerKits2 extends JavaPlugin {
         }
         Metrics metrics = new Metrics(this,19795);
 
-        Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(prefix+"&eHas been enabled! &fVersion: "+version));
-        Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(prefix+"&eThanks for using my plugin!   &f~Ajneb97"));
+        Bukkit.getConsoleSender().sendMessage(MessagesManager.getLegacyColoredMessage(prefix+"&eHas been enabled! &fVersion: "+version));
+        Bukkit.getConsoleSender().sendMessage(MessagesManager.getLegacyColoredMessage(prefix+"&eThanks for using my plugin!   &f~Ajneb97"));
 
         updateCheckerManager = new UpdateCheckerManager(version);
         updateMessage(updateCheckerManager.check());
@@ -90,7 +90,7 @@ public class PlayerKits2 extends JavaPlugin {
 
     public void onDisable(){
         this.configsManager.getPlayersConfigManager().saveConfigs();
-        Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(prefix+"&eHas been disabled! &fVersion: "+version));
+        Bukkit.getConsoleSender().sendMessage(MessagesManager.getLegacyColoredMessage(prefix+"&eHas been disabled! &fVersion: "+version));
     }
 
     public void registerCommands(){
@@ -113,7 +113,7 @@ public class PlayerKits2 extends JavaPlugin {
     }
 
     public void setPrefix(){
-        prefix = MessagesManager.getColoredMessage("&8[&bPlayerKits&a²&8] ");
+        prefix = MessagesManager.getLegacyColoredMessage("&8[&bPlayerKits&a²&8] ");
     }
 
     public void setVersion(){
@@ -215,11 +215,11 @@ public class PlayerKits2 extends JavaPlugin {
         if(!result.isError()){
             String latestVersion = result.getLatestVersion();
             if(latestVersion != null){
-                Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage("&cThere is a new version available. &e(&7"+latestVersion+"&e)"));
-                Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage("&cYou can download it at: &fhttps://modrinth.com/plugin/playerkits-2"));
+                Bukkit.getConsoleSender().sendMessage(MessagesManager.getLegacyColoredMessage("&cThere is a new version available. &e(&7"+latestVersion+"&e)"));
+                Bukkit.getConsoleSender().sendMessage(MessagesManager.getLegacyColoredMessage("&cYou can download it at: &fhttps://modrinth.com/plugin/playerkits-2"));
             }
         }else{
-            Bukkit.getConsoleSender().sendMessage(MessagesManager.getColoredMessage(prefix+"&cError while checking update."));
+            Bukkit.getConsoleSender().sendMessage(MessagesManager.getLegacyColoredMessage(prefix+"&cError while checking update."));
         }
 
     }
