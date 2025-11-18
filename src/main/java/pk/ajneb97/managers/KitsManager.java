@@ -397,10 +397,10 @@ public class KitsManager {
                 ActionUtils.message(player,actionLine);
                 break;
             case "console_command":
-                ActionUtils.consoleCommand(actionLine);
+                ActionUtils.consoleCommand(plugin, actionLine);
                 break;
             case "player_command":
-                ActionUtils.playerCommand(player,actionLine);
+                ActionUtils.playerCommand(plugin, player,actionLine);
                 break;
             case "playsound":
                 ActionUtils.playSound(player,actionLine);

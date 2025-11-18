@@ -1,5 +1,6 @@
 package pk.ajneb97.managers.edit;
 
+import io.github.projectunified.minelib.scheduler.entity.EntityScheduler;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -8,7 +9,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.configs.MainConfigManager;
 import pk.ajneb97.managers.*;
@@ -153,13 +153,12 @@ public class InventoryEditPositionManager {
     public void closeInventory(InventoryPlayer inventoryPlayer){
         boolean mustReturn = Boolean.parseBoolean(inventoryPlayer.getInventoryName().split(";")[2]);
         if(mustReturn){
-            new BukkitRunnable(){
-                @Override
-                public void run() {
-                    inventoryPlayer.restoreSavedInventoryContents();
-                    inventoryEditManager.openInventory(inventoryPlayer);
-                }
-            }.runTaskLater(plugin,1L);
+            EntityScheduler.get(plugin, inventoryPlayer.getPlayer()).run(
+                    () -> {
+                        inventoryPlayer.restoreSavedInventoryContents();
+                        inventoryEditManager.openInventory(inventoryPlayer);
+                    }
+            );
         }
     }
 }

@@ -13,6 +13,7 @@ import pk.ajneb97.api.PlayerKitsAPI;
 import pk.ajneb97.libs.actionbar.ActionBarAPI;
 import pk.ajneb97.libs.titles.TitleAPI;
 import pk.ajneb97.managers.MessagesManager;
+import io.github.projectunified.minelib.scheduler.global.GlobalScheduler;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -28,13 +29,15 @@ public class ActionUtils {
         }
     }
 
-    public static void consoleCommand(String actionLine){
-        ConsoleCommandSender sender = Bukkit.getConsoleSender();
-        Bukkit.dispatchCommand(sender, actionLine);
+    public static void consoleCommand(PlayerKits2 plugin, String actionLine){
+        GlobalScheduler.get(plugin).run(() -> {
+            ConsoleCommandSender sender = Bukkit.getConsoleSender();
+            Bukkit.dispatchCommand(sender, actionLine);
+        });
     }
 
-    public static void playerCommand(Player player, String actionLine){
-        player.performCommand(actionLine);
+    public static void playerCommand(PlayerKits2 plugin, Player player, String actionLine){
+        GlobalScheduler.get(plugin).run(() -> player.performCommand(actionLine));
     }
 
     public static void playSound(Player player,String actionLine){

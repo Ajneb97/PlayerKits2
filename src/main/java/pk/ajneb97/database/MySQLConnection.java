@@ -1,8 +1,9 @@
 package pk.ajneb97.database;
 
+import io.github.projectunified.minelib.scheduler.async.AsyncScheduler;
+import io.github.projectunified.minelib.scheduler.global.GlobalScheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.PlayerData;
@@ -115,7 +116,7 @@ public class MySQLConnection {
     }
 
     public void getPlayer(String uuid,PlayerCallback callback){
-        new BukkitRunnable(){
+        AsyncScheduler.get(plugin).run(new Runnable(){
             @Override
             public void run() {
                 PlayerData player = null;
@@ -154,21 +155,21 @@ public class MySQLConnection {
                     }
 
                     PlayerData finalPlayer = player;
-                    new BukkitRunnable(){
+                    GlobalScheduler.get(plugin).run(new Runnable(){
                         @Override
                         public void run() {
                             callback.onDone(finalPlayer);
                         }
-                    }.runTask(plugin);
+                    });
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
-        }.runTaskAsynchronously(plugin);
+        });
     }
 
     public void createPlayer(PlayerData player,SimpleCallback callback){
-        new BukkitRunnable(){
+        AsyncScheduler.get(plugin).run(new Runnable(){
             @Override
             public void run() {
                 try(Connection connection = getConnection()){
@@ -180,21 +181,21 @@ public class MySQLConnection {
                     statement.setString(2, player.getName());
                     statement.executeUpdate();
 
-                    new BukkitRunnable(){
+                    GlobalScheduler.get(plugin).run(new Runnable(){
                         @Override
                         public void run() {
                             callback.onDone();
                         }
-                    }.runTask(plugin);
+                    });
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
-        }.runTaskAsynchronously(plugin);
+        });
     }
 
     public void updatePlayerName(PlayerData player){
-        new BukkitRunnable(){
+        AsyncScheduler.get(plugin).run(new Runnable(){
             @Override
             public void run() {
                 try(Connection connection = getConnection()){
@@ -209,11 +210,11 @@ public class MySQLConnection {
                     e.printStackTrace();
                 }
             }
-        }.runTaskAsynchronously(plugin);
+        });
     }
 
     public void updateKit(PlayerData player,PlayerDataKit kit,boolean mustCreate){
-        new BukkitRunnable(){
+        AsyncScheduler.get(plugin).run(new Runnable(){
             @Override
             public void run() {
                 try(Connection connection = getConnection()){
@@ -246,11 +247,11 @@ public class MySQLConnection {
                     e.printStackTrace();
                 }
             }
-        }.runTaskAsynchronously(plugin);
+        });
     }
 
     public void resetKit(String uuid,String kitName,boolean all){
-        new BukkitRunnable(){
+        AsyncScheduler.get(plugin).run(new Runnable(){
             @Override
             public void run() {
                 try(Connection connection = getConnection()){
@@ -274,6 +275,6 @@ public class MySQLConnection {
                     e.printStackTrace();
                 }
             }
-        }.runTaskAsynchronously(plugin);
+        });
     }
 }
