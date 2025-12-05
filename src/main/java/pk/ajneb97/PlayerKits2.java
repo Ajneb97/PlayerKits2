@@ -1,4 +1,3 @@
-
 package pk.ajneb97;
 
 import org.bukkit.Bukkit;
@@ -7,6 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import pk.ajneb97.api.ExpansionPlayerKits;
 import pk.ajneb97.api.PlayerKitsAPI;
 import pk.ajneb97.configs.ConfigsManager;
+import pk.ajneb97.database.DatabaseManager;
 import pk.ajneb97.database.MySQLConnection;
 import pk.ajneb97.listeners.InventoryEditListener;
 import pk.ajneb97.listeners.OtherListener;
@@ -41,7 +41,7 @@ public class PlayerKits2 extends JavaPlugin {
 
     private InventoryUpdateTaskManager inventoryUpdateTaskManager;
     private PlayerDataSaveTask playerDataSaveTask;
-    private MySQLConnection mySQLConnection;
+    private DatabaseManager databaseManager;
 
     public void onEnable(){
         setVersion();
@@ -60,6 +60,8 @@ public class PlayerKits2 extends JavaPlugin {
         this.configsManager = new ConfigsManager(this);
         this.configsManager.configure();
 
+        this.configsManager.getMainConfigManager().migrateLegacyDatabaseConfig();
+
         this.migrationManager = new MigrationManager(this);
 
         this.inventoryUpdateTaskManager = new InventoryUpdateTaskManager(this);
@@ -68,10 +70,17 @@ public class PlayerKits2 extends JavaPlugin {
         this.verifyManager = new VerifyManager(this);
         this.verifyManager.verify();
 
-        if(configsManager.getMainConfigManager().isMySQL()){
-            mySQLConnection = new MySQLConnection(this);
-            mySQLConnection.setupMySql();
-        }else{
+        databaseManager = new DatabaseManager(this);
+        databaseManager.setupDatabase();
+
+        if (databaseManager.isConnected()) {
+            databaseManager.loadData();
+        } else {
+            if (configsManager.getMainConfigManager().isUsingSQLDatabase()) {
+                Bukkit.getConsoleSender().sendMessage(MessagesManager.getLegacyColoredMessage(
+                        prefix+" &cFailed to connect to database. Using flatfile mode as fallback."
+                ));
+            }
             reloadPlayerDataSaveTask();
         }
 
@@ -89,7 +98,21 @@ public class PlayerKits2 extends JavaPlugin {
     }
 
     public void onDisable(){
-        this.configsManager.getPlayersConfigManager().saveConfigs();
+        if (databaseManager != null && databaseManager.isConnected()) {
+            databaseManager.disable();
+        } else {
+            this.configsManager.getPlayersConfigManager().saveConfigs();
+        }
+
+        if (playerDataSaveTask != null) {
+            playerDataSaveTask.end();
+            playerDataSaveTask = null;
+        }
+
+        if (inventoryUpdateTaskManager != null) {
+            inventoryUpdateTaskManager.stop();
+        }
+
         Bukkit.getConsoleSender().sendMessage(MessagesManager.getLegacyColoredMessage(prefix+"&eHas been disabled! &fVersion: "+version));
     }
 
@@ -105,11 +128,20 @@ public class PlayerKits2 extends JavaPlugin {
     }
 
     public void reloadPlayerDataSaveTask() {
-        if(playerDataSaveTask != null) {
-            playerDataSaveTask.end();
+        boolean useDatabase = databaseManager != null && databaseManager.isConnected();
+
+        if (!useDatabase) {
+            if(playerDataSaveTask != null) {
+                playerDataSaveTask.end();
+            }
+            playerDataSaveTask = new PlayerDataSaveTask(this);
+            playerDataSaveTask.start(configsManager.getMainConfigManager().getConfig().getInt("player_data_save_time"));
+        } else {
+            if(playerDataSaveTask != null) {
+                playerDataSaveTask.end();
+                playerDataSaveTask = null;
+            }
         }
-        playerDataSaveTask = new PlayerDataSaveTask(this);
-        playerDataSaveTask.start(configsManager.getMainConfigManager().getConfig().getInt("player_data_save_time"));
     }
 
     public void setPrefix(){
@@ -191,8 +223,12 @@ public class PlayerKits2 extends JavaPlugin {
         return inventoryEditManager;
     }
 
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+
     public MySQLConnection getMySQLConnection() {
-        return mySQLConnection;
+        return null;
     }
 
     public NMSManager getNmsManager() {
@@ -221,6 +257,9 @@ public class PlayerKits2 extends JavaPlugin {
         }else{
             Bukkit.getConsoleSender().sendMessage(MessagesManager.getLegacyColoredMessage(prefix+"&cError while checking update."));
         }
+    }
 
+    public boolean isUsingDatabase() {
+        return databaseManager != null && databaseManager.isConnected();
     }
 }
