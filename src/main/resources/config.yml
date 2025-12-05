@@ -1,3 +1,7 @@
+# PlayerKits2 Configuration File
+# Documentation: https://github.com/Ajneb97/PlayerKits2/wiki
+
+# General plugin settings
 drop_items_if_full_inventory: false
 claim_kit_short_command: false
 close_inventory_on_claim: false
@@ -41,9 +45,50 @@ new_kit_default_values:
         - "&cto claim this kit again."
       item_flags:
         - HIDE_ATTRIBUTES
+
+# Player data settings
 player_data_save_time: 300
 update_notify: true
 use_minimessage: false
+
+# Database Configuration
+# Choose your database type: sqlite, mysql, or mariadb
+database:
+  # Database type: sqlite, mysql, or mariadb
+  # sqlite: Uses local SQLite database file (default, no setup required)
+  # mysql: Uses MySQL database (requires external MySQL server)
+  # mariadb: Uses MariaDB database (requires external MariaDB server)
+  type: "sqlite"
+
+  # MySQL/MariaDB connection settings (only needed if type is mysql or mariadb)
+  host: "localhost"
+  port: 3306
+  database: "playerkits"
+  username: "root"
+  password: ""
+
+  # Connection pool settings (optional, for mysql/mariadb only)
+  pool:
+    # Maximum time to wait for a connection from the pool (in milliseconds)
+    connectionTimeout: 30000
+    # Maximum number of connections in the pool
+    maximumPoolSize: 10
+    # Time to keep idle connections alive (in milliseconds, 0 = disabled)
+    keepaliveTime: 0
+    # Maximum time a connection can be idle (in milliseconds)
+    idleTimeout: 600000
+    # Maximum lifetime of a connection (in milliseconds)
+    maxLifetime: 1800000
+
+  # Advanced data source properties (optional)
+  advanced:
+    cachePrepStmts: true
+    prepStmtCacheSize: 250
+    prepStmtCacheSqlLimit: 2048
+    useServerPrepStmts: true
+
+# Legacy MySQL configuration (for backward compatibility with old configs)
+# This section will be automatically migrated to the new 'database' section
 mysql_database:
   enabled: false
   host: localhost
