@@ -1,6 +1,5 @@
 package pk.ajneb97.utils;
 
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.EntityType;
@@ -22,7 +21,7 @@ public class ActionUtils {
 
     public static void message(Player player,String actionLine) {
         if(PlayerKitsAPI.getPlugin().getConfigsManager().getMainConfigManager().isUseMiniMessage()){
-            player.sendMessage(MiniMessage.miniMessage().deserialize(actionLine));
+            MiniMessageUtils.message(player,actionLine);
         }else{
             player.sendMessage(MessagesManager.getLegacyColoredMessage(actionLine));
         }
