@@ -1,6 +1,5 @@
 package pk.ajneb97.managers.edit;
 
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
@@ -20,6 +19,7 @@ import pk.ajneb97.model.inventory.KitInventory;
 import pk.ajneb97.utils.InventoryItem;
 import pk.ajneb97.utils.InventoryUtils;
 import pk.ajneb97.utils.ItemUtils;
+import pk.ajneb97.utils.MiniMessageUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class InventoryEditPositionManager {
         Inventory inv;
         MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
         if(mainConfigManager.isUseMiniMessage()){
-            inv = Bukkit.createInventory(null,kitInventory.getSlots(), MiniMessage.miniMessage().deserialize(kitInventory.getTitle()));
+            inv = MiniMessageUtils.createInventory(kitInventory.getSlots(),kitInventory.getTitle());
         }else{
             inv = Bukkit.createInventory(null,kitInventory.getSlots(), MessagesManager.getLegacyColoredMessage(kitInventory.getTitle()));
         }
