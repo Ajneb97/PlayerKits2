@@ -15,17 +15,51 @@ import java.util.ArrayList;
 public class InventoryUpdateTaskManager {
 
     private PlayerKits2 plugin;
+    private BukkitRunnable task; // Store reference to the task
+    private boolean running; // Track if task is running
+
     public InventoryUpdateTaskManager(PlayerKits2 plugin){
         this.plugin = plugin;
+        this.running = false;
+        this.task = null;
     }
 
     public void start(){
-        new BukkitRunnable(){
+        if (running) {
+            plugin.getLogger().warning("InventoryUpdateTaskManager is already running!");
+            return;
+        }
+
+        task = new BukkitRunnable(){
             @Override
             public void run() {
                 execute();
             }
-        }.runTaskTimer(plugin,0L,20L);
+        };
+
+        task.runTaskTimer(plugin, 0L, 20L);
+        running = true;
+        plugin.getLogger().info("InventoryUpdateTaskManager started.");
+    }
+
+    public void stop(){
+        if (!running || task == null) {
+            plugin.getLogger().warning("InventoryUpdateTaskManager is not running!");
+            return;
+        }
+
+        try {
+            task.cancel();
+            running = false;
+            task = null;
+            plugin.getLogger().info("InventoryUpdateTaskManager stopped.");
+        } catch (IllegalStateException e) {
+            plugin.getLogger().warning("Failed to stop InventoryUpdateTaskManager: " + e.getMessage());
+        }
+    }
+
+    public boolean isRunning() {
+        return running;
     }
 
     public void execute(){
