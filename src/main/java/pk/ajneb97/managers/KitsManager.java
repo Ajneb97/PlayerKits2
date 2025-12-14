@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.api.events.KitPreClaimEvent;
 import pk.ajneb97.configs.MainConfigManager;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.KitAction;
@@ -221,6 +222,16 @@ public class KitsManager {
             }
         }
 
+        KitPreClaimEvent preClaimEvent = new KitPreClaimEvent(player, kit, giveKitInstructions.isFromCommand());
+        Bukkit.getPluginManager().callEvent(preClaimEvent);
+        if (preClaimEvent.isCancelled()) {
+            String reason = preClaimEvent.getCancelReason();
+            if (reason != null && !reason.isEmpty()) {
+                return PlayerKitsMessageResult.error(reason);
+            } else {
+                return PlayerKitsMessageResult.error(messagesFile.getString("kitClaimCancelled"));
+            }
+        }
 
         KitItemManager kitItemManager = plugin.getKitItemManager();
         ArrayList<KitItem> items = kit.getItems();
