@@ -2,7 +2,7 @@ main: pk.ajneb97.PlayerKits2
 version: ${project.version}
 name: PlayerKits2
 api-version: 1.13
-softdepend: [Vault,PlaceholderAPI]
+softdepend: [Vault,PlaceholderAPI,LTItemMail]
 author: Ajneb97
 
 commands:
