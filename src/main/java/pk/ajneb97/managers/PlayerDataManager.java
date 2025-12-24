@@ -1,9 +1,13 @@
 package pk.ajneb97.managers;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
+import pk.ajneb97.configs.PlayersConfigManager;
 import pk.ajneb97.database.MySQLConnection;
 import pk.ajneb97.model.PlayerData;
+import pk.ajneb97.model.internal.GenericCallback;
 import pk.ajneb97.model.internal.PlayerKitsMessageResult;
 import pk.ajneb97.utils.OtherUtils;
 
@@ -20,18 +24,12 @@ public class PlayerDataManager {
 
     public PlayerDataManager(PlayerKits2 plugin){
         this.plugin = plugin;
+        this.players = new HashMap<>();
         this.playerNames = new HashMap<>();
     }
 
     public Map<UUID,PlayerData> getPlayers() {
         return players;
-    }
-
-    public void setPlayers(Map<UUID,PlayerData> players) {
-        this.players = players;
-        for(Map.Entry<UUID, PlayerData> entry : players.entrySet()){
-            playerNames.put(entry.getValue().getName(),entry.getKey());
-        }
     }
 
     public void addPlayer(PlayerData p){
@@ -66,6 +64,11 @@ public class PlayerDataManager {
     public PlayerData getPlayerByName(String name){
         UUID uuid = getPlayerUUID(name);
         return players.get(uuid);
+    }
+
+    public void removePlayer(PlayerData playerData){
+        players.remove(playerData.getUuid());
+        playerNames.remove(playerData.getName());
     }
 
     public void removePlayerByUUID(UUID uuid){
@@ -133,41 +136,58 @@ public class PlayerDataManager {
         }
     }
 
-    public PlayerKitsMessageResult resetKitForPlayer(String name, String kitName, boolean all){
-        PlayerData playerData = getPlayerByName(name);
+    public PlayerKitsMessageResult resetKitForPlayer(String playerName, String kitName){
         FileConfiguration messagesConfig = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
-        if(playerData == null && !all){
+        if(Bukkit.getPlayer(playerName) == null){
+            return PlayerKitsMessageResult.error(messagesConfig.getString("playerNotOnline")
+                    .replace("%player%",playerName));
+        }
+
+        PlayerData playerData = getPlayerByName(playerName);
+        if(playerData == null){
             return PlayerKitsMessageResult.error(messagesConfig.getString("playerDataNotFound")
-                    .replace("%player%",name));
+                    .replace("%player%",playerName));
         }
 
-        if(all){
-            for(Map.Entry<UUID, PlayerData> entry : players.entrySet()){
-                entry.getValue().resetKit(kitName);
-            }
-        }else{
-            playerData.resetKit(kitName);
-        }
-
+        playerData.resetKit(kitName);
         if(plugin.getMySQLConnection() != null){
-            if(all){
-                plugin.getMySQLConnection().resetKit(null,kitName,true);
-            }else{
-                plugin.getMySQLConnection().resetKit(playerData.getUuid().toString(),kitName,false);
-            }
-
+            plugin.getMySQLConnection().resetKit(playerData.getUuid().toString(),kitName,false);
         }
 
         return PlayerKitsMessageResult.success();
     }
 
+
+    public void resetKitForAllPlayers(String kitName, GenericCallback<PlayerKitsMessageResult> callback){
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                MySQLConnection mySQLConnection = plugin.getMySQLConnection();
+                if (mySQLConnection == null) {
+                    PlayersConfigManager playerConfigsManager = plugin.getConfigsManager().getPlayersConfigManager();
+                    playerConfigsManager.resetKitForAllPlayers(kitName);
+                }
+
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        players.values().forEach(p -> p.resetKit(kitName));
+                        if(plugin.getMySQLConnection() != null){
+                            plugin.getMySQLConnection().resetKit(null,kitName,true);
+                        }
+
+                        callback.onDone(PlayerKitsMessageResult.success());
+                    }
+                }.runTask(plugin);
+            }
+        }.runTaskAsynchronously(plugin);
+    }
+
     public void manageJoin(Player player){
-        // Create or update data
         if(plugin.getMySQLConnection() != null){
             MySQLConnection mySQLConnection = plugin.getMySQLConnection();
             UUID uuid = player.getUniqueId();
             mySQLConnection.getPlayer(uuid.toString(), playerData -> {
-                removePlayerByUUID(uuid); //Remove data if already exists
                 if(playerData != null) {
                     addPlayer(playerData);
                     //Update name if different
@@ -180,24 +200,49 @@ public class PlayerDataManager {
                     playerData = new PlayerData(uuid, player.getName());
                     addPlayer(playerData);
 
-                    //Create if it doesn't exist
+                    //Create if it doesn't exist + first join kit
                     mySQLConnection.createPlayer(playerData, () -> plugin.getKitsManager().giveFirstJoinKit(player));
                 }
             });
         }else{
-            PlayerData playerData = getPlayer(player,false);
-            if(playerData == null){
-                playerData = new PlayerData(player.getUniqueId(),player.getName());
-                playerData.setModified(true);
-                addPlayer(playerData);
-                plugin.getKitsManager().giveFirstJoinKit(player);
-            }else{
-                if(playerData.getName() == null || !playerData.getName().equals(player.getName())){
-                    updatePlayerName(playerData.getName(),player.getName(),player.getUniqueId());
-                    playerData.setName(player.getName());
+            // Load player data from file if exists
+            plugin.getConfigsManager().getPlayersConfigManager().loadConfig(player.getUniqueId(), playerData -> {
+                if(playerData != null){
+                    addPlayer(playerData);
+                    if(playerData.getName() == null || !playerData.getName().equals(player.getName())){
+                        updatePlayerName(playerData.getName(),player.getName(),player.getUniqueId());
+                        playerData.setName(player.getName());
+                        playerData.setModified(true);
+                    }
+                }else{
+                    // Create it if it doesn't exist.
+                    playerData = new PlayerData(player.getUniqueId(),player.getName());
                     playerData.setModified(true);
+                    addPlayer(playerData);
+
+                    // First join kit
+                    plugin.getKitsManager().giveFirstJoinKit(player);
+                }
+            });
+        }
+    }
+
+    public void manageLeave(Player player){
+        // Save player data into file and remove from map
+        PlayerData playerData = getPlayer(player,false);
+        if(playerData != null){
+            if(plugin.getMySQLConnection() == null) {
+                if(playerData.isModified()){
+                    new BukkitRunnable(){
+                        @Override
+                        public void run() {
+                            plugin.getConfigsManager().getPlayersConfigManager().saveConfig(playerData);
+                        }
+                    }.runTaskAsynchronously(plugin);
                 }
             }
+
+            removePlayer(playerData);
         }
     }
 }

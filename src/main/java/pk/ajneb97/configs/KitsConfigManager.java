@@ -48,7 +48,7 @@ public class KitsConfigManager extends DataFolderConfigManager{
 
     public void saveConfig(Kit kit){
         String kitName = kit.getName();
-        CommonConfig kitConfig = getConfigFile(kitName+".yml");
+        CommonConfig kitConfig = getConfigFile(kitName+".yml",true);
 
         FileConfiguration config = kitConfig.getConfig();
 
