@@ -1,4 +1,4 @@
-package pk.ajneb97.database;
+package pk.ajneb97.model.internal;
 
 public interface SimpleCallback {
 

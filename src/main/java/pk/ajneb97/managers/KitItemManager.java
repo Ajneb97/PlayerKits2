@@ -243,7 +243,7 @@ public class KitItemManager {
         if(lore != null) {
             List<String> loreCopy = new ArrayList<>(lore);
             if(useMiniMessage){
-                MiniMessageUtils.setItemLore(meta,lore,player,plugin);
+                MiniMessageUtils.setItemLore(meta,loreCopy,player,plugin);
             }else{
                 for(int i=0;i<loreCopy.size();i++) {
                     String line = OtherUtils.replaceGlobalVariables(loreCopy.get(i),player,plugin);

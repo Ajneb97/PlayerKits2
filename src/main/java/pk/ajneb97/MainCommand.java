@@ -9,6 +9,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import pk.ajneb97.configs.MainConfigManager;
 import pk.ajneb97.managers.MessagesManager;
+import pk.ajneb97.managers.PlayerDataManager;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.internal.GiveKitInstructions;
 import pk.ajneb97.model.internal.PlayerKitsMessageResult;
@@ -170,13 +171,16 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         String kitName = args[1];
         String playerName = args[2];
 
-        PlayerKitsMessageResult result = plugin.getPlayerDataManager().resetKitForPlayer(playerName,kitName,playerName.equals("*"));
-        if(result.isError()){
-            msgManager.sendMessage(sender, result.getMessage(), true);
-        }else{
-            if(playerName.equals("*")){
+        PlayerDataManager playerDataManager = plugin.getPlayerDataManager();
+        if(playerName.equals("*")){
+            playerDataManager.resetKitForAllPlayers(kitName,result -> {
                 msgManager.sendMessage(sender, messagesConfig.getString("kitResetCorrectAll")
                         .replace("%kit%",kitName), true);
+            });
+        }else{
+            PlayerKitsMessageResult result = playerDataManager.resetKitForPlayer(playerName,kitName);
+            if(result.isError()){
+                msgManager.sendMessage(sender, result.getMessage(), true);
             }else{
                 msgManager.sendMessage(sender, messagesConfig.getString("kitResetCorrect")
                         .replace("%kit%",kitName).replace("%player%",playerName), true);
