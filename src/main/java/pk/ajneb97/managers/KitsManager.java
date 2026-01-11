@@ -49,7 +49,7 @@ public class KitsManager {
 
     public Kit getKitByName(String name){
         for(Kit kit : kits){
-            if(kit.getName().equals(name)){
+            if(kit.getName().equalsIgnoreCase(name)){
                 return kit;
             }
         }
