@@ -16,6 +16,7 @@ import pk.ajneb97.model.internal.KitVariable;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.inventory.ItemKitInventory;
 import pk.ajneb97.model.inventory.KitInventory;
+import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.InventoryItem;
 import pk.ajneb97.utils.InventoryUtils;
 import pk.ajneb97.utils.ItemUtils;
@@ -58,26 +59,35 @@ public class InventoryEditPositionManager {
                         if(kit == null){
                             continue;
                         }
-                        ItemStack item = kitItemManager.createItemFromKitItem(kit.getDisplayItemDefault(),null,kit);
+
+                        KitItem kitItem = kit.getDisplayItemDefault().clone();
+
                         //Check if it is the same kit
                         if(kitName.equals(inventoryPlayer.getKitName())){
-                            ItemMeta meta = item.getItemMeta();
                             List<String> extraLore = new ArrayList<>();
+                            List<String> currentLore = kitItem.getLore();
                             extraLore.add(" ");
-                            extraLore.add(MessagesManager.getLegacyColoredMessage("&a&lTHIS IS THE CURRENT POSITION OF"));
-                            extraLore.add(MessagesManager.getLegacyColoredMessage("&a&lTHE KIT."));
+                            if(mainConfigManager.isUseMiniMessage()){
+                                extraLore.add(MessagesManager.getLegacyColoredMessage("<green><b>THIS IS THE CURRENT POSITION OF</b>"));
+                                extraLore.add(MessagesManager.getLegacyColoredMessage("<green><b>THE KIT.</b>"));
+                            }else{
+                                extraLore.add(MessagesManager.getLegacyColoredMessage("&a&lTHIS IS THE CURRENT POSITION OF"));
+                                extraLore.add(MessagesManager.getLegacyColoredMessage("&a&lTHE KIT."));
+                            }
+
                             List<String> itemLore = new ArrayList<>();
-                            if(meta.hasLore()){
-                                itemLore = new ArrayList<>(meta.getLore());
+                            if(currentLore != null){
+                                itemLore = new ArrayList<>(currentLore);
                             }
                             itemLore.addAll(extraLore);
-                            meta.setLore(itemLore);
-                            item.setItemMeta(meta);
+                            kitItem.setLore(itemLore);
                         }
 
                         ArrayList<KitVariable> variablesToReplace = new ArrayList<>();
                         variablesToReplace.add(new KitVariable("%kit_name%",kit.getName()));
-                        kitItemManager.replaceVariables(item,variablesToReplace);
+                        kitItemManager.replaceVariables(kitItem,variablesToReplace,inventoryPlayer.getPlayer());
+
+                        ItemStack item = kitItemManager.createItemFromKitItem(kitItem,null,kit);
 
                         inv.setItem(slot,item);
                     }
