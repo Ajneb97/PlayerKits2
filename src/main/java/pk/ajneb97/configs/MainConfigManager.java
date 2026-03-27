@@ -81,6 +81,11 @@ public class MainConfigManager {
                 getConfig().set("new_kit_default_save_mode_original", true);
                 configFile.saveConfig();
             }
+            // Add language option defaulting to english (en)
+            if(!text.contains("language:")){
+                getConfig().set("language","en");
+                configFile.saveConfig();
+            }
         }catch(IOException e){
             e.printStackTrace();
         }
@@ -128,5 +133,14 @@ public class MainConfigManager {
 
     public boolean isUseMiniMessage() {
         return useMiniMessage;
+    }
+
+    // Allow changing the language at runtime and persist it to the main config
+    public void setLanguage(String lang){
+        if(lang == null) return;
+        getConfig().set("language", lang);
+        configFile.saveConfig();
+        // reload internal fields
+        configure();
     }
 }
