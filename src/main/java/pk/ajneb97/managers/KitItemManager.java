@@ -811,39 +811,26 @@ public class KitItemManager {
         return kitItem;
     }
 
-    public void replaceVariables(ItemStack item, ArrayList<KitVariable> variables){
-        boolean useMiniMessage = plugin.getConfigsManager().getMainConfigManager().isUseMiniMessage();
-        if(item.hasItemMeta()){
-            ItemMeta meta = item.getItemMeta();
-            if(meta.hasDisplayName()){
-                if(useMiniMessage){
-                    MiniMessageUtils.replaceVariablesItemName(meta,variables);
-                }else{
-                    String newName = meta.getDisplayName();
-                    for(KitVariable variable : variables){
-                        newName = newName.replace(variable.getVariable(),variable.getValue());
-                    }
-                    meta.setDisplayName(MessagesManager.getLegacyColoredMessage(newName));
-                }
+    public void replaceVariables(KitItem commonItem, ArrayList<KitVariable> variables, Player player){
+        if(commonItem.getName() != null){
+            String newName = commonItem.getName();
+            for(KitVariable variable : variables){
+                newName = newName.replace(variable.getVariable(),variable.getValue());
             }
+            newName = OtherUtils.replaceGlobalVariables(newName,player,plugin);
+            commonItem.setName(newName);
+        }
 
-            if(meta.hasLore()){
-                if(useMiniMessage){
-                    MiniMessageUtils.replaceVariablesItemLore(meta,variables);
-                }else{
-                    List<String> lore = meta.getLore();
-                    for(int i=0;i<lore.size();i++){
-                        for(KitVariable variable : variables){
-                            String line = lore.get(i).replace(variable.getVariable(),variable.getValue());
-                            lore.set(i,MessagesManager.getLegacyColoredMessage(line));
-                        }
-                    }
-                    meta.setLore(lore);
+        if(commonItem.getLore() != null){
+            List<String> lore = commonItem.getLore();
+            for(int i=0;i<lore.size();i++){
+                for(KitVariable variable : variables){
+                    String line = lore.get(i).replace(variable.getVariable(),variable.getValue());
+                    line = OtherUtils.replaceGlobalVariables(line,player,plugin);
+                    lore.set(i,line);
                 }
             }
-            item.setItemMeta(meta);
+            commonItem.setLore(lore);
         }
     }
-
-
 }

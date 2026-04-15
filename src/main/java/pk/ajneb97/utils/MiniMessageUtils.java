@@ -31,9 +31,10 @@ public class MiniMessageUtils {
         }
     }
 
-    public static void title(Player player, String title, String subtitle){
+    public static void title(Player player, String title, String subtitle, Integer fadeIn, Integer stay, Integer fadeOut){
         player.showTitle(Title.title(
-                MiniMessage.miniMessage().deserialize(title),MiniMessage.miniMessage().deserialize(subtitle)
+                MiniMessage.miniMessage().deserialize(title),MiniMessage.miniMessage().deserialize(subtitle),
+                fadeIn,stay,fadeOut
         ));
     }
 
@@ -80,34 +81,6 @@ public class MiniMessageUtils {
             loreComponent.add(MiniMessage.miniMessage().deserialize(line).decoration(TextDecoration.ITALIC, false));
         }
         meta.lore(loreComponent);
-    }
-
-    public static void replaceVariablesItemName(ItemMeta meta, ArrayList<KitVariable> variables){
-        Component name = meta.displayName();
-        Component newName = name;
-        for(KitVariable variable : variables){
-            newName = newName.replaceText(TextReplacementConfig.builder()
-                    .matchLiteral(variable.getVariable())
-                    .replacement(MiniMessage.miniMessage().deserialize(variable.getValue()))
-                    .build());
-        }
-        meta.displayName(newName);
-    }
-
-    public static void replaceVariablesItemLore(ItemMeta meta,ArrayList<KitVariable> variables){
-        List<Component> lore = meta.lore();
-        List<Component> newLore = new ArrayList<>();
-        for(Component c : lore){
-            Component newComponent = c;
-            for(KitVariable variable : variables){
-                newComponent = newComponent.replaceText(TextReplacementConfig.builder()
-                        .matchLiteral(variable.getVariable())
-                        .replacement(MiniMessage.miniMessage().deserialize(variable.getValue()))
-                        .build());
-            }
-            newLore.add(newComponent);
-        }
-        meta.lore(newLore);
     }
 
     public static void setRequirementsMessage(ItemMeta meta, String kitName, Player player, InventoryRequirementsManager inventoryRequirementsManager){

@@ -347,20 +347,24 @@ public class InventoryManager {
             newStatus = "default";
         }
 
+        kitItem = kitItem.clone();
+
         boolean useMiniMessage = plugin.getConfigsManager().getMainConfigManager().isUseMiniMessage();
         if(newStatus.equals(currentStatus) && currentItem != null){
             // Name and Lore update
+            kitItemManager.replaceVariables(kitItem,variablesToReplace,player);
+
             ItemMeta meta = currentItem.getItemMeta();
 
             String name = kitItem.getName();
             if(name != null){
-                name = OtherUtils.replaceGlobalVariables(name,player,plugin);
                 if(useMiniMessage){
                     MiniMessageUtils.setItemName(meta,name);
                 }else{
                     meta.setDisplayName(MessagesManager.getLegacyColoredMessage(name));
                 }
             }
+
             List<String> lore = kitItem.getLore();
             if(lore != null) {
                 List<String> loreCopy = new ArrayList<>(lore);
@@ -374,13 +378,12 @@ public class InventoryManager {
                     meta.setLore(loreCopy);
                 }
             }
-            currentItem.setItemMeta(meta);
 
-            kitItemManager.replaceVariables(currentItem,variablesToReplace);
+            currentItem.setItemMeta(meta);
         }else{
             // Full update
+            kitItemManager.replaceVariables(kitItem,variablesToReplace,player);
             ItemStack item = kitItemManager.createItemFromKitItem(kitItem,player,kit);
-            kitItemManager.replaceVariables(item,variablesToReplace);
             item = ItemUtils.setTagStringItem(plugin,item, "playerkits_kit", kitName);
             item = ItemUtils.setTagStringItem(plugin,item, "playerkits_kit_status", newStatus);
             inv.setItem(slot,item);
