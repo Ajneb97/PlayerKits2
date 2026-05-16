@@ -66,6 +66,8 @@ public class ConfigsManager {
             plugin.reloadPlayerDataSaveTask();
         }
 
+        plugin.getDependencyManager().reloadCurrencyProviders();
+
         plugin.getVerifyManager().verify();
 
         return true;

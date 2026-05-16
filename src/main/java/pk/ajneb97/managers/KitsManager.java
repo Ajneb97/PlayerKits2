@@ -1,7 +1,6 @@
 package pk.ajneb97.managers;
 
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -10,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.configs.MainConfigManager;
+import pk.ajneb97.managers.currency.*;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.KitAction;
 import pk.ajneb97.model.KitRequirements;
@@ -22,6 +22,8 @@ import pk.ajneb97.utils.OtherUtils;
 import pk.ajneb97.utils.PlayerUtils;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
 
 public class KitsManager {
 
@@ -202,7 +204,8 @@ public class KitsManager {
                     }
 
                     //Check price
-                    if(!passPrice(kitRequirements.getPrice(),player)){
+//                    if(!passPrice(kitRequirements.getPrice(),player)){
+                    if(!checkPrice(player.getUniqueId(), kitRequirements)){
                         sendKitActions(kit.getErrorActions(),player,false);
                         return PlayerKitsMessageResult.error(messagesFile.getString("requirementsError"));
                     }
@@ -350,9 +353,12 @@ public class KitsManager {
             if(!giveKitInstructions.isIgnoreRequirements() && kitRequirements != null && giveKitInstructions.isRequirementsSatisfied()){
                 //Check price and update balance
                 double price = kitRequirements.getPrice();
-                Economy economy = plugin.getDependencyManager().getVaultEconomy();
-                if(price > 0 && economy != null){
-                    economy.withdrawPlayer(player,price);
+//                Economy economy = plugin.getDependencyManager().getVaultEconomy();
+//                if(price > 0 && economy != null){
+//                    economy.withdrawPlayer(player,price);
+//                }
+                if(price > 0){
+                    chargePrice(player.getUniqueId(), kitRequirements);
                 }
 
                 //Actions
@@ -436,6 +442,60 @@ public class KitsManager {
             }
         }
         return true;
+    }
+
+    public boolean checkPrice(UUID playerId, KitRequirements requirements){
+        if (requirements.getPrice() == 0) return true;
+        String currencyProviderName = requirements.getCurrencyProvider();
+        CurrencyProvider currencyProvider;
+        if (currencyProviderName == null) {
+            currencyProvider = plugin.getDependencyManager().getCurrencyProvider(CurrencyProviderType.VAULT);
+            if (currencyProvider == null) return !requirements.isFailOnMissingDefaultCurrencyProvider();
+        } else {
+            CurrencyProviderType currencyProviderType = CurrencyProviderType.getByName(currencyProviderName);
+            if (currencyProviderType == null) return !requirements.isFailOnMissingSpecificCurrencyProvider();
+            currencyProvider = plugin.getDependencyManager().getCurrencyProvider(currencyProviderType);
+            if (currencyProvider == null) return !requirements.isFailOnMissingSpecificCurrencyProvider();
+        }
+        Currency currency;
+        if (currencyProvider instanceof SingleCurrencyProvider) {
+            currency = ((SingleCurrencyProvider) currencyProvider).getCurrency();
+        } else if (currencyProvider instanceof MultiCurrencyProvider) {
+            String currencyName = requirements.getCurrency();
+            if (currencyName == null) return !requirements.isFailOnMissingCurrency();
+            currency = ((MultiCurrencyProvider) currencyProvider).getCurrency(currencyName);
+            if (currency == null) return !requirements.isFailOnMissingCurrency();
+        } else {
+            return true;
+        }
+        return currency.has(playerId, requirements.getPrice());
+    }
+
+    public boolean chargePrice(UUID playerId, KitRequirements requirements){
+        if (requirements.getPrice() == 0) return true;
+        String currencyProviderName = requirements.getCurrencyProvider();
+        CurrencyProvider currencyProvider;
+        if (currencyProviderName == null) {
+            currencyProvider = plugin.getDependencyManager().getCurrencyProvider(CurrencyProviderType.VAULT);
+            if (currencyProvider == null) return !requirements.isFailOnMissingDefaultCurrencyProvider();
+        } else {
+            CurrencyProviderType currencyProviderType = CurrencyProviderType.getByName(currencyProviderName);
+            if (currencyProviderType == null) return !requirements.isFailOnMissingSpecificCurrencyProvider();
+            currencyProvider = plugin.getDependencyManager().getCurrencyProvider(currencyProviderType);
+            if (currencyProvider == null) return !requirements.isFailOnMissingSpecificCurrencyProvider();
+        }
+        Currency currency;
+        if (currencyProvider instanceof SingleCurrencyProvider) {
+            currency = ((SingleCurrencyProvider) currencyProvider).getCurrency();
+        } else if (currencyProvider instanceof MultiCurrencyProvider) {
+            String currencyName = requirements.getCurrency();
+            if (currencyName == null) return !requirements.isFailOnMissingCurrency();
+            currency = ((MultiCurrencyProvider) currencyProvider).getCurrency(currencyName);
+            if (currency == null) return !requirements.isFailOnMissingCurrency();
+        } else {
+            return true;
+        }
+        return currency.withdraw(playerId, requirements.getPrice());
     }
 
 }
