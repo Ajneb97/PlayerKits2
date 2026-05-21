@@ -1,4 +1,5 @@
 drop_items_if_full_inventory: false
+kit_menu: true
 claim_kit_short_command: false
 close_inventory_on_claim: false
 kit_preview: true

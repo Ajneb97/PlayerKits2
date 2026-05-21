@@ -17,6 +17,7 @@ public class MainConfigManager {
 
     //Options
     private Kit newKitDefault;
+    private boolean kitMenuEnabled;
     private boolean kitPreview;
     private boolean closeInventoryOnClaim;
     private boolean claimKitShortCommand;
@@ -38,6 +39,7 @@ public class MainConfigManager {
     public void configure(){
         FileConfiguration config = configFile.getConfig();
         newKitDefault = KitsConfigManager.getKitFromConfig(config,plugin,null,"new_kit_default_values.");
+        kitMenuEnabled = config.getBoolean("kit_menu", true);
         kitPreview = config.getBoolean("kit_preview");
         closeInventoryOnClaim = config.getBoolean("close_inventory_on_claim");
         kitPreviewRequiresKitPermission = config.getBoolean("kit_preview_requires_kit_permission");
@@ -66,6 +68,10 @@ public class MainConfigManager {
         Path pathConfig = Paths.get(configFile.getRoute());
         try{
             String text = new String(Files.readAllBytes(pathConfig));
+            if(!text.contains("kit_menu:")){
+                getConfig().set("kit_menu",true);
+                configFile.saveConfig();
+            }
             if(!text.contains("use_minimessage:")){
                 getConfig().set("use_minimessage",false);
                 configFile.saveConfig();
@@ -88,6 +94,10 @@ public class MainConfigManager {
 
     public Kit getNewKitDefault() {
         return newKitDefault;
+    }
+
+    public boolean isKitMenuEnabled() {
+        return kitMenuEnabled;
     }
 
     public boolean isKitPreview() {
