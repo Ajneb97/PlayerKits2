@@ -7,6 +7,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.InventoryManager;
 import pk.ajneb97.managers.MessagesManager;
@@ -31,6 +32,11 @@ public class PlayerListener implements Listener {
             player.sendMessage(MessagesManager.getLegacyColoredMessage(plugin.prefix+"&cThere is a new version available. &e(&7"+latestVersion+"&e)"));
             player.sendMessage(MessagesManager.getLegacyColoredMessage("&cYou can download it at: &ahttps://modrinth.com/plugin/playerkits-2"));
         }
+    }
+
+    @EventHandler
+    public void onLeave(PlayerQuitEvent event){
+        plugin.getPlayerDataManager().manageLeave(event.getPlayer());
     }
 
     @EventHandler

@@ -1,10 +1,6 @@
 package pk.ajneb97.managers;
 
 import me.clip.placeholderapi.PlaceholderAPI;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -14,6 +10,7 @@ import pk.ajneb97.model.KitRequirements;
 import pk.ajneb97.model.internal.GiveKitInstructions;
 import pk.ajneb97.model.internal.PlayerKitsMessageResult;
 import pk.ajneb97.model.inventory.InventoryPlayer;
+import pk.ajneb97.utils.MiniMessageUtils;
 import pk.ajneb97.utils.PlayerUtils;
 
 import java.util.ArrayList;
@@ -36,20 +33,7 @@ public class InventoryRequirementsManager {
             }
 
             if(plugin.getConfigsManager().getMainConfigManager().isUseMiniMessage()){
-                List<Component> newLore = new ArrayList<>();
-                PlainTextComponentSerializer plainSerializer = PlainTextComponentSerializer.plainText();
-                for(Component line : meta.lore()){
-                    String plainText = plainSerializer.serialize(line);
-                    if(plainText.contains("%kit_requirements_message%")){
-                        List<String> message = replaceRequirementsMessageVariable(kitName,player);
-                        for(String m : message){
-                            newLore.add(MiniMessage.miniMessage().deserialize(m).decoration(TextDecoration.ITALIC, false));
-                        }
-                    }else{
-                        newLore.add(line);
-                    }
-                }
-                meta.lore(newLore);
+                MiniMessageUtils.setRequirementsMessage(meta,kitName,player,this);
             }else{
                 List<String> lore = new ArrayList<>();
                 for(String line : meta.getLore()){

@@ -1,7 +1,6 @@
 package pk.ajneb97.libs.actionbar;
 
 import io.github.projectunified.minelib.scheduler.entity.EntityScheduler;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -9,6 +8,7 @@ import org.bukkit.entity.Player;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.api.PlayerKitsAPI;
 import pk.ajneb97.managers.MessagesManager;
+import pk.ajneb97.utils.MiniMessageUtils;
 import pk.ajneb97.utils.OtherUtils;
 
 import java.lang.reflect.Field;
@@ -21,7 +21,7 @@ public class ActionBarAPI
     public static void sendActionBar(Player player, String message) {
 	  if(OtherUtils.isNew()) {
           if(PlayerKitsAPI.getPlugin().getConfigsManager().getMainConfigManager().isUseMiniMessage()){
-              player.sendActionBar(MiniMessage.miniMessage().deserialize(message));
+              MiniMessageUtils.actionbar(player,message);
           }else{
               player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(MessagesManager.getLegacyColoredMessage(message)));
           }

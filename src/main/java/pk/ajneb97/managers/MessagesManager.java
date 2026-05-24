@@ -1,10 +1,9 @@
 package pk.ajneb97.managers;
 
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.CommandSender;
-import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.api.PlayerKitsAPI;
+import pk.ajneb97.utils.MiniMessageUtils;
 import pk.ajneb97.utils.OtherUtils;
 
 import java.util.regex.Matcher;
@@ -89,11 +88,7 @@ public class MessagesManager {
 	public void sendMessage(CommandSender sender, String message, boolean prefix){
 		if(!message.isEmpty()){
 			if(PlayerKitsAPI.getPlugin().getConfigsManager().getMainConfigManager().isUseMiniMessage()){
-				if(prefix){
-					sender.sendMessage(MiniMessage.miniMessage().deserialize(this.prefix+message));
-				}else{
-					sender.sendMessage(MiniMessage.miniMessage().deserialize(message));
-				}
+				MiniMessageUtils.messagePrefix(sender,message,prefix,this.prefix);
 			}else{
 				if(prefix){
 					sender.sendMessage(getLegacyColoredMessage(this.prefix+message));

@@ -1,10 +1,6 @@
 package pk.ajneb97.managers;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -23,10 +19,7 @@ import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.inventory.ItemKitInventory;
 import pk.ajneb97.model.inventory.KitInventory;
 import pk.ajneb97.model.item.KitItem;
-import pk.ajneb97.utils.ActionUtils;
-import pk.ajneb97.utils.ItemUtils;
-import pk.ajneb97.utils.OtherUtils;
-import pk.ajneb97.utils.PlayerUtils;
+import pk.ajneb97.utils.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,7 +89,7 @@ public class InventoryManager {
         }
         Inventory inv;
         if(mainConfigManager.isUseMiniMessage()){
-            inv = Bukkit.createInventory(null,kitInventory.getSlots(), MiniMessage.miniMessage().deserialize(title));
+            inv = MiniMessageUtils.createInventory(kitInventory.getSlots(),title);
         }else{
             inv = Bukkit.createInventory(null,kitInventory.getSlots(), MessagesManager.getLegacyColoredMessage(title));
         }
@@ -354,30 +347,29 @@ public class InventoryManager {
             newStatus = "default";
         }
 
+        kitItem = kitItem.clone();
+
         boolean useMiniMessage = plugin.getConfigsManager().getMainConfigManager().isUseMiniMessage();
         if(newStatus.equals(currentStatus) && currentItem != null){
             // Name and Lore update
+            kitItemManager.replaceVariables(kitItem,variablesToReplace,player);
+
             ItemMeta meta = currentItem.getItemMeta();
 
             String name = kitItem.getName();
             if(name != null){
-                name = OtherUtils.replaceGlobalVariables(name,player,plugin);
                 if(useMiniMessage){
-                    meta.displayName(MiniMessage.miniMessage().deserialize(name).decoration(TextDecoration.ITALIC, false));
+                    MiniMessageUtils.setItemName(meta,name);
                 }else{
                     meta.setDisplayName(MessagesManager.getLegacyColoredMessage(name));
                 }
             }
+
             List<String> lore = kitItem.getLore();
             if(lore != null) {
                 List<String> loreCopy = new ArrayList<>(lore);
                 if(useMiniMessage){
-                    List<Component> loreComponent = new ArrayList<>();
-                    for(int i=0;i<loreCopy.size();i++) {
-                        String line = OtherUtils.replaceGlobalVariables(loreCopy.get(i),player,plugin);
-                        loreComponent.add(MiniMessage.miniMessage().deserialize(line).decoration(TextDecoration.ITALIC, false));
-                    }
-                    meta.lore(loreComponent);
+                    MiniMessageUtils.setItemLore(meta,lore,player,plugin);
                 }else{
                     for(int i=0;i<loreCopy.size();i++) {
                         String line = OtherUtils.replaceGlobalVariables(loreCopy.get(i),player,plugin);
@@ -386,13 +378,12 @@ public class InventoryManager {
                     meta.setLore(loreCopy);
                 }
             }
-            currentItem.setItemMeta(meta);
 
-            kitItemManager.replaceVariables(currentItem,variablesToReplace);
+            currentItem.setItemMeta(meta);
         }else{
             // Full update
+            kitItemManager.replaceVariables(kitItem,variablesToReplace,player);
             ItemStack item = kitItemManager.createItemFromKitItem(kitItem,player,kit);
-            kitItemManager.replaceVariables(item,variablesToReplace);
             item = ItemUtils.setTagStringItem(plugin,item, "playerkits_kit", kitName);
             item = ItemUtils.setTagStringItem(plugin,item, "playerkits_kit_status", newStatus);
             inv.setItem(slot,item);

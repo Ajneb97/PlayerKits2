@@ -1,9 +1,5 @@
 package pk.ajneb97.managers;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextReplacementConfig;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -20,6 +16,7 @@ import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.internal.KitVariable;
 import pk.ajneb97.model.item.*;
 import pk.ajneb97.utils.ItemUtils;
+import pk.ajneb97.utils.MiniMessageUtils;
 import pk.ajneb97.utils.OtherUtils;
 import pk.ajneb97.utils.ServerVersion;
 
@@ -47,26 +44,32 @@ public class KitItemManager {
 
         ServerVersion serverVersion = PlayerKits2.serverVersion;
         boolean useMiniMessage = plugin.getConfigsManager().getMainConfigManager().isUseMiniMessage();
+        boolean isPaper = plugin.getDependencyManager().isPaper();
 
         if(item.hasItemMeta()) {
             ItemMeta meta = item.getItemMeta();
             if(meta.hasDisplayName()) {
                 if(useMiniMessage){
-                    kitItem.setName(MiniMessage.miniMessage().serialize(meta.displayName()));
+                    MiniMessageUtils.setCommonItemName(kitItem,meta);
                 }else{
-                    kitItem.setName(meta.getDisplayName().replace("§", "&"));
+                    if(isPaper && serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_19_R1)){
+                        MiniMessageUtils.setCommonItemNameLegacy(kitItem,meta);
+                    }else{
+                        kitItem.setName(meta.getDisplayName().replace("§", "&"));
+                    }
                 }
-
             }
             if(meta.hasLore()) {
                 List<String> lore = new ArrayList<>();
                 if(useMiniMessage){
-                    for (Component line : meta.lore()) {
-                        lore.add(MiniMessage.miniMessage().serialize(line));
-                    }
+                    MiniMessageUtils.setCommonItemLore(lore,meta);
                 }else{
-                    for(String l : meta.getLore()) {
-                        lore.add(l.replace("§", "&"));
+                    if(isPaper && serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_19_R1)){
+                        MiniMessageUtils.setCommonItemLoreLegacy(lore,meta);
+                    }else{
+                        for(String l : meta.getLore()) {
+                            lore.add(l.replace("§", "&"));
+                        }
                     }
                 }
                 kitItem.setLore(lore);
@@ -230,7 +233,7 @@ public class KitItemManager {
         if(name != null){
             name = OtherUtils.replaceGlobalVariables(name,player,plugin);
             if(useMiniMessage){
-                meta.displayName(MiniMessage.miniMessage().deserialize(name).decoration(TextDecoration.ITALIC, false));
+                MiniMessageUtils.setItemName(meta,name);
             }else{
                 meta.setDisplayName(MessagesManager.getLegacyColoredMessage(name));
             }
@@ -240,12 +243,7 @@ public class KitItemManager {
         if(lore != null) {
             List<String> loreCopy = new ArrayList<>(lore);
             if(useMiniMessage){
-                List<Component> loreComponent = new ArrayList<>();
-                for(int i=0;i<loreCopy.size();i++) {
-                    String line = OtherUtils.replaceGlobalVariables(loreCopy.get(i),player,plugin);
-                    loreComponent.add(MiniMessage.miniMessage().deserialize(line).decoration(TextDecoration.ITALIC, false));
-                }
-                meta.lore(loreComponent);
+                MiniMessageUtils.setItemLore(meta,loreCopy,player,plugin);
             }else{
                 for(int i=0;i<loreCopy.size();i++) {
                     String line = OtherUtils.replaceGlobalVariables(loreCopy.get(i),player,plugin);
@@ -813,59 +811,26 @@ public class KitItemManager {
         return kitItem;
     }
 
-    public void replaceVariables(ItemStack item, ArrayList<KitVariable> variables){
-        boolean useMiniMessage = plugin.getConfigsManager().getMainConfigManager().isUseMiniMessage();
-        if(item.hasItemMeta()){
-            ItemMeta meta = item.getItemMeta();
-            if(meta.hasDisplayName()){
-                if(useMiniMessage){
-                    Component name = meta.displayName();
-                    Component newName = name;
-                    for(KitVariable variable : variables){
-                        newName = newName.replaceText(TextReplacementConfig.builder()
-                                .matchLiteral(variable.getVariable())
-                                .replacement(MiniMessage.miniMessage().deserialize(variable.getValue()))
-                                .build());
-                    }
-                    meta.displayName(newName);
-                }else{
-                    String newName = meta.getDisplayName();
-                    for(KitVariable variable : variables){
-                        newName = newName.replace(variable.getVariable(),variable.getValue());
-                    }
-                    meta.setDisplayName(MessagesManager.getLegacyColoredMessage(newName));
-                }
+    public void replaceVariables(KitItem commonItem, ArrayList<KitVariable> variables, Player player){
+        if(commonItem.getName() != null){
+            String newName = commonItem.getName();
+            for(KitVariable variable : variables){
+                newName = newName.replace(variable.getVariable(),variable.getValue());
             }
+            newName = OtherUtils.replaceGlobalVariables(newName,player,plugin);
+            commonItem.setName(newName);
+        }
 
-            if(meta.hasLore()){
-                if(useMiniMessage){
-                    List<Component> lore = meta.lore();
-                    List<Component> newLore = new ArrayList<>();
-                    for(Component c : lore){
-                        Component newComponent = c;
-                        for(KitVariable variable : variables){
-                            newComponent = newComponent.replaceText(TextReplacementConfig.builder()
-                                    .matchLiteral(variable.getVariable())
-                                    .replacement(MiniMessage.miniMessage().deserialize(variable.getValue()))
-                                    .build());
-                        }
-                        newLore.add(newComponent);
-                    }
-                    meta.lore(newLore);
-                }else{
-                    List<String> lore = meta.getLore();
-                    for(int i=0;i<lore.size();i++){
-                        for(KitVariable variable : variables){
-                            String line = lore.get(i).replace(variable.getVariable(),variable.getValue());
-                            lore.set(i,MessagesManager.getLegacyColoredMessage(line));
-                        }
-                    }
-                    meta.setLore(lore);
+        if(commonItem.getLore() != null){
+            List<String> lore = commonItem.getLore();
+            for(int i=0;i<lore.size();i++){
+                for(KitVariable variable : variables){
+                    String line = lore.get(i).replace(variable.getVariable(),variable.getValue());
+                    line = OtherUtils.replaceGlobalVariables(line,player,plugin);
+                    lore.set(i,line);
                 }
             }
-            item.setItemMeta(meta);
+            commonItem.setLore(lore);
         }
     }
-
-
 }
