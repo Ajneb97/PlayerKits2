@@ -4,6 +4,7 @@ name: PlayerKits2
 api-version: 1.13
 softdepend: [Vault,PlaceholderAPI]
 author: Ajneb97
+folia-supported: true
 
 commands:
   kit:

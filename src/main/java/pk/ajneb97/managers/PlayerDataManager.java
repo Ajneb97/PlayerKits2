@@ -1,8 +1,9 @@
 package pk.ajneb97.managers;
+import io.github.projectunified.minelib.scheduler.async.AsyncScheduler;
+import io.github.projectunified.minelib.scheduler.global.GlobalScheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.configs.PlayersConfigManager;
 import pk.ajneb97.database.MySQLConnection;
@@ -159,7 +160,7 @@ public class PlayerDataManager {
 
 
     public void resetKitForAllPlayers(String kitName, GenericCallback<PlayerKitsMessageResult> callback){
-        new BukkitRunnable() {
+        AsyncScheduler.get(plugin).run(new Runnable() {
             @Override
             public void run() {
                 MySQLConnection mySQLConnection = plugin.getMySQLConnection();
@@ -168,7 +169,7 @@ public class PlayerDataManager {
                     playerConfigsManager.resetKitForAllPlayers(kitName);
                 }
 
-                new BukkitRunnable() {
+                GlobalScheduler.get(plugin).run(new Runnable() {
                     @Override
                     public void run() {
                         players.values().forEach(p -> p.resetKit(kitName));
@@ -178,9 +179,9 @@ public class PlayerDataManager {
 
                         callback.onDone(PlayerKitsMessageResult.success());
                     }
-                }.runTask(plugin);
+                });
             }
-        }.runTaskAsynchronously(plugin);
+        });
     }
 
     public void manageJoin(Player player){
@@ -233,12 +234,12 @@ public class PlayerDataManager {
         if(playerData != null){
             if(plugin.getMySQLConnection() == null) {
                 if(playerData.isModified()){
-                    new BukkitRunnable(){
+                    AsyncScheduler.get(plugin).run(new Runnable(){
                         @Override
                         public void run() {
                             plugin.getConfigsManager().getPlayersConfigManager().saveConfig(playerData);
                         }
-                    }.runTaskAsynchronously(plugin);
+                    });
                 }
             }
 
