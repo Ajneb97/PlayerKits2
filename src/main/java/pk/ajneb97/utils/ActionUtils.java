@@ -54,6 +54,14 @@ public class ActionUtils {
         player.playSound(player.getLocation(), sound, volume, pitch);
     }
 
+    public static void playSoundResourcePack(Player player, String soundLine){
+        String[] sep = soundLine.split(";");
+        String sound = sep[0];
+        float volume = Float.parseFloat(sep[1]);
+        float pitch = Float.parseFloat(sep[2]);
+        player.playSound(player.getLocation(), sound, volume, pitch);
+    }
+
     private static Sound getSoundByName(String name){
         try {
             Class<?> soundTypeClass = Class.forName("org.bukkit.Sound");

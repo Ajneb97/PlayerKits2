@@ -405,6 +405,9 @@ public class KitsManager {
             case "playsound":
                 ActionUtils.playSound(player,actionLine);
                 break;
+            case "playsound_resource_pack":
+                ActionUtils.playSoundResourcePack(player,actionLine);
+                break;
             case "actionbar":
                 ActionUtils.actionbar(player,actionLine,plugin);
                 break;

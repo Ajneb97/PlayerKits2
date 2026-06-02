@@ -111,7 +111,7 @@ public class VerifyManager {
             String[] actionText = action.getAction().split(" ");
             String actionName = actionText[0];
             if(actionName.equals("console_command:") || actionName.equals("player_command:")
-                    || actionName.equals("playsound:") || actionName.equals("actionbar:")
+                    || actionName.equals("playsound:") || actionName.equals("playsound_resource_pack:") || actionName.equals("actionbar:")
                     || actionName.equals("title:") || actionName.equals("firework:")
                     || actionName.equals("close_inventory") || actionName.equals("message:")){
                 continue;
