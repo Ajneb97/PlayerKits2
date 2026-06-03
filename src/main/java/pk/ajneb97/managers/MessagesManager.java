@@ -100,6 +100,7 @@ public class MessagesManager {
 	}
 
 	public static String getLegacyColoredMessage(String message) {
+		message = message.replaceAll("&#([a-fA-F0-9]{6})", "#$1");
 		if(OtherUtils.isNew()) {
 			Pattern pattern = Pattern.compile("#[a-fA-F0-9]{6}");
 			Matcher match = pattern.matcher(message);
