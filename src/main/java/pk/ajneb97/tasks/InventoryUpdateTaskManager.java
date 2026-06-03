@@ -1,9 +1,9 @@
 package pk.ajneb97.tasks;
 
+import io.github.projectunified.minelib.scheduler.global.GlobalScheduler;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.*;
 import pk.ajneb97.model.inventory.InventoryPlayer;
@@ -20,12 +20,7 @@ public class InventoryUpdateTaskManager {
     }
 
     public void start(){
-        new BukkitRunnable(){
-            @Override
-            public void run() {
-                execute();
-            }
-        }.runTaskTimer(plugin,0L,20L);
+        GlobalScheduler.get(plugin).runTimer(this::execute, 0L, 20L);
     }
 
     public void execute(){
