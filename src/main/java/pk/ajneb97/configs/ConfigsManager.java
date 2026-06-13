@@ -22,9 +22,10 @@ public class ConfigsManager {
     }
 
     public void configure(){
-        this.kitsConfigManager.configure();
-        this.messagesConfigManager.configure();
+        // Load main config first so 'language' and other options are available for other config managers
         this.mainConfigManager.configure();
+        this.messagesConfigManager.configure();
+        this.kitsConfigManager.configure();
         if(!mainConfigManager.isMySQL()){
             this.playersConfigManager.configure();
         }
@@ -52,10 +53,11 @@ public class ConfigsManager {
     }
 
     public boolean reload(){
-        if(!messagesConfigManager.reloadConfig()){
+        // Reload main config first so messages can be reloaded based on language
+        if(!mainConfigManager.reloadConfig()){
             return false;
         }
-        if(!mainConfigManager.reloadConfig()){
+        if(!messagesConfigManager.reloadConfig()){
             return false;
         }
         if(!inventoryConfigManager.reloadConfig()){
