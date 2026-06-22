@@ -118,8 +118,8 @@ public class PlayerKits2 extends JavaPlugin {
 
     public void setVersion(){
         String packageName = Bukkit.getServer().getClass().getPackage().getName();
-        String bukkitVersion = Bukkit.getServer().getBukkitVersion().split("-")[0];
-        switch(bukkitVersion){
+        String minecraftVersion = ServerVersion.getMinecraftVersion();
+        switch(minecraftVersion){
             case "1.20.5":
             case "1.20.6":
                 serverVersion = ServerVersion.v1_20_R4;
@@ -151,13 +151,18 @@ public class PlayerKits2 extends JavaPlugin {
                 serverVersion = ServerVersion.v1_21_R7;
                 break;
             case "26.1":
+            case "26.1.1":
+            case "26.1.2":
                 serverVersion = ServerVersion.v26_1;
+                break;
+            case "26.2":
+                serverVersion = ServerVersion.v26_2;
                 break;
             default:
                 try{
                     serverVersion = ServerVersion.valueOf(packageName.replace("org.bukkit.craftbukkit.", ""));
                 }catch(Exception e){
-                    serverVersion = ServerVersion.v26_1;
+                    serverVersion = ServerVersion.v26_2;
                 }
         }
     }
