@@ -5,6 +5,7 @@ import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.PlayerUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Kit {
     private String name;
@@ -27,6 +28,7 @@ public class Kit {
     private KitRequirements requirements;
 
     private boolean autoArmor;
+    private List<String> enabledWorlds;
 
     public Kit(String name){
         this.name = name;
@@ -34,6 +36,7 @@ public class Kit {
         this.autoArmor = false;
         this.oneTime = false;
         this.saveOriginalItems = false;
+        this.enabledWorlds = new ArrayList<>();
     }
 
     public String getName() {
@@ -179,6 +182,18 @@ public class Kit {
 
     public void setAllowPlaceholdersOnOriginalItems(boolean allowPlaceholdersOnOriginalItems) {
         this.allowPlaceholdersOnOriginalItems = allowPlaceholdersOnOriginalItems;
+    }
+
+    public List<String> getEnabledWorlds() {
+        return enabledWorlds;
+    }
+
+    public void setEnabledWorlds(List<String> enabledWorlds) {
+        this.enabledWorlds = enabledWorlds;
+    }
+
+    public boolean isWorldEnabled(String worldName) {
+        return enabledWorlds.isEmpty() || enabledWorlds.contains(worldName);
     }
 
     public boolean playerHasPermission(CommandSender player){

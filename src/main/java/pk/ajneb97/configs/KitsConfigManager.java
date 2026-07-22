@@ -60,6 +60,7 @@ public class KitsConfigManager extends DataFolderConfigManager{
         config.set("custom_permission",kit.getCustomPermission());
         config.set("save_original_items",kit.isSaveOriginalItems());
         config.set("allow_placeholders_on_original_items",kit.isAllowPlaceholdersOnOriginalItems());
+        config.set("enabled-worlds",kit.getEnabledWorlds().isEmpty() ? null : kit.getEnabledWorlds());
 
         KitItemManager kitItemManager = plugin.getKitItemManager();
         int currentPos = 1;
@@ -178,6 +179,9 @@ public class KitsConfigManager extends DataFolderConfigManager{
 
         Kit kit = new Kit(name);
         kit.setCooldown(cooldown);
+
+        List<String> enabledWorlds = config.contains(mainPath+"enabled-worlds") ? config.getStringList(mainPath+"enabled-worlds") : new ArrayList<>();
+        kit.setEnabledWorlds(enabledWorlds);
 
         kit.setAutoArmor(autoArmor);
         kit.setOneTime(oneTime);

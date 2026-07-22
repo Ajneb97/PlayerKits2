@@ -42,5 +42,6 @@ kitPreviewDisabled: "&cKit preview is disabled."
 inventoryNotExists: "&cThat inventory doesn't exists."
 onlyPlayerCommand: "&cOnly a player can use this command."
 commandPreviewOtherCorrect: "&aPreviewing kit &7%kit% &ato &e%player%&a."
+worldDisabledError: "&cYou can't use this kit in this world."
 
 

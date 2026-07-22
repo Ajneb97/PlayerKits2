@@ -163,6 +163,12 @@ public class KitsManager {
 
         //Check properties
         if(!giveKitInstructions.isFromCommand()){
+            //World check
+            if(!kit.isWorldEnabled(player.getWorld().getName())){
+                sendKitActions(kit.getErrorActions(),player,false);
+                return PlayerKitsMessageResult.error(messagesFile.getString("worldDisabledError"));
+            }
+
             //Permission
             if(!giveKitInstructions.isIgnorePermission() && !kit.playerHasPermission(player)){
                 sendKitActions(kit.getErrorActions(),player,false);

@@ -33,8 +33,9 @@ public class MiniMessageUtils {
 
     public static void title(Player player, String title, String subtitle, Integer fadeIn, Integer stay, Integer fadeOut){
         player.showTitle(Title.title(
-                MiniMessage.miniMessage().deserialize(title),MiniMessage.miniMessage().deserialize(subtitle),
-                fadeIn,stay,fadeOut
+                MiniMessage.miniMessage().deserialize(title),
+                MiniMessage.miniMessage().deserialize(subtitle),
+                Title.Times.times(java.time.Duration.ofMillis(fadeIn * 50L), java.time.Duration.ofMillis(stay * 50L), java.time.Duration.ofMillis(fadeOut * 50L))
         ));
     }
 
