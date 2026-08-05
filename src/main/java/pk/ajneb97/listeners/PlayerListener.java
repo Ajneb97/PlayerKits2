@@ -70,6 +70,7 @@ public class PlayerListener implements Listener {
             plugin.getLayoutEditorManager().endSession(player);
         }
         plugin.getInventoryManager().removeInventoryPlayer(player);
+        plugin.getInventoryManager().purgeGuiItems(player);
         plugin.getInventoryManager().syncInventoryLater(player);
     }
 
@@ -92,6 +93,7 @@ public class PlayerListener implements Listener {
 
         event.setCancelled(true);
         event.setResult(org.bukkit.event.Event.Result.DENY);
+        plugin.getInventoryManager().syncInventoryLater(player);
 
         if (!holder.isOwner(player.getUniqueId())) {
             plugin.getInventoryManager().closeLater(player);
@@ -142,5 +144,10 @@ public class PlayerListener implements Listener {
 
         event.setCancelled(true);
         event.setResult(org.bukkit.event.Event.Result.DENY);
+
+        HumanEntity human = event.getWhoClicked();
+        if (human instanceof Player) {
+            plugin.getInventoryManager().syncInventoryLater((Player) human);
+        }
     }
 }

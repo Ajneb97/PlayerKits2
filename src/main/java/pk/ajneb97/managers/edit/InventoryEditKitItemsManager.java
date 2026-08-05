@@ -2,6 +2,7 @@ package pk.ajneb97.managers.edit;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -31,6 +32,7 @@ public class InventoryEditKitItemsManager {
     @SuppressWarnings({"deprecation", "removal"})
     public void openInventory(InventoryPlayer inventoryPlayer){
         inventoryPlayer.setInventoryName("edit_items");
+        inventoryPlayer.setEditSelectedSlot(-1);
         KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.EDIT_ITEMS, inventoryPlayer.getUuid());
         Inventory inv = Bukkit.createInventory(holder, 54, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
         holder.setInventory(inv);
@@ -55,11 +57,18 @@ public class InventoryEditKitItemsManager {
         lore = new ArrayList<>();
         lore.add("&7Here you can edit the items of the kit.");
         lore.add("");
-        lore.add("&7If you want to set an item on the offhand");
-        lore.add("&7just RIGHT CLICK it.");
+        lore.add("&eClick an item in your inventory &7to copy");
+        lore.add("&7it in. You always keep your own item.");
         lore.add("");
-        lore.add("&7You can move the items to define a custom");
-        lore.add("&7position on the PREVIEW inventory.");
+        lore.add("&eClick an item here &7to pick it up, then");
+        lore.add("&7click another slot to move or swap it.");
+        lore.add("&7This sets its PREVIEW inventory position.");
+        lore.add("");
+        lore.add("&eSHIFT CLICK &7to remove an item.");
+        lore.add("&eRIGHT CLICK &7to toggle offhand.");
+        lore.add("");
+        lore.add("&8Nothing here is a real item, so your own");
+        lore.add("&8inventory is never changed.");
         new InventoryItem(inv, 49, Material.COMPASS).name("&6&lInfo").lore(lore).ready();
 
         Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
@@ -178,26 +187,89 @@ public class InventoryEditKitItemsManager {
     }
 
     public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, int slot, ClickType clickType, InventoryClickEvent event){
-        if(event.getSlotType() == null || event.getClickedInventory() == null){
+        event.setCancelled(true);
+        event.setResult(org.bukkit.event.Event.Result.DENY);
+
+        Player player = inventoryPlayer.getPlayer();
+        Inventory top = InventoryUtils.getTopInventory(player);
+        Inventory clicked = event.getClickedInventory();
+        if(top == null || clicked == null){
             return;
         }
-        if(event.getClickedInventory().equals(InventoryUtils.getTopInventory(inventoryPlayer.getPlayer()))){
 
-            if(slot >= 45 && slot <= 53){
-                event.setCancelled(true);
-                if(slot == 45){
-                    inventoryEditManager.openInventory(inventoryPlayer);
-                }else if(slot == 53){
-                    saveKitItems(inventoryPlayer);
-                    inventoryPlayer.getPlayer().sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&aKit Items saved."));
-                }
-            }else if(clickType.isRightClick()){
-                event.setCancelled(true);
-                if(item != null){
+        plugin.getInventoryManager().syncInventoryLater(player);
 
-                    clickOffHand(inventoryPlayer,event.getClickedInventory(),item,slot);
-                }
+        if(!clicked.equals(top)){
+            ItemStack source = event.getCurrentItem();
+            if(source != null && source.getType() != Material.AIR){
+                copyIntoEditor(inventoryPlayer, top, source);
+            }
+            return;
+        }
+
+        if(slot >= 45 && slot <= 53){
+            inventoryPlayer.setEditSelectedSlot(-1);
+            if(slot == 45){
+                inventoryEditManager.openInventory(inventoryPlayer);
+            }else if(slot == 53){
+                saveKitItems(inventoryPlayer);
+                player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&aKit Items saved."));
+            }
+            return;
+        }
+
+        if(slot < 0 || slot > 44){
+            return;
+        }
+
+        if(clickType.isRightClick()){
+            inventoryPlayer.setEditSelectedSlot(-1);
+            if(item != null && item.getType() != Material.AIR){
+                clickOffHand(inventoryPlayer, top, item, slot);
+            }
+            return;
+        }
+
+        if(clickType.isShiftClick()){
+            inventoryPlayer.setEditSelectedSlot(-1);
+            if(item != null && item.getType() != Material.AIR){
+                top.setItem(slot, null);
+                player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&eItem removed from the kit editor."));
+            }
+            return;
+        }
+
+        int selected = inventoryPlayer.getEditSelectedSlot();
+        if(selected == -1){
+            if(item != null && item.getType() != Material.AIR){
+                inventoryPlayer.setEditSelectedSlot(slot);
+                player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&eItem picked up. Click another slot to move it."));
+            }
+            return;
+        }
+
+        if(selected == slot){
+            inventoryPlayer.setEditSelectedSlot(-1);
+            return;
+        }
+
+        ItemStack moving = top.getItem(selected);
+        top.setItem(selected, top.getItem(slot));
+        top.setItem(slot, moving);
+        inventoryPlayer.setEditSelectedSlot(-1);
+    }
+
+    private void copyIntoEditor(InventoryPlayer inventoryPlayer, Inventory top, ItemStack source){
+        for(int i=0;i<=44;i++){
+            ItemStack existing = top.getItem(i);
+            if(existing == null || existing.getType() == Material.AIR){
+                top.setItem(i, source.clone());
+                inventoryPlayer.getPlayer().sendMessage(MessagesManager.getLegacyColoredMessage(
+                        PlayerKits2.prefix+"&aItem copied into the kit editor. &7You keep your original."));
+                return;
             }
         }
+        inventoryPlayer.getPlayer().sendMessage(MessagesManager.getLegacyColoredMessage(
+                PlayerKits2.prefix+"&cThe kit editor is full."));
     }
 }

@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.configs.MainConfigManager;
@@ -43,6 +44,7 @@ public final class InventoryManager {
     public static final String TAG_ITEM_ACTIONS = "playerkits_item_actions";
     public static final String TAG_BUY = "playerkits_buy";
     public static final String TAG_LAYOUT_EDITOR = "playerkits_layout_editor";
+    public static final String TAG_GUI = "playerkits_gui";
 
     private static final String TYPE_LAYOUT_EDITOR = "layout_editor";
     private static final String KIT_TYPE_PREFIX = "kit: ";
@@ -184,6 +186,8 @@ public final class InventoryManager {
         if (inventoryName.equals("preview_inventory")) {
             setKitPreviewItems(inv, inventoryPlayer, kitInventory);
         }
+
+        markGuiItems(inv);
 
         inventoryPlayer.setHolder(holder);
         player.openInventory(inv);
@@ -419,6 +423,39 @@ public final class InventoryManager {
             if (player != null) {
                 pendingClaims.remove(player.getUniqueId());
             }
+        }
+    }
+
+    public void markGuiItems(Inventory inv) {
+        ItemStack[] contents = inv.getContents();
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack item = contents[i];
+            if (item == null || item.getType() == Material.AIR) {
+                continue;
+            }
+            inv.setItem(i, ItemUtils.setTagStringItem(plugin, item, TAG_GUI, "1"));
+        }
+    }
+
+    public void purgeGuiItems(Player player) {
+        if (player == null || !player.isOnline()) {
+            return;
+        }
+        PlayerInventory inventory = player.getInventory();
+        ItemStack[] contents = inventory.getContents();
+        boolean changed = false;
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack item = contents[i];
+            if (item == null || item.getType() == Material.AIR) {
+                continue;
+            }
+            if (ItemUtils.getTagStringItem(plugin, item, TAG_GUI) != null) {
+                inventory.setItem(i, null);
+                changed = true;
+            }
+        }
+        if (changed) {
+            syncInventory(player);
         }
     }
 

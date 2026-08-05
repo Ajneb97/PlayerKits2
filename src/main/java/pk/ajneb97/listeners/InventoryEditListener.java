@@ -120,22 +120,13 @@ public class InventoryEditListener implements Listener {
             return;
         }
 
-        if (holder.getType() == KitGuiHolder.Type.EDIT_ITEMS) {
-            HumanEntity human = event.getWhoClicked();
-            if (human instanceof Player && holder.isOwner(human.getUniqueId())
-                    && PlayerUtils.isPlayerKitsAdmin(human)) {
-                for (int rawSlot : event.getRawSlots()) {
-                    if (rawSlot >= 45 && rawSlot <= 53) {
-                        event.setCancelled(true);
-                        return;
-                    }
-                }
-                return;
-            }
-        }
-
         event.setCancelled(true);
         event.setResult(org.bukkit.event.Event.Result.DENY);
+
+        HumanEntity human = event.getWhoClicked();
+        if (human instanceof Player) {
+            plugin.getInventoryManager().syncInventoryLater((Player) human);
+        }
     }
 
     @SuppressWarnings({"deprecation", "removal"})

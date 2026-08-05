@@ -18,6 +18,7 @@ public class InventoryPlayer {
     private PlatformTask updateTask;
     private KitGuiHolder holder;
     private int layoutSelectedIndex = -1;
+    private int editSelectedSlot = -1;
 
     public InventoryPlayer(Player player, String inventoryName) {
         this.player = player;
@@ -67,6 +68,14 @@ public class InventoryPlayer {
 
     public void setHolder(KitGuiHolder holder) {
         this.holder = holder;
+    }
+
+    public int getEditSelectedSlot() {
+        return editSelectedSlot;
+    }
+
+    public void setEditSelectedSlot(int editSelectedSlot) {
+        this.editSelectedSlot = editSelectedSlot;
     }
 
     public int getLayoutSelectedIndex() {

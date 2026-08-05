@@ -197,12 +197,14 @@ public class LayoutEditorManager {
 
         if (openNow) {
             fillControls(inv, session);
+            plugin.getInventoryManager().markGuiItems(inv);
             inventoryPlayer.setHolder(holder);
             inventoryPlayer.setInventoryName("layout_editor");
             player.openInventory(inv);
             plugin.getInventoryManager().registerLayoutSession(inventoryPlayer);
         } else {
-            player.updateInventory();
+            plugin.getInventoryManager().markGuiItems(inv);
+            plugin.getInventoryManager().syncInventory(player);
         }
     }
 
