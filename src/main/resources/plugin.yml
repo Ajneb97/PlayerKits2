@@ -1,11 +1,13 @@
 main: pk.ajneb97.PlayerKits2
 version: ${project.version}
-name: PlayerKits2
+name: BetterPlayerKits2
 api-version: 1.13
+folia-supported: true
 softdepend: [Vault,PlaceholderAPI]
-author: Ajneb97
+authors: [Ajneb97, "Jules(forked it)"]
+description: Fork of PlayerKits2 by Ajneb97 with Folia support, hardening and per-player kit layouts.
 
 commands:
   kit:
-    description: Main command of PlayerKits2
-    aliases: [kits,playerkits]
+    description: Main command of BetterPlayerKits2
+    aliases: [kits,playerkits,bkits,betterplayerkits]

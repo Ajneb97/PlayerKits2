@@ -1,6 +1,5 @@
 package pk.ajneb97.configs;
 
-
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.configs.model.CommonConfig;
 
@@ -53,10 +52,12 @@ public abstract class DataFolderConfigManager {
         String pathFile = plugin.getDataFolder() + File.separator + folderName;
         File folder = new File(pathFile);
         File[] listOfFiles = folder.listFiles();
+        if (listOfFiles == null) {
+            return configs;
+        }
         for (File file : listOfFiles) {
-            if (file.isFile()) {
-                String pathName = file.getName();
-                CommonConfig commonConfig = new CommonConfig(pathName, plugin, folderName, true);
+            if (file.isFile() && file.getName().endsWith(".yml")) {
+                CommonConfig commonConfig = new CommonConfig(file.getName(), plugin, folderName, true);
                 commonConfig.registerConfig();
                 configs.add(commonConfig);
             }

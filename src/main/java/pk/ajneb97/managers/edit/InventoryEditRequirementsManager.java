@@ -10,6 +10,7 @@ import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.KitRequirements;
+import pk.ajneb97.model.inventory.KitGuiHolder;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.utils.InventoryItem;
 
@@ -25,17 +26,19 @@ public class InventoryEditRequirementsManager {
         this.inventoryEditManager = inventoryEditManager;
     }
 
+    @SuppressWarnings({"deprecation", "removal"})
     public void openInventory(InventoryPlayer inventoryPlayer) {
         inventoryPlayer.setInventoryName("edit_requirements");
-        Inventory inv = Bukkit.createInventory(null, 27, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.EDIT, inventoryPlayer.getUuid());
+        Inventory inv = Bukkit.createInventory(holder, 27, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        holder.setInventory(inv);
+        inventoryPlayer.setHolder(holder);
 
-        //Set Go Back
         new InventoryItem(inv, 18, Material.ARROW).name("&eGo Back").ready();
 
         Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
         KitRequirements kitRequirements = kit.getRequirements();
 
-        //Set Price
         List<String> lore = new ArrayList<String>();
         lore.add("&7Click to define the price of");
         lore.add("&7the kit. Requires Vault and an");
@@ -48,7 +51,6 @@ public class InventoryEditRequirementsManager {
         lore.add("&7Current Price: &a$" + currentPrice);
         new InventoryItem(inv, 11, Material.EMERALD).name("&eSet &6&lPrice").lore(lore).ready();
 
-        //Set Auto Armor
         lore = new ArrayList<String>();
         lore.add("&7Click to enable/disable whether players");
         lore.add("&7must accomplish the requirements of this");
@@ -61,7 +63,6 @@ public class InventoryEditRequirementsManager {
         lore.add("&7Current Status: " + oneTimeRequirements);
         new InventoryItem(inv, 13, Material.GHAST_TEAR).name("&eSet &6&lOne Time Requirements").lore(lore).ready();
 
-        //Set Extra Requirements
         lore = new ArrayList<String>();
         lore.add("&7Click to add/edit extra requirements.");
         lore.add("");
@@ -70,7 +71,7 @@ public class InventoryEditRequirementsManager {
         new InventoryItem(inv, 15, Material.REDSTONE).name("&eSet &6&lExtra Requirements").lore(lore).ready();
 
         inventoryPlayer.getPlayer().openInventory(inv);
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.trackInventoryPlayer(inventoryPlayer);
     }
 
     public void setOneTimeRequirements(InventoryPlayer inventoryPlayer){
@@ -91,7 +92,7 @@ public class InventoryEditRequirementsManager {
 
         player.closeInventory();
         inventoryPlayer.setInventoryName("edit_chat_price");
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.trackInventoryPlayer(inventoryPlayer);
     }
 
     public void setPrice(InventoryPlayer inventoryPlayer,String message){

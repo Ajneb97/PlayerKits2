@@ -52,7 +52,6 @@ public class Kit {
         this.cooldown = cooldown;
     }
 
-
     public boolean isPermissionRequired() {
         return permissionRequired;
     }

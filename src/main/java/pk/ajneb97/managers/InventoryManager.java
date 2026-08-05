@@ -1,6 +1,6 @@
 package pk.ajneb97.managers;
 
-import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -17,385 +17,505 @@ import pk.ajneb97.model.internal.KitVariable;
 import pk.ajneb97.model.internal.PlayerKitsMessageResult;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.inventory.ItemKitInventory;
+import pk.ajneb97.model.inventory.KitGuiHolder;
 import pk.ajneb97.model.inventory.KitInventory;
 import pk.ajneb97.model.item.KitItem;
-import pk.ajneb97.utils.*;
+import pk.ajneb97.utils.InventoryUtils;
+import pk.ajneb97.utils.ItemUtils;
+import pk.ajneb97.utils.MiniMessageUtils;
+import pk.ajneb97.utils.OtherUtils;
+import pk.ajneb97.utils.PlayerUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class InventoryManager {
+public final class InventoryManager {
 
-    private PlayerKits2 plugin;
-    private ArrayList<KitInventory> inventories;
-    private ArrayList<InventoryPlayer> players;
-    private InventoryRequirementsManager inventoryRequirementsManager;
-    public InventoryManager(PlayerKits2 plugin){
+    public static final String TAG_KIT = "playerkits_kit";
+    public static final String TAG_KIT_STATUS = "playerkits_kit_status";
+    public static final String TAG_OPEN_INVENTORY = "playerkits_open_inventory";
+    public static final String TAG_ITEM_ACTIONS = "playerkits_item_actions";
+    public static final String TAG_BUY = "playerkits_buy";
+    public static final String TAG_LAYOUT_EDITOR = "playerkits_layout_editor";
+
+    private static final String TYPE_LAYOUT_EDITOR = "layout_editor";
+    private static final String KIT_TYPE_PREFIX = "kit: ";
+
+    private final PlayerKits2 plugin;
+    private Map<String, KitInventory> inventories;
+    private final Map<UUID, InventoryPlayer> players;
+    private final InventoryRequirementsManager inventoryRequirementsManager;
+
+    public InventoryManager(PlayerKits2 plugin) {
         this.plugin = plugin;
-        this.players = new ArrayList<>();
-        this.inventoryRequirementsManager = new InventoryRequirementsManager(plugin,this);
+        this.inventories = new ConcurrentHashMap<>();
+        this.players = new ConcurrentHashMap<>();
+        this.inventoryRequirementsManager = new InventoryRequirementsManager(plugin, this);
     }
 
-    public ArrayList<InventoryPlayer> getPlayers() {
-        return players;
+    public Collection<InventoryPlayer> getPlayers() {
+        return players.values();
     }
 
     public ArrayList<KitInventory> getInventories() {
-        return inventories;
+        return new ArrayList<>(inventories.values());
     }
 
     public InventoryRequirementsManager getInventoryRequirementsManager() {
         return inventoryRequirementsManager;
     }
 
-    public void setInventories(ArrayList<KitInventory> inventories) {
-        this.inventories = inventories;
-    }
-
-    public KitInventory getInventory(String name){
-        for(KitInventory kitInventory : inventories){
-            if(kitInventory.getName().equals(name)){
-                return kitInventory;
+    public void setInventories(ArrayList<KitInventory> newInventories) {
+        Map<String, KitInventory> replacement = new ConcurrentHashMap<>();
+        for (KitInventory inventory : newInventories) {
+            if (inventory.getName() != null) {
+                replacement.put(inventory.getName(), inventory);
             }
         }
-        return null;
+        this.inventories = replacement;
     }
 
-    public InventoryPlayer getInventoryPlayer(Player player){
-        for(InventoryPlayer inventoryPlayer : players){
-            if(inventoryPlayer.getPlayer().equals(player)){
-                return inventoryPlayer;
-            }
-        }
-        return null;
+    public KitInventory getInventory(String name) {
+        return name == null ? null : inventories.get(name);
     }
 
-    public void removeInventoryPlayer(Player player){
-        for(int i=0;i<players.size();i++){
-            if(players.get(i).getPlayer().equals(player)){
-                players.remove(i);
-            }
+    public InventoryPlayer getInventoryPlayer(Player player) {
+        return players.get(player.getUniqueId());
+    }
+
+    public void removeInventoryPlayer(Player player) {
+        InventoryPlayer removed = players.remove(player.getUniqueId());
+        if (removed != null) {
+            removed.cancelUpdateTask();
         }
     }
 
-    public void openInventory(InventoryPlayer inventoryPlayer){
+    public void closeAll() {
+        for (InventoryPlayer inventoryPlayer : new ArrayList<>(players.values())) {
+            inventoryPlayer.cancelUpdateTask();
+        }
+        players.clear();
+    }
+
+    public void openInventory(InventoryPlayer inventoryPlayer) {
+        Player player = inventoryPlayer.getPlayer();
+        if (player == null || !player.isOnline()) {
+            return;
+        }
+
         KitInventory kitInventory = getInventory(inventoryPlayer.getInventoryName());
+        if (kitInventory == null) {
+            plugin.getMessagesManager().sendMessage(player,
+                    plugin.getConfigsManager().getMessagesConfigManager().getConfig().getString("inventoryNotExists"), true);
+            return;
+        }
+
         MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
 
         String title = kitInventory.getTitle();
-        if(inventoryPlayer.getInventoryName().equals("buy_requirements_inventory") || inventoryPlayer.getInventoryName().equals("preview_inventory")){
-            title = title.replace("%kit%",inventoryPlayer.getKitName());
+        String inventoryName = inventoryPlayer.getInventoryName();
+        if (inventoryName.equals("buy_requirements_inventory") || inventoryName.equals("preview_inventory")) {
+            title = title.replace("%kit%", inventoryPlayer.getKitName() == null ? "" : inventoryPlayer.getKitName());
         }
-        Inventory inv;
-        if(mainConfigManager.isUseMiniMessage()){
-            inv = MiniMessageUtils.createInventory(kitInventory.getSlots(),title);
-        }else{
-            inv = Bukkit.createInventory(null,kitInventory.getSlots(), MessagesManager.getLegacyColoredMessage(title));
-        }
+
+        KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.KITS, player.getUniqueId());
+        Inventory inv = InventoryUtils.createInventory(holder, kitInventory.getSlots(), title,
+                mainConfigManager.isUseMiniMessage());
 
         List<ItemKitInventory> items = kitInventory.getItems();
         KitItemManager kitItemManager = plugin.getKitItemManager();
         KitsManager kitsManager = plugin.getKitsManager();
         PlayerDataManager playerDataManager = plugin.getPlayerDataManager();
+        int maxSlot = kitInventory.getSlots();
 
-        //Add items for all inventories
-        for(ItemKitInventory itemInventory : items){
-            for(int slot : itemInventory.getSlots()){
-                String type = itemInventory.getType();
-                if(type != null && type.startsWith("kit: ")){
-                    setKit(type.replace("kit: ",""),inventoryPlayer.getPlayer(),inv,slot,kitsManager
-                            ,playerDataManager,kitItemManager,null);
+        for (ItemKitInventory itemInventory : items) {
+            String type = itemInventory.getType();
+            for (int slot : itemInventory.getSlots()) {
+                if (slot < 0 || slot >= maxSlot) {
                     continue;
                 }
 
-                ItemStack item = kitItemManager.createItemFromKitItem(itemInventory.getItem(),inventoryPlayer.getPlayer(),null);
+                if (type != null && type.startsWith(KIT_TYPE_PREFIX)) {
+                    setKit(type.substring(KIT_TYPE_PREFIX.length()), player, inv, slot, kitsManager,
+                            playerDataManager, kitItemManager, null);
+                    continue;
+                }
 
-                if(inventoryPlayer.getInventoryName().equals("buy_requirements_inventory")){
-                    inventoryRequirementsManager.configureRequirementsItem(item,inventoryPlayer.getKitName(),inventoryPlayer.getPlayer());
-                    if(type != null){
-                        item = ItemUtils.setTagStringItem(plugin,item, "playerkits_buy", type);
+                ItemStack item = kitItemManager.createItemFromKitItem(itemInventory.getItem(), player, null);
+                if (item == null) {
+                    continue;
+                }
+
+                if (inventoryName.equals("buy_requirements_inventory")) {
+                    inventoryRequirementsManager.configureRequirementsItem(item, inventoryPlayer.getKitName(), player);
+                    if (type != null) {
+                        item = ItemUtils.setTagStringItem(plugin, item, TAG_BUY, type);
                     }
                 }
 
-                String openInventory = itemInventory.getOpenInventory();
-                if(openInventory != null) {
-                    item = ItemUtils.setTagStringItem(plugin,item, "playerkits_open_inventory", openInventory);
+                if (type != null && type.equals(TYPE_LAYOUT_EDITOR)) {
+                    if (!mainConfigManager.isLayoutEditor()) {
+                        continue;
+                    }
+                    item = ItemUtils.setTagStringItem(plugin, item, TAG_LAYOUT_EDITOR, "yes");
                 }
-                item = setItemActions(itemInventory,item);
 
-                inv.setItem(slot,item);
+                String openInventory = itemInventory.getOpenInventory();
+                if (openInventory != null) {
+                    item = ItemUtils.setTagStringItem(plugin, item, TAG_OPEN_INVENTORY, openInventory);
+                }
+                item = setItemActions(itemInventory, item);
+
+                inv.setItem(slot, item);
             }
         }
 
-        //Special items for some inventories
-        if(inventoryPlayer.getInventoryName().equals("preview_inventory")){
-            setKitPreviewItems(inv,inventoryPlayer,kitInventory);
+        if (inventoryName.equals("preview_inventory")) {
+            setKitPreviewItems(inv, inventoryPlayer, kitInventory);
         }
 
+        inventoryPlayer.setHolder(holder);
+        player.openInventory(inv);
+        players.put(player.getUniqueId(), inventoryPlayer);
+        startUpdateTask(inventoryPlayer);
+    }
 
-        inventoryPlayer.getPlayer().openInventory(inv);
-        players.add(inventoryPlayer);
+    public void openInventoryLater(InventoryPlayer inventoryPlayer) {
+        Player player = inventoryPlayer.getPlayer();
+        plugin.getPlatformScheduler().runForEntityLater(player, () -> {
+            if (player.isOnline()) {
+                openInventory(inventoryPlayer);
+            }
+        }, 1L);
+    }
+
+    public void registerLayoutSession(InventoryPlayer inventoryPlayer) {
+        Player player = inventoryPlayer.getPlayer();
+        inventoryPlayer.cancelUpdateTask();
+        players.put(player.getUniqueId(), inventoryPlayer);
+    }
+
+    private void startUpdateTask(InventoryPlayer inventoryPlayer) {
+        Player player = inventoryPlayer.getPlayer();
+        inventoryPlayer.setUpdateTask(plugin.getPlatformScheduler().runForEntityTimer(player,
+                () -> updateOpenInventory(inventoryPlayer), 20L, 20L));
+    }
+
+    private void updateOpenInventory(InventoryPlayer inventoryPlayer) {
+        Player player = inventoryPlayer.getPlayer();
+        if (player == null || !player.isOnline()) {
+            inventoryPlayer.cancelUpdateTask();
+            return;
+        }
+        if (players.get(player.getUniqueId()) != inventoryPlayer) {
+            inventoryPlayer.cancelUpdateTask();
+            return;
+        }
+
+        Inventory inv = InventoryUtils.getTopInventory(player);
+        KitGuiHolder holder = InventoryUtils.getKitGuiHolder(inv);
+        if (holder == null || holder != inventoryPlayer.getHolder()) {
+            return;
+        }
+
+        KitsManager kitsManager = plugin.getKitsManager();
+        PlayerDataManager playerDataManager = plugin.getPlayerDataManager();
+        KitItemManager kitItemManager = plugin.getKitItemManager();
+
+        ItemStack[] contents = inv.getContents();
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack item = contents[i];
+            if (item == null || item.getType() == Material.AIR) {
+                continue;
+            }
+
+            String kitName = ItemUtils.getTagStringItem(plugin, item, TAG_KIT);
+            if (kitName != null) {
+                setKit(kitName, player, inv, i, kitsManager, playerDataManager, kitItemManager, item);
+            }
+        }
     }
 
     private ItemStack setItemActions(ItemKitInventory itemInventory, ItemStack item) {
         List<String> clickActions = itemInventory.getClickActions();
-        if(clickActions != null && !clickActions.isEmpty()) {
-            String actionsList = "";
-            for(int i=0;i<clickActions.size();i++) {
-                if(i==clickActions.size()-1) {
-                    actionsList=actionsList+clickActions.get(i);
-                }else {
-                    actionsList=actionsList+clickActions.get(i)+"|";
-                }
-            }
-            item = ItemUtils.setTagStringItem(plugin, item, "playerkits_item_actions", actionsList);
+        if (clickActions != null && !clickActions.isEmpty()) {
+            item = ItemUtils.setTagStringItem(plugin, item, TAG_ITEM_ACTIONS, String.join("|", clickActions));
         }
         return item;
     }
 
-    public void setKitPreviewItems(Inventory inv,InventoryPlayer inventoryPlayer,KitInventory kitInventory){
+    public void setKitPreviewItems(Inventory inv, InventoryPlayer inventoryPlayer, KitInventory kitInventory) {
         KitItemManager kitItemManager = plugin.getKitItemManager();
-        KitsManager kitsManager = plugin.getKitsManager();
-
-        Kit kit = kitsManager.getKitByName(inventoryPlayer.getKitName());
-        if(kit == null){
+        Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
+        if (kit == null) {
             return;
         }
 
-        // Create a list with all items including actions display items
-        ArrayList<KitItem> allItems = new ArrayList<>();
-        allItems.addAll(kit.getItems());
-        for(KitAction kitAction : kit.getClaimActions()){
+        List<KitItem> allItems = new ArrayList<>(kit.getItems());
+        for (KitAction kitAction : kit.getClaimActions()) {
             KitItem kitItem = kitAction.getDisplayItem();
-            if(kitItem != null){
+            if (kitItem != null) {
                 allItems.add(kitItem);
             }
         }
 
+        int maxSlot = kitInventory.getSlots();
         int slot = 0;
-        for(KitItem kitItem : allItems){
-            ItemStack item = kitItemManager.createItemFromKitItem(kitItem,inventoryPlayer.getPlayer(),kit);
-            if(kitItem.getPreviewSlot() != -1){
-                inv.setItem(kitItem.getPreviewSlot(),item);
-            }else{
-                inv.setItem(slot,item);
+        for (KitItem kitItem : allItems) {
+            ItemStack item = kitItemManager.createItemFromKitItem(kitItem, inventoryPlayer.getPlayer(), kit);
+            int previewSlot = kitItem.getPreviewSlot();
+            if (previewSlot != -1) {
+                if (previewSlot >= 0 && previewSlot < maxSlot) {
+                    inv.setItem(previewSlot, item);
+                }
+            } else if (slot < maxSlot) {
+                inv.setItem(slot, item);
             }
             slot++;
 
-            if(slot >= kitInventory.getSlots()){
+            if (slot >= maxSlot) {
                 break;
             }
         }
     }
 
-    public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, ClickType clickType){
-        String kitName = ItemUtils.getTagStringItem(plugin,item,"playerkits_kit");
-        if(kitName != null){
-            clickOnKitItem(inventoryPlayer,kitName,clickType);
+    public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, ClickType clickType) {
+        String kitName = ItemUtils.getTagStringItem(plugin, item, TAG_KIT);
+        if (kitName != null) {
+            clickOnKitItem(inventoryPlayer, kitName, clickType);
             return;
         }
 
-        String itemActions = ItemUtils.getTagStringItem(plugin,item,"playerkits_item_actions");
-        if(itemActions != null){
-            clickOnActionItem(inventoryPlayer,itemActions);
-        }
-
-        String openInventory = ItemUtils.getTagStringItem(plugin,item,"playerkits_open_inventory");
-        if(openInventory != null){
-            clickOnOpenInventoryItem(inventoryPlayer,openInventory);
+        if (ItemUtils.getTagStringItem(plugin, item, TAG_LAYOUT_EDITOR) != null) {
+            plugin.getLayoutEditorManager().openFromInventory(inventoryPlayer);
             return;
         }
 
-        //Requirements inventory
-        if(inventoryPlayer.getInventoryName().equals("buy_requirements_inventory")){
-            String buyTag = ItemUtils.getTagStringItem(plugin,item,"playerkits_buy");
-            if(buyTag == null){
+        String itemActions = ItemUtils.getTagStringItem(plugin, item, TAG_ITEM_ACTIONS);
+        if (itemActions != null) {
+            clickOnActionItem(inventoryPlayer, itemActions);
+        }
+
+        String openInventory = ItemUtils.getTagStringItem(plugin, item, TAG_OPEN_INVENTORY);
+        if (openInventory != null) {
+            clickOnOpenInventoryItem(inventoryPlayer, openInventory);
+            return;
+        }
+
+        if (inventoryPlayer.getInventoryName().equals("buy_requirements_inventory")) {
+            String buyTag = ItemUtils.getTagStringItem(plugin, item, TAG_BUY);
+            if (buyTag == null) {
                 return;
             }
-            if(buyTag.equals("yes") || buyTag.equals("buy_yes")){
+            if (buyTag.equals("yes") || buyTag.equals("buy_yes")) {
                 inventoryRequirementsManager.requirementsInventoryBuy(inventoryPlayer);
-            }else{
+            } else {
                 inventoryRequirementsManager.requirementsInventoryCancel(inventoryPlayer);
             }
         }
     }
 
-    public void clickOnKitItem(InventoryPlayer inventoryPlayer,String kitName,ClickType clickType){
+    public void clickOnKitItem(InventoryPlayer inventoryPlayer, String kitName, ClickType clickType) {
         MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
         Player player = inventoryPlayer.getPlayer();
         FileConfiguration messagesConfig = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
         MessagesManager msgManager = plugin.getMessagesManager();
 
-        if(clickType.equals(ClickType.RIGHT)){
-            //Preview
-            if(!mainConfigManager.isKitPreview()){
+        Kit kit = plugin.getKitsManager().getKitByName(kitName);
+        if (kit == null) {
+            msgManager.sendMessage(player, messagesConfig.getString("kitDoesNotExists").replace("%kit%", kitName), true);
+            return;
+        }
+
+        if (mainConfigManager.isLayoutEditor() && mainConfigManager.isLayoutEditorShiftClick()
+                && clickType.isShiftClick() && clickType.isLeftClick()) {
+            plugin.getLayoutEditorManager().open(inventoryPlayer, kitName);
+            return;
+        }
+
+        if (clickType == ClickType.RIGHT) {
+            if (!mainConfigManager.isKitPreview()) {
                 return;
             }
 
-            Kit kit = plugin.getKitsManager().getKitByName(kitName);
-            if(kit.isPermissionRequired()){
-                if(mainConfigManager.isKitPreviewRequiresKitPermission() && !kit.playerHasPermission(player)){
-                    msgManager.sendMessage(player,messagesConfig.getString("cantPreviewError"),true);
-                    return;
-                }
+            if (kit.isPermissionRequired() && mainConfigManager.isKitPreviewRequiresKitPermission()
+                    && !kit.playerHasPermission(player)) {
+                msgManager.sendMessage(player, messagesConfig.getString("cantPreviewError"), true);
+                return;
             }
+
             inventoryPlayer.setPreviousInventoryName(inventoryPlayer.getInventoryName());
             inventoryPlayer.setInventoryName("preview_inventory");
             inventoryPlayer.setKitName(kitName);
-            openInventory(inventoryPlayer);
+            openInventoryLater(inventoryPlayer);
             return;
         }
 
-
-        PlayerKitsMessageResult result = plugin.getKitsManager().giveKit(player,kitName,
-                new GiveKitInstructions());
-        if(result.isError()){
-            msgManager.sendMessage(player,result.getMessage(),true);
-            return;
-        }else{
-            if(result.isProceedToBuy()){
-                //Open requirements inventory
-                inventoryPlayer.setPreviousInventoryName(inventoryPlayer.getInventoryName());
-                inventoryPlayer.setInventoryName("buy_requirements_inventory");
-                inventoryPlayer.setKitName(kitName);
-                openInventory(inventoryPlayer);
-                return;
-            }
-            msgManager.sendMessage(player,messagesConfig.getString("kitReceived").replace("%kit%",kitName),true);
-        }
-
-        if(mainConfigManager.isCloseInventoryOnClaim()){
-            player.closeInventory();
+        PlayerKitsMessageResult result = plugin.getKitsManager().giveKit(player, kitName, new GiveKitInstructions());
+        if (result.isError()) {
+            msgManager.sendMessage(player, result.getMessage(), true);
             return;
         }
 
-        openInventory(inventoryPlayer);
+        if (result.isProceedToBuy()) {
+            inventoryPlayer.setPreviousInventoryName(inventoryPlayer.getInventoryName());
+            inventoryPlayer.setInventoryName("buy_requirements_inventory");
+            inventoryPlayer.setKitName(kitName);
+            openInventoryLater(inventoryPlayer);
+            return;
+        }
+
+        msgManager.sendMessage(player, messagesConfig.getString("kitReceived").replace("%kit%", kitName), true);
+
+        if (mainConfigManager.isCloseInventoryOnClaim()) {
+            closeLater(player);
+            return;
+        }
+
+        openInventoryLater(inventoryPlayer);
     }
 
-    public void clickOnOpenInventoryItem(InventoryPlayer inventoryPlayer,String openInventory){
-        if(openInventory.equals("previous")){
-            inventoryPlayer.setInventoryName(inventoryPlayer.getPreviousInventoryName());
-        }else{
+    public void closeLater(Player player) {
+        plugin.getPlatformScheduler().runForEntityLater(player, () -> {
+            if (player.isOnline()) {
+                player.closeInventory();
+            }
+        }, 1L);
+    }
+
+    public void clickOnOpenInventoryItem(InventoryPlayer inventoryPlayer, String openInventory) {
+        if (openInventory.equals("previous")) {
+            String previous = inventoryPlayer.getPreviousInventoryName();
+            if (previous == null) {
+                closeLater(inventoryPlayer.getPlayer());
+                return;
+            }
+            inventoryPlayer.setInventoryName(previous);
+        } else {
             inventoryPlayer.setPreviousInventoryName(inventoryPlayer.getInventoryName());
             inventoryPlayer.setInventoryName(openInventory);
         }
-        openInventory(inventoryPlayer);
+        openInventoryLater(inventoryPlayer);
     }
 
-    public void clickOnActionItem(InventoryPlayer inventoryPlayer,String itemActions) {
-        String[] sep = itemActions.split("\\|");
-
+    public void clickOnActionItem(InventoryPlayer inventoryPlayer, String itemActions) {
         KitsManager kitsManager = plugin.getKitsManager();
         Player player = inventoryPlayer.getPlayer();
-        for(String action : sep){
-            kitsManager.executeAction(player,action);
+        for (String action : itemActions.split("\\|")) {
+            kitsManager.executeAction(player, action);
         }
     }
 
-    public void setKit(String kitName, Player player, Inventory inv, int slot, KitsManager kitsManager, PlayerDataManager playerDataManager
-        ,KitItemManager kitItemManager,ItemStack currentItem){
+    @SuppressWarnings({"deprecation", "removal"})
+    public void setKit(String kitName, Player player, Inventory inv, int slot, KitsManager kitsManager,
+                       PlayerDataManager playerDataManager, KitItemManager kitItemManager, ItemStack currentItem) {
         Kit kit = kitsManager.getKitByName(kitName);
-        if(kit == null){
+        if (kit == null) {
             return;
         }
 
-        // Check status before
         String currentStatus = "default";
-        if(currentItem != null){
-            currentStatus = ItemUtils.getTagStringItem(plugin,currentItem,"playerkits_kit_status");
-            if(currentStatus == null){
-                currentStatus = "default";
+        if (currentItem != null) {
+            String tagged = ItemUtils.getTagStringItem(plugin, currentItem, TAG_KIT_STATUS);
+            if (tagged != null) {
+                currentStatus = tagged;
             }
         }
         String newStatus = "default";
 
-        ArrayList<KitVariable> variablesToReplace = new ArrayList<>();
-        variablesToReplace.add(new KitVariable("%kit_name%",kit.getName()));
+        ArrayList<KitVariable> variablesToReplace = new ArrayList<>(2);
+        variablesToReplace.add(new KitVariable("%kit_name%", kit.getName()));
 
         KitItem kitItem = null;
-        if(!kit.playerHasPermission(player)){
+        if (!kit.playerHasPermission(player)) {
             kitItem = kit.getDisplayItemNoPermission();
             newStatus = "no_permission";
-        }else{
-            //One time
-            if(kit.isOneTime() && !PlayerUtils.isPlayerKitsAdmin(player) && playerDataManager.isKitOneTime(player,kit.getName())){
+        } else {
+            boolean admin = PlayerUtils.isPlayerKitsAdmin(player);
+
+            if (kit.isOneTime() && !admin && playerDataManager.isKitOneTime(player, kit.getName())) {
                 kitItem = kit.getDisplayItemOneTime();
                 newStatus = "one_time";
             }
 
-            //One time requirements
-            if(kit.getRequirements() != null && kit.getRequirements().isOneTimeRequirements()
-                && playerDataManager.isKitBought(player,kit.getName())){
+            if (kit.getRequirements() != null && kit.getRequirements().isOneTimeRequirements()
+                    && playerDataManager.isKitBought(player, kit.getName())) {
                 kitItem = kit.getDisplayItemOneTimeRequirements();
                 newStatus = "one_time_requirements";
             }
 
-            //Cooldown
-            long playerCooldown = playerDataManager.getKitCooldown(player,kit.getName());
-            if(kit.getCooldown() != 0 && !PlayerUtils.isPlayerKitsAdmin(player)){
+            if (kit.getCooldown() != 0 && !admin) {
+                long playerCooldown = playerDataManager.getKitCooldown(player, kit.getName());
                 String timeStringMillisDif = playerDataManager.getKitCooldownString(playerCooldown);
-                if(!timeStringMillisDif.isEmpty()) {
+                if (!timeStringMillisDif.isEmpty()) {
                     kitItem = kit.getDisplayItemCooldown();
-                    variablesToReplace.add(new KitVariable("%time%",timeStringMillisDif));
+                    variablesToReplace.add(new KitVariable("%time%", timeStringMillisDif));
                     newStatus = "cooldown";
                 }
             }
         }
-        if(kitItem == null){
+        if (kitItem == null) {
             kitItem = kit.getDisplayItemDefault();
             newStatus = "default";
+        }
+        if (kitItem == null) {
+            return;
         }
 
         kitItem = kitItem.clone();
 
         boolean useMiniMessage = plugin.getConfigsManager().getMainConfigManager().isUseMiniMessage();
-        if(newStatus.equals(currentStatus) && currentItem != null){
-            // Name and Lore update
-            kitItemManager.replaceVariables(kitItem,variablesToReplace,player);
+        if (currentItem != null && newStatus.equals(currentStatus)) {
+            kitItemManager.replaceVariables(kitItem, variablesToReplace, player);
 
             ItemMeta meta = currentItem.getItemMeta();
+            if (meta == null) {
+                return;
+            }
 
             String name = kitItem.getName();
-            if(name != null){
-                if(useMiniMessage){
-                    MiniMessageUtils.setItemName(meta,name);
-                }else{
+            if (name != null) {
+                if (useMiniMessage) {
+                    MiniMessageUtils.setItemName(meta, name);
+                } else {
                     meta.setDisplayName(MessagesManager.getLegacyColoredMessage(name));
                 }
             }
 
             List<String> lore = kitItem.getLore();
-            if(lore != null) {
-                List<String> loreCopy = new ArrayList<>(lore);
-                if(useMiniMessage){
-                    MiniMessageUtils.setItemLore(meta,lore,player,plugin);
-                }else{
-                    for(int i=0;i<loreCopy.size();i++) {
-                        String line = OtherUtils.replaceGlobalVariables(loreCopy.get(i),player,plugin);
-                        loreCopy.set(i, MessagesManager.getLegacyColoredMessage(line));
+            if (lore != null) {
+                if (useMiniMessage) {
+                    MiniMessageUtils.setItemLore(meta, lore, player, plugin);
+                } else {
+                    List<String> loreCopy = new ArrayList<>(lore.size());
+                    for (String line : lore) {
+                        loreCopy.add(MessagesManager.getLegacyColoredMessage(
+                                OtherUtils.replaceGlobalVariables(line, player, plugin)));
                     }
                     meta.setLore(loreCopy);
                 }
             }
 
             currentItem.setItemMeta(meta);
-        }else{
-            // Full update
-            kitItemManager.replaceVariables(kitItem,variablesToReplace,player);
-            ItemStack item = kitItemManager.createItemFromKitItem(kitItem,player,kit);
-            item = ItemUtils.setTagStringItem(plugin,item, "playerkits_kit", kitName);
-            item = ItemUtils.setTagStringItem(plugin,item, "playerkits_kit_status", newStatus);
-            inv.setItem(slot,item);
+        } else {
+            kitItemManager.replaceVariables(kitItem, variablesToReplace, player);
+            ItemStack item = kitItemManager.createItemFromKitItem(kitItem, player, kit);
+            item = ItemUtils.setTagStringItem(plugin, item, TAG_KIT, kitName);
+            item = ItemUtils.setTagStringItem(plugin, item, TAG_KIT_STATUS, newStatus);
+            inv.setItem(slot, item);
         }
     }
 
-
-
-    public KitPosition getKitPositionByKitName(String kitName){
-        for(KitInventory kitInventory : inventories){
-            for(ItemKitInventory itemKitInventory : kitInventory.getItems()){
-                if(itemKitInventory.getType() != null && itemKitInventory.getType().equals("kit: "+kitName)){
+    public KitPosition getKitPositionByKitName(String kitName) {
+        String expected = KIT_TYPE_PREFIX + kitName;
+        for (KitInventory kitInventory : inventories.values()) {
+            for (ItemKitInventory itemKitInventory : kitInventory.getItems()) {
+                if (expected.equals(itemKitInventory.getType()) && !itemKitInventory.getSlots().isEmpty()) {
                     return new KitPosition(itemKitInventory.getSlots().get(0), kitInventory.getName());
                 }
             }
@@ -403,16 +523,10 @@ public class InventoryManager {
         return null;
     }
 
-    public void removeKitFromInventory(String kitName){
-        for(KitInventory inventory : inventories){
-            List<ItemKitInventory> items = inventory.getItems();
-            for(int i=0;i<items.size();i++){
-                ItemKitInventory item = items.get(i);
-                if(item.getType() != null && item.getType().equals("kit: "+kitName)){
-                    items.remove(i);
-                    i--;
-                }
-            }
+    public void removeKitFromInventory(String kitName) {
+        String expected = KIT_TYPE_PREFIX + kitName;
+        for (KitInventory inventory : inventories.values()) {
+            inventory.getItems().removeIf(item -> expected.equals(item.getType()));
         }
     }
 }

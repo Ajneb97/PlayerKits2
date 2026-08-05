@@ -25,6 +25,7 @@ public class InventoryRequirementsManager {
         this.inventoryManager = inventoryManager;
     }
 
+    @SuppressWarnings({"deprecation", "removal"})
     public void configureRequirementsItem(ItemStack item, String kitName, Player player){
         if(item.hasItemMeta()) {
             ItemMeta meta = item.getItemMeta();
@@ -90,7 +91,6 @@ public class InventoryRequirementsManager {
                 }
             }
 
-            //Replace price variable
             line = line.replace("%status_symbol_price%",priceRequirementStatusSymbol);
 
             if(isPlaceholderAPI) {
@@ -108,17 +108,15 @@ public class InventoryRequirementsManager {
         Player player = inventoryPlayer.getPlayer();
         MessagesManager msgManager = plugin.getMessagesManager();
 
-        //Buy - Unlock
         KitsManager kitsManager = plugin.getKitsManager();
         PlayerKitsMessageResult result = kitsManager.giveKit(player,inventoryPlayer.getKitName(),
                 new GiveKitInstructions(false,true,false,false));
         if(!result.isError()){
             if(plugin.getConfigsManager().getMainConfigManager().isCloseInventoryOnClaim()){
-                player.closeInventory();
+                inventoryManager.closeLater(player);
                 return;
             }
 
-            //Everything is good, open previous inventory.
             requirementsInventoryCancel(inventoryPlayer);
         }else{
             msgManager.sendMessage(player, result.getMessage(), true);
@@ -126,10 +124,14 @@ public class InventoryRequirementsManager {
     }
 
     public void requirementsInventoryCancel(InventoryPlayer inventoryPlayer){
-        inventoryPlayer.setInventoryName(inventoryPlayer.getPreviousInventoryName());
+        String previous = inventoryPlayer.getPreviousInventoryName();
+        if(previous == null || inventoryManager.getInventory(previous) == null){
+            inventoryManager.closeLater(inventoryPlayer.getPlayer());
+            return;
+        }
+        inventoryPlayer.setInventoryName(previous);
         inventoryPlayer.setKitName(null);
-        inventoryManager.openInventory(inventoryPlayer);
+        inventoryManager.openInventoryLater(inventoryPlayer);
     }
-
 
 }

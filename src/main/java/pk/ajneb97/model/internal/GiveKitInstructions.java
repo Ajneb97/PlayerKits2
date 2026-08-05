@@ -2,8 +2,8 @@ package pk.ajneb97.model.internal;
 
 public class GiveKitInstructions {
 
-    private boolean fromCommand; //Allows to ignore some errors, like permissions, cooldown, one time...
-    private boolean requirementsSatisfied; //The player is buying the kit and all requirements are satisfied
+    private boolean fromCommand;
+    private boolean requirementsSatisfied;
     private boolean ignorePermission;
     private boolean ignoreRequirements;
 

@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
+@SuppressWarnings({"deprecation", "removal"})
 public class JSONMessage {
 
 	private Player player;
@@ -16,13 +17,13 @@ public class JSONMessage {
 	private BaseComponent[] hover;
 	private String suggestCommand;
 	private String executeCommand;
-	
+
 	public JSONMessage(Player player, String text) {
 		this.player = player;
 		this.hover = null;
 		this.text = text;
 	}
-	
+
 	public JSONMessage hover(List<String> list) {
 		hover = new BaseComponent[list.size()];
 		for(int i=0;i<list.size();i++) {
@@ -36,17 +37,17 @@ public class JSONMessage {
 		}
 		return this;
 	}
-	
+
 	public JSONMessage setSuggestCommand(String command) {
 		this.suggestCommand = command;
 		return this;
 	}
-	
+
 	public JSONMessage setExecuteCommand(String command) {
 		this.executeCommand = command;
 		return this;
 	}
-	
+
 	public void send() {
 		TextComponent message = new TextComponent();
 		message.setText(ChatColor.translateAlternateColorCodes('&', text));

@@ -4,7 +4,6 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.api.PlayerKitsAPI;
 import pk.ajneb97.managers.MessagesManager;
@@ -17,7 +16,7 @@ import java.lang.reflect.Method;
 public class ActionBarAPI
 {
 
-
+    @SuppressWarnings({"deprecation", "removal"})
     public static void sendActionBar(Player player, String message) {
 	  if(OtherUtils.isNew()) {
           if(PlayerKitsAPI.getPlugin().getConfigsManager().getMainConfigManager().isUseMiniMessage()){
@@ -35,7 +34,7 @@ public class ActionBarAPI
           useOldMethods = true;
       }
       if (!player.isOnline()) {
-          return; // Player may have logged out
+          return;
       }
 
       try {
@@ -80,29 +79,18 @@ public class ActionBarAPI
           e.printStackTrace();
       }
     }
-  
+
   public static void sendActionBar(final Player player, final String message, int duration, PlayerKits2 plugin) {
-	  sendActionBar(player, message);
-	  
+      sendActionBar(player, message);
+
       if (duration > 0) {
-          // Sends empty message at the end of the duration. Allows messages shorter than 3 seconds, ensures precision.
-          new BukkitRunnable() {
-              @Override
-              public void run() {
-            	  sendActionBar(player, "");
-              }
-          }.runTaskLater(plugin, duration + 1);
+          plugin.getPlatformScheduler().runForEntityLater(player, () -> sendActionBar(player, ""), duration + 1L);
       }
 
-      // Re-sends the messages every 3 seconds so it doesn't go away from the player's screen.
       while (duration > 40) {
           duration -= 40;
-          new BukkitRunnable() {
-              @Override
-              public void run() {
-                  sendActionBar(player, message);
-              }
-          }.runTaskLater(plugin, (long) duration);
+          final long delay = duration;
+          plugin.getPlatformScheduler().runForEntityLater(player, () -> sendActionBar(player, message), delay);
       }
   }
 

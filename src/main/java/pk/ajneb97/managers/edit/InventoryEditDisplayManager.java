@@ -10,6 +10,7 @@ import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.KitAction;
+import pk.ajneb97.model.inventory.KitGuiHolder;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.InventoryItem;
@@ -28,11 +29,14 @@ public class InventoryEditDisplayManager {
         this.inventoryEditManager = inventoryEditManager;
     }
 
+    @SuppressWarnings({"deprecation", "removal"})
     public void openInventory(InventoryPlayer inventoryPlayer, String type) {
         inventoryPlayer.setInventoryName("edit_display_" + type);
-        Inventory inv = Bukkit.createInventory(null, 27, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.EDIT, inventoryPlayer.getUuid());
+        Inventory inv = Bukkit.createInventory(holder, 27, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        holder.setInventory(inv);
+        inventoryPlayer.setHolder(holder);
 
-        //Decoration
         ArrayList<Integer> slots = new ArrayList<>();
         OtherUtils.addRangeToList(0,11,slots);
         OtherUtils.addRangeToList(15,26,slots);
@@ -44,10 +48,8 @@ public class InventoryEditDisplayManager {
             }
         }
 
-        //Set Go Back
         new InventoryItem(inv, 18, Material.ARROW).name("&eGo Back").ready();
 
-        //Info Heads
         Material headMaterial = null;
         if(OtherUtils.isLegacy()){
             headMaterial = Material.valueOf("SKULL_ITEM");
@@ -68,7 +70,6 @@ public class InventoryEditDisplayManager {
         Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
         KitItem kitItem = getKitDisplayItemFromType(kit,type);
 
-        //Set Info Item
         lore = new ArrayList<>();
         lore.add("&7You are currently editing the");
         if(type.equals("permission")){
@@ -89,7 +90,6 @@ public class InventoryEditDisplayManager {
         }
         new InventoryItem(inv, 0, Material.COMPASS).name("&6&lInfo").lore(lore).ready();
 
-        //Save Item
         lore = new ArrayList<>();
         lore.add("&7Click here if you made changes");
         lore.add("&7to the item, before leaving this");
@@ -101,7 +101,7 @@ public class InventoryEditDisplayManager {
         }
 
         inventoryPlayer.getPlayer().openInventory(inv);
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.trackInventoryPlayer(inventoryPlayer);
     }
 
     public void saveKitItem(InventoryPlayer inventoryPlayer){
@@ -141,8 +141,7 @@ public class InventoryEditDisplayManager {
             return;
         }
         if(event.getClickedInventory().equals(InventoryUtils.getTopInventory(inventoryPlayer.getPlayer()))){
-            //Top inventory
-            //Cancel unless is slot 13
+
             if(slot != 13){
                 event.setCancelled(true);
                 if(slot == 18){

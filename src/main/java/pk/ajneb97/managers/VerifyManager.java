@@ -25,7 +25,7 @@ public class VerifyManager {
     }
 
     public void sendVerification(Player player) {
-        player.sendMessage(MessagesManager.getLegacyColoredMessage("&f&l- - - - - - - - &b&lPLAYERKITS 2 VERIFY &f&l- - - - - - - -"));
+        player.sendMessage(MessagesManager.getLegacyColoredMessage("&f&l- - - - - - - - &b&lBETTERPLAYERKITS 2 VERIFY &f&l- - - - - - - -"));
         player.sendMessage(MessagesManager.getLegacyColoredMessage(""));
         if(errors.isEmpty()) {
             player.sendMessage(MessagesManager.getLegacyColoredMessage("&aThere are no errors in the plugin ;)"));
@@ -36,20 +36,18 @@ public class VerifyManager {
             }
         }
         player.sendMessage(MessagesManager.getLegacyColoredMessage(""));
-        player.sendMessage(MessagesManager.getLegacyColoredMessage("&f&l- - - - - - - - &b&lPLAYERKITS 2 VERIFY &f&l- - - - - - - -"));
+        player.sendMessage(MessagesManager.getLegacyColoredMessage("&f&l- - - - - - - - &b&lBETTERPLAYERKITS 2 VERIFY &f&l- - - - - - - -"));
     }
 
     public void verify() {
         this.errors = new ArrayList<PKBaseError>();
         this.criticalErrors = false;
 
-        //CHECK KITS
         ArrayList<Kit> kits = plugin.getKitsManager().getKits();
         for(Kit kit : kits) {
             verifyKit(kit);
         }
 
-        //CHECK INVENTORIES
         InventoryManager inventoryManager = plugin.getInventoryManager();
         ArrayList<KitInventory> inventories = inventoryManager.getInventories();
         for(KitInventory inventory : inventories){
@@ -78,7 +76,6 @@ public class VerifyManager {
         verifyActions(kit.getClaimActions(),"claim",kitName);
         verifyActions(kit.getErrorActions(),"error",kitName);
 
-        //Items
         ArrayList<KitItem> allKitItems = new ArrayList<KitItem>();
         allKitItems.add(kit.getDisplayItemDefault());
         allKitItems.add(kit.getDisplayItemCooldown());
@@ -145,7 +142,6 @@ public class VerifyManager {
                }
            }
 
-           //Items
            KitItem kitItem = item.getItem();
            if(kitItem != null){
                if(!verifyItem(kitItem.getId())){
@@ -154,7 +150,6 @@ public class VerifyManager {
                }
            }
 
-           //Valid slots
            for(int slot : item.getSlots()){
                if(slot >= maxSlots){
                    errors.add(new PKInventoryInvalidSlotError("inventory.yml",null,true,slot,

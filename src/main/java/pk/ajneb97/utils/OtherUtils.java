@@ -27,7 +27,6 @@ public class OtherUtils {
         return true;
     }
 
-    // 1.20+
     public static boolean isTrimNew() {
         ServerVersion serverVersion = PlayerKits2.serverVersion;
         if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R1)) {

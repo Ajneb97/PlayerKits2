@@ -10,7 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class MessagesConfigManager {
+public final class MessagesConfigManager {
 
     private PlayerKits2 plugin;
     private CommonConfig configFile;
@@ -25,7 +25,6 @@ public class MessagesConfigManager {
     public void configure(){
         FileConfiguration config = configFile.getConfig();
 
-        //Configure messages
         MessagesManager msgManager = new MessagesManager();
         msgManager.setTimeSeconds(config.getString("seconds"));
         msgManager.setTimeMinutes(config.getString("minutes"));
@@ -82,9 +81,21 @@ public class MessagesConfigManager {
                 getConfig().set("pluginCriticalErrors", "&cThe plugin has detected some errors. Check them using &7/kit verify");
                 saveConfig();
             }
+            if(!text.contains("layoutSaved:")){
+                getConfig().set("invalidKitName", "&cKit names can only contain letters, numbers, - and _ (max 48 characters).");
+                getConfig().set("kitClaimInProgress", "&cYou are already claiming a kit, wait a moment.");
+                getConfig().set("playerDataNotLoaded", "&cYour kit data is still loading, try again in a moment.");
+                getConfig().set("layoutSaved", "&aYour personal layout for kit &7%kit% &awas saved.");
+                getConfig().set("layoutReset", "&aYour personal layout for kit &7%kit% &awas reset to the default.");
+                getConfig().set("layoutDisabled", "&cThe kit layout editor is disabled.");
+                getConfig().set("layoutNoItems", "&cThis kit has no items you can arrange.");
+                getConfig().set("layoutNoKitSelected", "&cOpen a kit first to edit its layout.");
+                getConfig().set("commandLayoutError", "&cYou need to use: &7/kit layout <kit>");
+                saveConfig();
+            }
 
-        }catch(IOException e){
-            e.printStackTrace();
+        }catch(IOException error){
+            plugin.getLogger().severe("Could not check messages.yml for updates: "+error);
         }
     }
 }

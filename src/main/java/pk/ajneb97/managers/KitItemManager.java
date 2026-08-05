@@ -30,6 +30,7 @@ public class KitItemManager {
         this.plugin = plugin;
     }
 
+    @SuppressWarnings({"deprecation", "removal"})
     public KitItem createKitItemFromItemStack(ItemStack item,boolean exactItem){
         if(exactItem){
             return new KitItem(item.clone());
@@ -185,7 +186,6 @@ public class KitItemManager {
             }
         }
 
-
         kitItem.setAttributes(ItemUtils.getAttributes(plugin,item));
         kitItem.setSkullData(ItemUtils.getSkullData(item));
         kitItem.setPotionData(ItemUtils.getPotionData(item));
@@ -197,11 +197,12 @@ public class KitItemManager {
         return kitItem;
     }
 
+    @SuppressWarnings({"deprecation", "removal"})
     public ItemStack createItemFromKitItem(KitItem kitItem, Player player, Kit kit){
         if(kitItem.getOriginalItem() != null){
             ItemStack item = kitItem.getOriginalItem().clone();
             if(kit.isAllowPlaceholdersOnOriginalItems()){
-                // Placeholders on original item
+
                 ItemMeta meta = item.getItemMeta();
                 if(meta.hasDisplayName()){
                     String name = OtherUtils.replaceGlobalVariables(meta.getDisplayName(),player,plugin);
@@ -227,7 +228,6 @@ public class KitItemManager {
 
         boolean useMiniMessage = plugin.getConfigsManager().getMainConfigManager().isUseMiniMessage();
 
-        //MAIN META
         ItemMeta meta = item.getItemMeta();
         String name = kitItem.getName();
         if(name != null){
@@ -318,7 +318,6 @@ public class KitItemManager {
 
         item.setItemMeta(meta);
 
-        //OTHER META
         int color = kitItem.getColor();
         if(color != 0) {
             LeatherArmorMeta meta2 = (LeatherArmorMeta) item.getItemMeta();
@@ -338,7 +337,6 @@ public class KitItemManager {
             item.setItemMeta(meta2);
         }
 
-        //ADVANCED DATA
         KitItemSkullData skullData = kitItem.getSkullData();
         ItemUtils.setSkullData(item, skullData, player);
 
@@ -360,14 +358,13 @@ public class KitItemManager {
         List<String> attributes = kitItem.getAttributes();
         item = ItemUtils.setAttributes(plugin,item, attributes);
 
-        //Item Flags
         meta = item.getItemMeta();
         List<String> flags = kitItem.getFlags();
         if(flags != null) {
             for(String flag : flags) {
                 if (flag.equals("HIDE_ATTRIBUTES") && plugin.getDependencyManager().isPaper() &&
                         serverVersion.serverVersionGreaterEqualThan(serverVersion, ServerVersion.v1_21_R1)) {
-                    //Fix PAPER HIDE_ATTRIBUTES
+
                     ItemUtils.addDummyAttribute(meta,plugin);
                 }
                 meta.addItemFlags(ItemFlag.valueOf(flag));

@@ -11,7 +11,7 @@ public class PlayerKitsAPI {
 
     private static PlayerKits2 plugin;
     public PlayerKitsAPI(PlayerKits2 plugin){
-        this.plugin = plugin;
+        PlayerKitsAPI.plugin = plugin;
     }
 
     public static PlayerKits2 getPlugin() {

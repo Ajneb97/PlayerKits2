@@ -36,7 +36,6 @@ public class KitRequirements {
         this.oneTimeRequirements = oneTimeRequirements;
     }
 
-
     public List<String> getMessage() {
         return message;
     }

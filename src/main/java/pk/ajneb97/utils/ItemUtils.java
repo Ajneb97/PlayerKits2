@@ -42,7 +42,6 @@ import pk.ajneb97.model.item.*;
 
 public class ItemUtils {
 
-
 	@SuppressWarnings("deprecation")
 	public static ItemStack createItemFromID(String id) {
 		String[] idsplit = new String[2];
@@ -52,19 +51,19 @@ public class ItemUtils {
 			  idsplit = id.split(":");
 			  String stringDataValue = idsplit[1];
 			  DataValue = Integer.valueOf(stringDataValue);
-			  Material mat = Material.getMaterial(idsplit[0].toUpperCase()); 
-			  stack = new ItemStack(mat,1,(short)DataValue);	             	  
+			  Material mat = Material.getMaterial(idsplit[0].toUpperCase());
+			  stack = new ItemStack(mat,1,(short)DataValue);
 		}else{
 			  Material mat = Material.getMaterial(id.toUpperCase());
-			  stack = new ItemStack(mat,1);	  			  
+			  stack = new ItemStack(mat,1);
 		}
 		return stack;
 	}
-	
+
 	public static ItemStack setTagStringItem(PlayerKits2 plugin, ItemStack item, String key, String value) {
 		return plugin.getNmsManager().setTagStringItem(item,key,value);
 	}
-	
+
 	public static String getTagStringItem(PlayerKits2 plugin, ItemStack item, String key) {
 		if(item == null || item.getType().equals(Material.AIR)){
 			return null;
@@ -75,26 +74,27 @@ public class ItemUtils {
 	public static ItemStack removeTagItem(PlayerKits2 plugin, ItemStack item, String key) {
 		return plugin.getNmsManager().removeTagItem(item,key);
 	}
-	
+
 	public static List<String> getNBT(PlayerKits2 plugin, ItemStack item){
 		return plugin.getNmsManager().getNBT(item);
 	}
-	
+
 	public static ItemStack setNBT(PlayerKits2 plugin, ItemStack item, List<String> nbtList){
 		return plugin.getNmsManager().setNBT(item,nbtList);
 	}
-	
+
+	@SuppressWarnings({"deprecation", "removal"})
 	public static KitItemSkullData getSkullData(ItemStack item) {
 		KitItemSkullData kitItemSkullData = null;
 		String owner = null;
 		String texture = null;
 		String id = null;
-		
+
 		String typeName = item.getType().name();
 		if(!typeName.equals("PLAYER_HEAD") && !typeName.equals("SKULL_ITEM")) {
 			return null;
 		}
-		
+
 		SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
 		ServerVersion serverVersion = PlayerKits2.serverVersion;
 		if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R1)){
@@ -153,20 +153,21 @@ public class ItemUtils {
         if(texture != null || id != null || owner != null) {
 			kitItemSkullData = new KitItemSkullData(owner,texture,id);
 		}
-		
+
 		return kitItemSkullData;
 	}
 
+	@SuppressWarnings({"deprecation", "removal"})
 	public static void setSkullData(ItemStack item, KitItemSkullData skullData, Player player){
 		String typeName = item.getType().name();
 		if(!typeName.equals("PLAYER_HEAD") && !typeName.equals("SKULL_ITEM")) {
 			return;
 		}
-		
+
 		if(skullData == null) {
 			return;
 		}
-		
+
 		String texture = skullData.getTexture();
 		String owner = skullData.getOwner();
 		if(owner != null && player != null) {
@@ -221,7 +222,8 @@ public class ItemUtils {
 
         item.setItemMeta(skullMeta);
 	}
-	
+
+	@SuppressWarnings({"deprecation", "removal"})
 	public static KitItemPotionData getPotionData(ItemStack item) {
 		KitItemPotionData potionData = null;
 		List<String> potionEffectsList = new ArrayList<String>();
@@ -229,16 +231,16 @@ public class ItemUtils {
 		boolean extended = false;
 		String potionType = null;
 		int potionColor = 0;
-		
+
 		String typeName = item.getType().name();
 		if(!typeName.contains("POTION") && !typeName.equals("TIPPED_ARROW")) {
 			return null;
 		}
-		
+
 		if(!(item.getItemMeta() instanceof PotionMeta)) {
 			return null;
 		}
-		
+
 		PotionMeta meta = (PotionMeta) item.getItemMeta();
 		if(meta.hasCustomEffects()) {
 			List<PotionEffect> potionEffects = meta.getCustomEffects();
@@ -266,28 +268,29 @@ public class ItemUtils {
 				potionType = basePotionData.getType().name();
 			}
 		}
-		
+
 		potionData = new KitItemPotionData(upgraded,extended,potionType,potionColor,potionEffectsList);
-		
+
 		return potionData;
 	}
-	
+
+	@SuppressWarnings({"deprecation", "removal"})
 	public static void setPotionData(ItemStack item,KitItemPotionData potionData){
 		String typeName = item.getType().name();
 		if(!typeName.contains("POTION") && !typeName.equals("TIPPED_ARROW")) {
 			return;
 		}
-		
+
 		if(potionData == null) {
 			return;
 		}
-		
+
 		if(!(item.getItemMeta() instanceof PotionMeta)) {
 			return;
 		}
-		
+
 		PotionMeta meta = (PotionMeta) item.getItemMeta();
-		
+
 		List<String> potionEffects = potionData.getPotionEffects();
 		if(potionEffects != null) {
 			for(int i=0;i<potionEffects.size();i++) {
@@ -318,17 +321,17 @@ public class ItemUtils {
 				meta.setBasePotionData(basePotionData);
 			}
 		}
-		
+
 		item.setItemMeta(meta);
 	}
-	
+
 	public static KitItemBannerData getBannerData(ItemStack item) {
 		KitItemBannerData bannerData = null;
 		List<String> bannerPatterns = new ArrayList<String>();
 		String baseColor = null;
-		
+
 		List<Pattern> patterns = new ArrayList<Pattern>();
-		
+
 		String typeName = item.getType().name();
 		if(typeName.contains("BANNER") || typeName.contains("PATTERN")) {
 			if(item.getItemMeta() instanceof BannerMeta) {
@@ -349,29 +352,29 @@ public class ItemUtils {
 		}else {
 			return null;
 		}
-		
+
 		for(Pattern p : patterns) {
 			bannerPatterns.add(p.getColor().name()+";"+getBannerPatternName(p));
 		}
-		
+
 		if(bannerPatterns.isEmpty() && baseColor == null) {
 			return null;
 		}
-		
+
 		bannerData = new KitItemBannerData(bannerPatterns,baseColor);
 		return bannerData;
 	}
-	
+
 	public static void setBannerData(ItemStack item,KitItemBannerData bannerData){
 		String typeName = item.getType().name();
 
 		if(bannerData == null) {
 			return;
 		}
-		
+
 		List<String> bannerPatterns = bannerData.getPatterns();
 		String baseColor = bannerData.getBaseColor();
-		
+
 		if(typeName.contains("BANNER") || typeName.contains("PATTERN")) {
 			BannerMeta meta = (BannerMeta) item.getItemMeta();
 			if(bannerPatterns != null) {
@@ -405,18 +408,18 @@ public class ItemUtils {
 			item.setItemMeta(meta);
 		}
 	}
-	
+
 	public static KitItemFireworkData getFireworkData(ItemStack item) {
 		KitItemFireworkData fireworkData = null;
-		
+
 		List<String> fireworkRocketEffects = new ArrayList<String>();
 		String fireworkStarEffect = null;
 		int fireworkPower = 0;
-		
+
 		String typeName = item.getType().name();
 		boolean isFireworkCharge = false;
 		List<FireworkEffect> effects = new ArrayList<FireworkEffect>();
-		
+
 		if(typeName.equals("FIREWORK") || typeName.equals("FIREWORK_ROCKET")) {
 			FireworkMeta meta = (FireworkMeta) item.getItemMeta();
 			fireworkPower = meta.getPower();
@@ -429,7 +432,7 @@ public class ItemUtils {
 		}else {
 			return null;
 		}
-		
+
 		for(FireworkEffect e : effects) {
 			if(e == null) {
 				continue;
@@ -454,31 +457,31 @@ public class ItemUtils {
 				}
 			}
 			line = line+colorsLine+fadeColorsLine+";"+e.hasFlicker()+";"+e.hasTrail();
-			
+
 			if(isFireworkCharge) {
 				fireworkStarEffect = line;
 				break;
 			}
-			
+
 			fireworkRocketEffects.add(line);
 		}
-		
+
 		fireworkData = new KitItemFireworkData(fireworkRocketEffects,fireworkStarEffect,fireworkPower);
-		
+
 		return fireworkData;
 	}
-	
+
 	public static void setFireworkData(ItemStack item,KitItemFireworkData fireworkData){
 		String typeName = item.getType().name();
 
 		if(fireworkData == null) {
 			return;
 		}
-		
+
 		int power = fireworkData.getFireworkPower();
 		List<String> rocketEffects = fireworkData.getFireworkRocketEffects();
 		String starEffect = fireworkData.getFireworkStarEffect();
-		
+
 		if(typeName.equals("FIREWORK") || typeName.equals("FIREWORK_ROCKET")) {
 			FireworkMeta meta = (FireworkMeta) item.getItemMeta();
 			if(rocketEffects != null) {
@@ -497,7 +500,7 @@ public class ItemUtils {
 			item.setItemMeta(meta);
 		}
 	}
-	
+
 	private static FireworkEffect getFireworkEffect(String line) {
 		String[] sep = line.split(";");
 		String type = sep[0];
@@ -511,7 +514,7 @@ public class ItemUtils {
 			String[] fadeColors = sep[2].split(",");
 			for(int c=0;c<fadeColors.length;c++) {
 				fadeColorsList.add(Color.fromRGB(Integer.valueOf(fadeColors[c])));
-			} 
+			}
 		}
 
 		boolean flicker = Boolean.valueOf(sep[3]);
@@ -519,12 +522,13 @@ public class ItemUtils {
 		return FireworkEffect.builder().flicker(flicker).trail(trail).with(Type.valueOf(type))
 				.withColor(colorsList).withFade(fadeColorsList).build();
 	}
-	
+
+	@SuppressWarnings({"deprecation", "removal"})
 	public static List<String> getAttributes(PlayerKits2 plugin, ItemStack item){
 		if(OtherUtils.isLegacy()) {
 			return plugin.getNmsManager().getAttributes(item);
 		}else {
-			//1.13+
+
 			ServerVersion serverVersion = PlayerKits2.serverVersion;
 			boolean newSystem = serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R1);
 
@@ -552,22 +556,23 @@ public class ItemUtils {
 						attributeList.add(line);
 					}
 				}
-				
+
 				return attributeList;
 			}
 		}
 		return null;
 	}
-	
+
+	@SuppressWarnings({"deprecation", "removal"})
 	public static ItemStack setAttributes(PlayerKits2 plugin, ItemStack item, List<String> attributes) {
 		if(attributes == null) {
 			return item;
 		}
-		
+
 		if(OtherUtils.isLegacy()) {
 			return plugin.getNmsManager().setAttributes(item,attributes);
 		}else {
-			//1.13+
+
 			ServerVersion serverVersion = PlayerKits2.serverVersion;
 			boolean newSystem = serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R1);
 
@@ -616,7 +621,6 @@ public class ItemUtils {
 		return item;
 	}
 
-	// 1.21+ only
 	public static void addDummyAttribute(ItemMeta meta,PlayerKits2 plugin){
 		try{
 			AttributeModifier modifier = new AttributeModifier(new NamespacedKey(plugin,"dummy_attribute"),0,AttributeModifier.Operation.ADD_NUMBER,EquipmentSlotGroup.FEET);
@@ -630,11 +634,12 @@ public class ItemUtils {
 
 		}
 	}
-	
+
+	@SuppressWarnings({"deprecation", "removal"})
 	public static KitItemBookData getBookData(ItemStack item){
 		KitItemBookData bookData = null;
 		String typeName = item.getType().name();
-		
+
 		List<String> pages = new ArrayList<String>();
 		String author = null;
 		String generation = null;
@@ -642,10 +647,10 @@ public class ItemUtils {
 
 		if(typeName.equals("WRITTEN_BOOK")) {
 			BookMeta meta = (BookMeta) item.getItemMeta();
-			
+
 			author = meta.getAuthor();
 			title = meta.getTitle();
-			
+
 			if(!Bukkit.getVersion().contains("1.12") && OtherUtils.isLegacy()) {
 				pages = new ArrayList<String>(meta.getPages());
 			}else {
@@ -656,26 +661,27 @@ public class ItemUtils {
 					pages.add(ComponentSerializer.toString(page));
 				}
 			}
-			
+
 			bookData = new KitItemBookData(pages,author,generation,title);
 			return bookData;
 		}else {
 			return null;
 		}
 	}
-	
+
+	@SuppressWarnings({"deprecation", "removal"})
 	public static void setBookData(ItemStack item,KitItemBookData bookData){
 		String typeName = item.getType().name();
 
 		if(bookData == null) {
 			return;
 		}
-		
+
 		String author = bookData.getAuthor();
 		String generation = bookData.getGeneration();
 		String title = bookData.getTitle();
 		List<String> pages = bookData.getPages();
-		
+
 		if(typeName.equals("WRITTEN_BOOK")) {
 			BookMeta meta = (BookMeta) item.getItemMeta();
 			if(!Bukkit.getVersion().contains("1.12") && OtherUtils.isLegacy()) {
@@ -692,11 +698,12 @@ public class ItemUtils {
 			}
 			meta.setAuthor(author);
 			meta.setTitle(title);
-			
+
 			item.setItemMeta(meta);
 		}
 	}
 
+	@SuppressWarnings({"deprecation", "removal"})
 	public static KitItemTrimData getArmorTrimData(ItemStack item) {
 		if(!OtherUtils.isTrimNew()) {
 			return null;
@@ -720,6 +727,7 @@ public class ItemUtils {
 		return new KitItemTrimData(armorTrimPattern,armorTrimMaterial);
 	}
 
+	@SuppressWarnings({"deprecation", "removal"})
 	public static void setArmorTrimData(ItemStack item,KitItemTrimData trimData){
 		if(trimData == null || !OtherUtils.isTrimNew()) {
 			return;

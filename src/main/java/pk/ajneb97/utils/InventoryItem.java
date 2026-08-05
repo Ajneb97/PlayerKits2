@@ -18,30 +18,32 @@ public class InventoryItem {
 	private ItemStack item;
 	private ItemMeta meta;
 	private String headTexture;
-	
+
 	public InventoryItem(Inventory inventory, int slot, Material material) {
 		this.inventory = inventory;
 		this.item = new ItemStack(material);
 		this.meta = item.getItemMeta();
 		this.slot = slot;
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	public InventoryItem dataValue(short datavalue) {
 		item.setDurability(datavalue);
 		return this;
 	}
-	
+
 	public InventoryItem amount(int amount) {
 		item.setAmount(amount);
 		return this;
 	}
-	
+
+	@SuppressWarnings({"deprecation", "removal"})
 	public InventoryItem name(String name) {
 		meta.setDisplayName(MessagesManager.getLegacyColoredMessage(name));
 		return this;
 	}
-	
+
+	@SuppressWarnings({"deprecation", "removal"})
 	public InventoryItem lore(List<String> lore) {
 		for(int i=0;i<lore.size();i++) {
 			lore.set(i, MessagesManager.getLegacyColoredMessage(lore.get(i)));
@@ -49,7 +51,7 @@ public class InventoryItem {
 		meta.setLore(lore);
 		return this;
 	}
-	
+
 	public InventoryItem enchanted(boolean enchanted) {
 		if(enchanted) {
 			meta.addEnchant(Enchantment.FIRE_ASPECT, 1, true);
@@ -58,6 +60,7 @@ public class InventoryItem {
 		return this;
 	}
 
+	@SuppressWarnings({"deprecation", "removal"})
 	public InventoryItem setSkull(String texture){
 		if(OtherUtils.isLegacy()){
 			item.setDurability((short) 3);
@@ -65,7 +68,7 @@ public class InventoryItem {
 		headTexture = texture;
 		return this;
 	}
-	
+
 	public void ready() {
 		item.setItemMeta(meta);
 		if(headTexture != null){

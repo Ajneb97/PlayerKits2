@@ -6,7 +6,6 @@ import pk.ajneb97.PlayerKits2;
 
 public class ExpansionPlayerKits extends PlaceholderExpansion {
 
-    // We get an instance of the plugin later.
     private PlayerKits2 plugin;
 
     public ExpansionPlayerKits(PlayerKits2 plugin) {
@@ -25,7 +24,7 @@ public class ExpansionPlayerKits extends PlaceholderExpansion {
 
     @Override
     public String getAuthor(){
-        return "Ajneb97";
+        return "Ajneb97 (fork maintained by Jules)";
     }
 
     @Override
@@ -33,6 +32,7 @@ public class ExpansionPlayerKits extends PlaceholderExpansion {
         return "playerkits";
     }
 
+    @SuppressWarnings({"deprecation", "removal"})
     @Override
     public String getVersion(){
         return plugin.getDescription().getVersion();
@@ -46,11 +46,11 @@ public class ExpansionPlayerKits extends PlaceholderExpansion {
         }
 
         if(identifier.startsWith("cooldown_")){
-        	// %playerkits_cooldown_<kit>%
+
         	String event = identifier.replace("cooldown_", "");
             return PlayerKitsAPI.getKitCooldown(player,event);
         }else if(identifier.startsWith("onetime_ready_")){
-            // %conditionalevents_onetime_ready_<kit>%
+
             String event = identifier.replace("onetime_ready_", "");
             return PlayerKitsAPI.getOneTimeReady(player,event);
         }

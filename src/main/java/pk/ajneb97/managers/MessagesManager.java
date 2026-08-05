@@ -20,7 +20,6 @@ public class MessagesManager {
 	private String cooldownPlaceholderReady;
 	private String prefix;
 
-
 	public String getTimeSeconds() {
 		return timeSeconds;
 	}
@@ -86,7 +85,7 @@ public class MessagesManager {
 	}
 
 	public void sendMessage(CommandSender sender, String message, boolean prefix){
-		if(!message.isEmpty()){
+		if(message != null && !message.isEmpty()){
 			if(PlayerKitsAPI.getPlugin().getConfigsManager().getMainConfigManager().isUseMiniMessage()){
 				MiniMessageUtils.messagePrefix(sender,message,prefix,this.prefix);
 			}else{
@@ -99,15 +98,16 @@ public class MessagesManager {
 		}
 	}
 
+	@SuppressWarnings({"deprecation", "removal"})
 	public static String getLegacyColoredMessage(String message) {
 		if(OtherUtils.isNew()) {
 			Pattern pattern = Pattern.compile("#[a-fA-F0-9]{6}");
 			Matcher match = pattern.matcher(message);
-			
+
 			while(match.find()) {
 				String color = message.substring(match.start(),match.end());
 				message = message.replace(color, ChatColor.of(color)+"");
-				
+
 				match = pattern.matcher(message);
 			}
 		}

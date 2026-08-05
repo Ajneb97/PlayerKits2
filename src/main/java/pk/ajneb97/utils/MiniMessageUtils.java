@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.meta.ItemMeta;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.InventoryRequirementsManager;
@@ -46,8 +47,8 @@ public class MiniMessageUtils {
         player.sendMessage(MiniMessage.miniMessage().deserialize(message));
     }
 
-    public static Inventory createInventory(int slots, String title){
-        return Bukkit.createInventory(null,slots, MiniMessage.miniMessage().deserialize(title));
+    public static Inventory createInventory(InventoryHolder holder, int slots, String title){
+        return Bukkit.createInventory(holder,slots, MiniMessage.miniMessage().deserialize(title));
     }
 
     public static void setCommonItemName(KitItem commonItem, ItemMeta meta){

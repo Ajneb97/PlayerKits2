@@ -2,7 +2,6 @@ package pk.ajneb97.managers;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.configs.KitsConfigManager;
 import pk.ajneb97.configs.PlayersConfigManager;
@@ -23,15 +22,12 @@ public class MigrationManager {
     }
 
     public void migrate(CommandSender sender){
-        new BukkitRunnable(){
-            @Override
-            public void run() {
-                migrateKits(sender);
-                migratePlayers(sender);
+        plugin.getPlatformScheduler().runAsync(() -> {
+            migrateKits(sender);
+            migratePlayers(sender);
 
-                sender.sendMessage(PlayerKits2.prefix+MessagesManager.getLegacyColoredMessage(" &aMigration completed."));
-            }
-        }.runTaskAsynchronously(plugin);
+            sender.sendMessage(PlayerKits2.prefix+MessagesManager.getLegacyColoredMessage(" &aMigration completed."));
+        });
     }
 
     public void migrateKits(CommandSender sender){

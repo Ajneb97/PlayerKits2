@@ -21,11 +21,9 @@ public class KitItem{
     private List<String> bookEnchants;
     private int color;
     private List<String> nbt;
-    //Format:
-    //<name>;<operation>;<amount>;<uuid>;<slot>
+
     private List<String> attributes;
 
-    //For Paper only
     private List<String> canDestroy;
     private List<String> canPlace;
 
@@ -35,11 +33,11 @@ public class KitItem{
     private KitItemBannerData bannerData;
     private KitItemBookData bookData;
     private KitItemTrimData trimData;
-    private KitItemCustomModelComponentData customModelComponentData; // 1.21.4+
+    private KitItemCustomModelComponentData customModelComponentData;
 
-    private boolean hideTooltip; // 1.20.6+
-    private String tooltipStyle; // 1.21.2+
-    private String model; // 1.21.4+
+    private boolean hideTooltip;
+    private String tooltipStyle;
+    private String model;
 
     private boolean offhand;
     private int previewSlot;
@@ -275,8 +273,9 @@ public class KitItem{
         this.previewSlot = previewSlot;
     }
 
+    @SuppressWarnings({"deprecation", "removal"})
     public void removeOffHandFromEditInventory(PlayerKits2 plugin){
-        //Assumes that has the lore and the nbt
+
         if(originalItem != null){
             ItemMeta meta = originalItem.getItemMeta();
             List<String> lore = meta.getLore();
@@ -313,7 +312,8 @@ public class KitItem{
         kitItem.setNbt(nbt != null ? new ArrayList<>(nbt) : null);
         kitItem.setAttributes(attributes != null ? new ArrayList<>(attributes) : null);
         kitItem.setCanDestroy(canDestroy != null ? new ArrayList<>(canDestroy) : null);
-        kitItem.setCanDestroy(canPlace != null ? new ArrayList<>(canPlace) : null);
+        kitItem.setCanPlace(canPlace != null ? new ArrayList<>(canPlace) : null);
+        kitItem.setOriginalItem(originalItem != null ? originalItem.clone() : null);
 
         kitItem.setSkullData(skullData != null ? skullData.clone() : null);
         kitItem.setPotionData(potionData != null ? potionData.clone() : null);

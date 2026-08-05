@@ -27,7 +27,15 @@ public class ActionUtils {
         }
     }
 
-    public static void consoleCommand(String actionLine){
+    public static void consoleCommand(PlayerKits2 plugin,String actionLine){
+        if(plugin.getPlatformScheduler().isRegionised()){
+            plugin.getPlatformScheduler().runGlobal(() -> dispatchConsoleCommand(actionLine));
+            return;
+        }
+        dispatchConsoleCommand(actionLine);
+    }
+
+    private static void dispatchConsoleCommand(String actionLine){
         ConsoleCommandSender sender = Bukkit.getConsoleSender();
         Bukkit.dispatchCommand(sender, actionLine);
     }
@@ -96,6 +104,7 @@ public class ActionUtils {
         TitleAPI.sendTitle(player,fadeIn,stay,fadeOut,title,subtitle);
     }
 
+    @SuppressWarnings({"deprecation", "removal"})
     public static void firework(Player player,String actionLine,PlayerKits2 plugin){
         ArrayList<Color> colors = new ArrayList<Color>();
         FireworkEffect.Type type = null;

@@ -75,6 +75,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 reset(sender,args,messagesConfig,msgManager);
             }else if(args[0].equalsIgnoreCase("edit")) {
                 edit(player,args,messagesConfig,msgManager);
+            }else if(args[0].equalsIgnoreCase("layout")){
+                layout(player,args,messagesConfig,msgManager);
             }else if(args[0].equalsIgnoreCase("verify")){
                 verify(player,messagesConfig,msgManager);
             }else if(args[0].equalsIgnoreCase("migrate")) {
@@ -83,7 +85,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 open(sender,args,messagesConfig,msgManager);
             }
             else{
-                // /kit <kit> (short command)
+
                 if(claimKitShortCommand){
                     claimKitShortCommand(player,messagesConfig,msgManager,args[0]);
                     return true;
@@ -92,14 +94,13 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 }
             }
         }else{
-            // /kit
+
             if(plugin.getVerifyManager().isCriticalErrors()){
                 msgManager.sendMessage(player,messagesConfig.getString("pluginCriticalErrors"),true);
                 return true;
             }
             plugin.getInventoryManager().openInventory(new InventoryPlayer(player,"main_inventory"));
         }
-
 
         return true;
     }
@@ -109,7 +110,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             msgManager.sendMessage(sender,messagesConfig.getString("commandDoesNotExists"),true);
             return;
         }
-        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&7[ [ &8[&bPlayerKits&a²&8] &7] ]"));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&7[ [ &8[&bBetterPlayerKits&a²&8] &7] ]"));
         sender.sendMessage(MessagesManager.getLegacyColoredMessage(" "));
         sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit &8Opens the GUI."));
         sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit claim <kit> &8Claims a kit outside the GUI."));
@@ -121,9 +122,10 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit preview <kit> (optional)<player> &8Previews a kit."));
         sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit open <inventory> <player> &8Opens a specific inventory for a player."));
         sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit reload &8Reloads the config."));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit layout <kit> &8Edits your personal layout for a kit."));
         sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit verify &8Checks the plugin for errors."));
         sender.sendMessage(MessagesManager.getLegacyColoredMessage(" "));
-        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&7[ [ &8[&bPlayerKits&a²&8] &7] ]"));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&7[ [ &8[&bBetterPlayerKits&a²&8] &7] ]"));
     }
 
     public void migrate(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
@@ -133,6 +135,21 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         }
 
         plugin.getMigrationManager().migrate(sender);
+    }
+
+    public void layout(Player player,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
+        if(!plugin.getConfigsManager().getMainConfigManager().isLayoutEditor()){
+            msgManager.sendMessage(player,messagesConfig.getString("layoutDisabled"),true);
+            return;
+        }
+
+        if(args.length < 2){
+            msgManager.sendMessage(player,messagesConfig.getString("commandLayoutError"),true);
+            return;
+        }
+
+        InventoryPlayer inventoryPlayer = new InventoryPlayer(player,"main_inventory");
+        plugin.getLayoutEditorManager().open(inventoryPlayer,args[1]);
     }
 
     public void verify(Player player,FileConfiguration messagesConfig,MessagesManager msgManager){
@@ -157,7 +174,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     public void reset(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager) {
-        // /kits reset <kit> <player>
+
         if(!PlayerUtils.isPlayerKitsAdmin(sender)) {
             msgManager.sendMessage(sender, messagesConfig.getString("noPermissions"), true);
             return;
@@ -189,7 +206,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     public void open(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager) {
-        // /kits open <inventory> <player>
+
         if(!PlayerUtils.isPlayerKitsAdmin(sender)) {
             msgManager.sendMessage(sender, messagesConfig.getString("noPermissions"), true);
             return;
@@ -220,7 +237,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     public void give(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
-        // /kits give <kit> <player>
+
         if(!PlayerUtils.isPlayerKitsAdmin(sender)){
             msgManager.sendMessage(sender,messagesConfig.getString("noPermissions"),true);
             return;
@@ -250,7 +267,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     public void claim(Player player,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
-        // /kit claim <kit>
+
         if(args.length < 2){
             msgManager.sendMessage(player,messagesConfig.getString("commandClaimError"),true);
             return;
@@ -261,7 +278,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     public void preview(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
-        // /kit preview <kit> (optional)<player>
+
         MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
         if(!mainConfigManager.isKitPreview()){
             msgManager.sendMessage(sender,messagesConfig.getString("kitPreviewDisabled"),true);
@@ -282,7 +299,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
 
         Player player;
         if(args.length > 2){
-            // Kit preview for someone else
+
             if(!PlayerUtils.isPlayerKitsAdmin(sender)){
                 msgManager.sendMessage(sender,messagesConfig.getString("noPermissions"),true);
                 return;
@@ -320,13 +337,13 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     public void claimKitShortCommand(Player player,FileConfiguration messagesConfig,MessagesManager msgManager,String kitName){
-        // /kit <kit>
+
         PlayerKitsMessageResult result = plugin.getKitsManager().giveKit(player,kitName,new GiveKitInstructions());
         if(result.isError()){
             msgManager.sendMessage(player,result.getMessage(),true);
         }else{
             if(result.isProceedToBuy()){
-                //Open requirements inventory
+
                 InventoryPlayer inventoryPlayer = new InventoryPlayer(player,"buy_requirements_inventory");
                 inventoryPlayer.setKitName(kitName);
                 inventoryPlayer.setPreviousInventoryName("main_inventory");
@@ -338,7 +355,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     public void create(Player player,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
-        // /kit create <kit> (optional)<original/configurable>
+
         if(!PlayerUtils.isPlayerKitsAdmin(player)){
             msgManager.sendMessage(player,messagesConfig.getString("noPermissions"),true);
             return;
@@ -365,7 +382,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     public void delete(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
-        // /kit delete <kit>
+
         if(!PlayerUtils.isPlayerKitsAdmin(sender)){
             msgManager.sendMessage(sender,messagesConfig.getString("noPermissions"),true);
             return;
@@ -380,7 +397,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     public void edit(Player player,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
-        // /kit edit <kit>
+
         if(!PlayerUtils.isPlayerKitsAdmin(player)){
             msgManager.sendMessage(player,messagesConfig.getString("noPermissions"),true);
             return;
@@ -401,7 +418,6 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         inventoryPlayer.setKitName(args[1]);
         plugin.getInventoryEditManager().openInventory(inventoryPlayer);
     }
-
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
@@ -424,6 +440,9 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             if(kitPreviewEnabled){
                 commands.add("preview");
             }
+            if(mainConfigManager.isLayoutEditor()){
+                commands.add("layout");
+            }
             if(PlayerUtils.isPlayerKitsAdmin(sender)){
                 commands.add("give");commands.add("delete");commands.add("create");
                 commands.add("reload");commands.add("reset");commands.add("edit");
@@ -442,6 +461,9 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 }
                 if(kitPreviewEnabled){
                     commands.add("preview");
+                }
+                if(mainConfigManager.isLayoutEditor()){
+                    commands.add("layout");
                 }
                 if(PlayerUtils.isPlayerKitsAdmin(sender)){
                     commands.add("give");commands.add("delete");

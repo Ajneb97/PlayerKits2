@@ -11,18 +11,23 @@ import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.KitAction;
 import pk.ajneb97.model.internal.KitPosition;
+import pk.ajneb97.model.inventory.KitGuiHolder;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.InventoryItem;
 import pk.ajneb97.utils.OtherUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class InventoryEditManager {
+public final class InventoryEditManager {
 
     private PlayerKits2 plugin;
-    private ArrayList<InventoryPlayer> players;
+    private final Map<UUID, InventoryPlayer> players;
     private InventoryEditActionsManager inventoryEditActionsManager;
     private InventoryEditDisplayManager inventoryEditDisplayManager;
     private InventoryEditKitItemsManager inventoryEditKitItemsManager;
@@ -30,7 +35,7 @@ public class InventoryEditManager {
     private InventoryEditRequirementsManager inventoryEditRequirementsManager;
     public InventoryEditManager(PlayerKits2 plugin){
         this.plugin = plugin;
-        this.players = new ArrayList<>();
+        this.players = new ConcurrentHashMap<>();
         this.inventoryEditActionsManager = new InventoryEditActionsManager(plugin,this);
         this.inventoryEditDisplayManager = new InventoryEditDisplayManager(plugin,this);
         this.inventoryEditKitItemsManager = new InventoryEditKitItemsManager(plugin,this);
@@ -39,12 +44,18 @@ public class InventoryEditManager {
     }
 
     public InventoryPlayer getInventoryPlayer(Player player){
-        for(InventoryPlayer inventoryPlayer : players){
-            if(inventoryPlayer.getPlayer().equals(player)){
-                return inventoryPlayer;
-            }
+        return players.get(player.getUniqueId());
+    }
+
+    public void trackInventoryPlayer(InventoryPlayer inventoryPlayer){
+        players.put(inventoryPlayer.getUuid(), inventoryPlayer);
+    }
+
+    public void restoreAll(){
+        for(InventoryPlayer inventoryPlayer : new ArrayList<>(players.values())){
+            inventoryPlayer.restoreSavedInventoryContents();
         }
-        return null;
+        players.clear();
     }
 
     public InventoryEditActionsManager getInventoryEditActionsManager() {
@@ -63,25 +74,24 @@ public class InventoryEditManager {
         return inventoryEditPositionManager;
     }
 
-    public ArrayList<InventoryPlayer> getPlayers() {
-        return players;
+    public Collection<InventoryPlayer> getPlayers() {
+        return players.values();
     }
 
     public void removeInventoryPlayer(Player player){
-        for(int i=0;i<players.size();i++){
-            if(players.get(i).getPlayer().equals(player)){
-                players.remove(i);
-            }
-        }
+        players.remove(player.getUniqueId());
     }
 
+    @SuppressWarnings({"deprecation", "removal"})
     public void openInventory(InventoryPlayer inventoryPlayer) {
         inventoryPlayer.setInventoryName("edit_main_inventory");
-        Inventory inv = Bukkit.createInventory(null, 45, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.EDIT, inventoryPlayer.getUuid());
+        Inventory inv = Bukkit.createInventory(holder, 45, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        holder.setInventory(inv);
+        inventoryPlayer.setHolder(holder);
 
         Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
 
-        //Set Position
         List<String> lore = new ArrayList<String>();
         lore.add("&7Click to define the position of the display");
         lore.add("&7item of this kit in the Inventory.");
@@ -97,7 +107,6 @@ public class InventoryEditManager {
         lore.add("&7Current Inventory: &a" + inventoryName);
         new InventoryItem(inv, 10, Material.DROPPER).name("&eSet &6&lSlot").lore(lore).ready();
 
-        //Set Cooldown
         lore = new ArrayList<String>();
         lore.add("&7Click to define the cooldown of");
         lore.add("&7the kit.");
@@ -109,7 +118,6 @@ public class InventoryEditManager {
             new InventoryItem(inv, 11, Material.CLOCK).name("&eSet &6&lCooldown").lore(lore).ready();
         }
 
-        //Set Permission Required
         lore = new ArrayList<String>();
         lore.add("&7Click to enable/disable whether this kit");
         lore.add("&7needs permissions to be claimed.");
@@ -123,7 +131,6 @@ public class InventoryEditManager {
         lore.add("&7Current Status: " + permission);
         new InventoryItem(inv, 12, Material.REDSTONE_BLOCK).name("&eSet &6&lPermission Required").lore(lore).ready();
 
-        //Set One Time
         lore = new ArrayList<String>();
         lore.add("&7Click to enable/disable whether this kit");
         lore.add("&7should be claimed just one time.");
@@ -135,7 +142,6 @@ public class InventoryEditManager {
         lore.add("&7Current Status: " + oneTime);
         new InventoryItem(inv, 20, Material.GHAST_TEAR).name("&eSet &6&lOne Time").lore(lore).ready();
 
-        //Set Auto Armor
         lore = new ArrayList<String>();
         lore.add("&7Click to enable/disable whether armor");
         lore.add("&7should be equipped automatically when");
@@ -148,7 +154,6 @@ public class InventoryEditManager {
         lore.add("&7Current Status: " + autoArmor);
         new InventoryItem(inv, 21, Material.IRON_CHESTPLATE).name("&eSet &6&lAuto Armor").lore(lore).ready();
 
-        //Display Item DEFAULT
         Material headMaterial = null;
         if(OtherUtils.isLegacy()){
             headMaterial = Material.valueOf("SKULL_ITEM");
@@ -164,7 +169,6 @@ public class InventoryEditManager {
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMWNkZTUxNGFmYTE5NGQ1Y2JkMDQ3N2MwNWI3Y2IxODVmZjFkZmZkMGMyZmFkZmFlMWE1YmI4MDY0ODU2Yzg5MiJ9fX0=")
                 .name("&eSet &6&lDefault Display Item").lore(lore).ready();
 
-        //Display Item NO PERMISSION
         lore = new ArrayList<String>();
         lore.add("&7Click to edit the kit display item when");
         lore.add("&7player doesn't have the permissions to");
@@ -175,7 +179,6 @@ public class InventoryEditManager {
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzdkNDk5YTlhZjUyOTllZGE0Y2NkYWMyMDE5ZWZlN2YyNDk2MWYzZTFmY2U3Njk0Y2I2ODIwMjlkMjllOWVhMSJ9fX0=")
                 .name("&eSet &6&lNo Permissions Display Item").lore(lore).ready();
 
-        //Display Item ONE TIME
         lore = new ArrayList<String>();
         lore.add("&7Click to edit the kit display item when");
         lore.add("&7one time option is enabled and the player");
@@ -186,7 +189,6 @@ public class InventoryEditManager {
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzU3NDc2NmUzZGVjNDkwNGZhNWFhMTU5MjA4ZGFlYzExYzYzYzVlMzI2MTU3YzM2NWViMTY5MDFiNjFmNjQ1YiJ9fX0=")
                 .name("&eSet &6&lOne Time Display Item").lore(lore).ready();
 
-        //Display Item COOLDOWN
         lore = new ArrayList<String>();
         lore.add("&7Click to edit the kit display item when");
         lore.add("&7the player is on cooldown.");
@@ -196,7 +198,6 @@ public class InventoryEditManager {
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODg3YTc1ZjZjYmNjOGUxN2I4ZmJmYWVlMzM3MGZlZjAyMWMyNWY3MDM1YjI1ZDRjNjU3OTZlZjMzODljZWYwMCJ9fX0=")
                 .name("&eSet &6&lCooldown Display Item").lore(lore).ready();
 
-        //Display Item ONE TIME REQUIREMENTS
         lore = new ArrayList<String>();
         lore.add("&7Click to edit the kit display item when");
         lore.add("&7one time requirements option is enabled and");
@@ -208,7 +209,6 @@ public class InventoryEditManager {
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGU4NmJlNTQ5OWViNDI0NWE0NjFiZGNiODZmZjE2M2M4NTVjMTgyODFmOTcxMDU0MmIxN2ZkMjhiYWU0MjQzYiJ9fX0=")
                 .name("&eSet &6&lOne Time Requirements Display Item").lore(lore).ready();
 
-        //Set Kit Items
         lore = new ArrayList<String>();
         lore.add("&7Click to edit the kit items.");
         lore.add("");
@@ -228,12 +228,10 @@ public class InventoryEditManager {
         }
         new InventoryItem(inv, 14, Material.DIAMOND).name("&eSet &6&lKit Items").lore(lore).ready();
 
-        //Set Requirements
         lore = new ArrayList<String>();
         lore.add("&7Click to edit the kit requirements.");
         new InventoryItem(inv, 15, Material.REDSTONE).name("&eSet &6&lRequirements").lore(lore).ready();
 
-        //Set Claim Actions
         lore = new ArrayList<String>();
         lore.add("&7Click to edit the actions to execute");
         lore.add("&7when the player claims the kit.");
@@ -242,7 +240,6 @@ public class InventoryEditManager {
         lore = setActionItemLore(kit.getClaimActions(),lore);
         new InventoryItem(inv, 23, Material.IRON_INGOT).name("&eSet &6&lClaim Actions").lore(lore).ready();
 
-        //Set Error Actions
         lore = new ArrayList<String>();
         lore.add("&7Click to edit the actions to execute");
         lore.add("&7when there is an error when claiming");
@@ -253,7 +250,7 @@ public class InventoryEditManager {
         new InventoryItem(inv, 24, Material.NETHER_BRICK).name("&eSet &6&lError Actions").lore(lore).ready();
 
         inventoryPlayer.getPlayer().openInventory(inv);
-        players.add(inventoryPlayer);
+        trackInventoryPlayer(inventoryPlayer);
     }
 
     public List<String> setActionItemLore(ArrayList<KitAction> actions,List<String> lore){
@@ -323,7 +320,7 @@ public class InventoryEditManager {
 
         player.closeInventory();
         inventoryPlayer.setInventoryName("edit_chat_cooldown");
-        players.add(inventoryPlayer);
+        trackInventoryPlayer(inventoryPlayer);
     }
 
     public void setCooldown(InventoryPlayer inventoryPlayer,String message){

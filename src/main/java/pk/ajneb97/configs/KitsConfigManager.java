@@ -69,7 +69,6 @@ public class KitsConfigManager extends DataFolderConfigManager{
             currentPos++;
         }
 
-
         config.set("actions",null);
         saveActions(kit.getClaimActions(),"claim",config,kitItemManager);
         saveActions(kit.getErrorActions(),"error",config,kitItemManager);
@@ -133,7 +132,6 @@ public class KitsConfigManager extends DataFolderConfigManager{
         file.delete();
     }
 
-    // mainPath must include a "." at the end
     public static Kit getKitFromConfig(FileConfiguration config, PlayerKits2 plugin, String name, String mainPath){
         KitItemManager kitItemManager = plugin.getKitItemManager();
         int cooldown = config.contains(mainPath+"cooldown") ? config.getInt(mainPath+"cooldown") : 0;
@@ -174,7 +172,6 @@ public class KitsConfigManager extends DataFolderConfigManager{
             double price = config.contains("requirements.price") ? config.getDouble("requirements.price") : 0;
             kitRequirements = new KitRequirements(oneTimeRequirements,extraRequirements,message,actionsOnBuy,price);
         }
-
 
         Kit kit = new Kit(name);
         kit.setCooldown(cooldown);

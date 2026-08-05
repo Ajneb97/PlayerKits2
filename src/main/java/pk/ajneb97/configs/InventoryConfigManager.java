@@ -1,5 +1,6 @@
 package pk.ajneb97.configs;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.configs.model.CommonConfig;
@@ -11,11 +12,10 @@ import pk.ajneb97.utils.OtherUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InventoryConfigManager {
+public final class InventoryConfigManager {
 
     private PlayerKits2 plugin;
     private CommonConfig configFile;
-
 
     public InventoryConfigManager(PlayerKits2 plugin){
         this.plugin = plugin;
@@ -25,6 +25,64 @@ public class InventoryConfigManager {
             checkAndFix();
         }
         checkClickCommands();
+        checkLayoutEditorItem();
+    }
+
+    public void checkLayoutEditorItem(){
+        FileConfiguration config = configFile.getConfig();
+        if(config.getBoolean("layout_editor_button_added")){
+            return;
+        }
+        config.set("layout_editor_button_added",true);
+
+        ConfigurationSection inventories = config.getConfigurationSection("inventories");
+        if(inventories == null){
+            configFile.saveConfig();
+            return;
+        }
+
+        for(String inventoryKey : inventories.getKeys(false)){
+            ConfigurationSection inventory = inventories.getConfigurationSection(inventoryKey);
+            if(inventory == null){
+                continue;
+            }
+            for(String slotKey : inventory.getKeys(false)){
+                if("layout_editor".equals(inventory.getString(slotKey+".type"))){
+                    configFile.saveConfig();
+                    return;
+                }
+            }
+        }
+
+        ConfigurationSection preview = inventories.getConfigurationSection("preview_inventory");
+        if(preview == null){
+            configFile.saveConfig();
+            return;
+        }
+
+        int slots = preview.getInt("slots");
+        int target = slots-1;
+        while(target >= 0 && preview.contains(String.valueOf(target))){
+            target--;
+        }
+        if(target < 0){
+            configFile.saveConfig();
+            return;
+        }
+
+        String path = "inventories.preview_inventory."+target;
+        config.set(path+".item.id","CRAFTING_TABLE");
+        config.set(path+".item.name","&b&lEdit Layout");
+        List<String> lore = new ArrayList<>();
+        lore.add("&7Arrange this kit the way you want");
+        lore.add("&7it to arrive in your inventory.");
+        lore.add("");
+        lore.add("&7Only you see your own layout and the");
+        lore.add("&7original kit is never changed.");
+        config.set(path+".item.lore",lore);
+        config.set(path+".type","layout_editor");
+
+        configFile.saveConfig();
     }
 
     public void checkAndFix(){

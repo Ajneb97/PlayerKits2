@@ -12,7 +12,6 @@ import java.util.*;
 
 public class NMSManager {
 
-
     private Version version;
     private ServerVersion serverVersion;
     private PlayerKits2 plugin;
@@ -27,17 +26,17 @@ public class NMSManager {
         }
 
         try {
-            //Classes
+
             version.addClass("CraftItemStack",Class.forName("org.bukkit.craftbukkit."+serverVersion+".inventory.CraftItemStack"));
             if(serverVersionGreaterEqualThan(ServerVersion.v1_17_R1)){
-                //1.17 or greater
+
                 version.addClass("ItemStackNMS",Class.forName("net.minecraft.world.item.ItemStack"));
                 version.addClass("NBTTagCompound",Class.forName("net.minecraft.nbt.NBTTagCompound"));
                 version.addClass("MojangsonParser",Class.forName("net.minecraft.nbt.MojangsonParser"));
                 version.addClass("NBTBase",Class.forName("net.minecraft.nbt.NBTBase"));
                 version.addClass("NBTTagList",Class.forName("net.minecraft.nbt.NBTTagList"));
             }else{
-                //1.16 or lower
+
                 version.addClass("ItemStackNMS",Class.forName("net.minecraft.server."+serverVersion+".ItemStack"));
                 version.addClass("NBTTagCompound",Class.forName("net.minecraft.server."+serverVersion+".NBTTagCompound"));
                 version.addClass("MojangsonParser",Class.forName("net.minecraft.server."+serverVersion+".MojangsonParser"));
@@ -45,17 +44,16 @@ public class NMSManager {
                 version.addClass("NBTTagList",Class.forName("net.minecraft.server."+serverVersion+".NBTTagList"));
             }
 
-            //Methods
             version.addMethod("asNMSCopy",version.getClassRef("CraftItemStack").getMethod("asNMSCopy",ItemStack.class));
             version.addMethod("asBukkitCopy",version.getClassRef("CraftItemStack").getMethod("asBukkitCopy",version.getClassRef("ItemStackNMS")));
             if(!serverVersionGreaterEqualThan(ServerVersion.v1_13_R1)){
-                //1.12 or lower
+
                 version.addMethod("listSize",version.getClassRef("NBTTagList").getMethod("size"));
                 version.addMethod("listGet",version.getClassRef("NBTTagList").getMethod("get",int.class));
                 version.addMethod("listAdd",version.getClassRef("NBTTagList").getMethod("add",version.getClassRef("NBTBase")));
             }
             if(!serverVersionGreaterEqualThan(ServerVersion.v1_18_R1)){
-                //1.17 or lower
+
                 version.addMethod("hasTag",version.getClassRef("ItemStackNMS").getMethod("hasTag"));
                 version.addMethod("getTag",version.getClassRef("ItemStackNMS").getMethod("getTag"));
                 version.addMethod("setTag",version.getClassRef("ItemStackNMS").getMethod("setTag",version.getClassRef("NBTTagCompound")));
@@ -81,7 +79,7 @@ public class NMSManager {
                 version.addMethod("hasKeyOfType",version.getClassRef("NBTTagCompound").getMethod("hasKeyOfType",String.class,int.class));
                 version.addMethod("parse",version.getClassRef("MojangsonParser").getMethod("parse",String.class));
             }else{
-                //1.18 or greater
+
                 String methodName = null;
                 switch(serverVersion){
                     case v1_18_R1: methodName = "r"; break;
@@ -155,7 +153,7 @@ public class NMSManager {
         }
 
         try {
-            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item); //ItemStackNMS
+            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item);
             Object compound = getNBTCompound(newItem);
             version.getMethodRef("setString").invoke(compound,key,value);
             version.getMethodRef("setTag").invoke(newItem,compound);
@@ -178,7 +176,7 @@ public class NMSManager {
         }
 
         try {
-            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item); //ItemStackNMS
+            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item);
             Object compound = getNBTCompound(newItem);
             if((boolean)version.getMethodRef("hasKey").invoke(compound,key)){
                 return (String)version.getMethodRef("getString").invoke(compound,key);
@@ -203,7 +201,7 @@ public class NMSManager {
         }
 
         try {
-            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item); //ItemStackNMS
+            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item);
             Object compound = getNBTCompound(newItem);
             version.getMethodRef("remove").invoke(compound,key);
             version.getMethodRef("setTag").invoke(newItem,compound);
@@ -214,13 +212,14 @@ public class NMSManager {
         return item;
     }
 
+    @SuppressWarnings({"deprecation", "removal", "unchecked"})
     public List<String> getNBT(ItemStack item){
         List<String> nbtList = new ArrayList<>();
         try {
-            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item); //ItemStackNMS
-            if((boolean)version.getMethodRef("hasTag").invoke(newItem,null)){
-                Object compound = version.getMethodRef("getTag").invoke(newItem,null);
-                Set<String> tags = (Set<String>) version.getMethodRef("getKeys").invoke(compound,null);
+            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item);
+            if((boolean)version.getMethodRef("hasTag").invoke(newItem)){
+                Object compound = version.getMethodRef("getTag").invoke(newItem);
+                Set<String> tags = (Set<String>) version.getMethodRef("getKeys").invoke(compound);
                 Set<String> notTags = new HashSet<>(Arrays.asList(
                         "ench", "HideFlags", "display", "SkullOwner", "AttributeModifiers", "Enchantments",
                         "Damage", "CustomModelData", "Potion", "StoredEnchantments", "CustomPotionColor",
@@ -233,28 +232,24 @@ public class NMSManager {
                             continue;
                         }
                         if((boolean)version.getMethodRef("hasKeyOfType").invoke(compound,t,1)) {
-                            //boolean
+
                             nbtList.add(t+"|"+version.getMethodRef("getBoolean").invoke(compound,t)+"|boolean");
                         }else if((boolean)version.getMethodRef("hasKeyOfType").invoke(compound,t,3)) {
-                            //int
+
                             nbtList.add(t+"|"+version.getMethodRef("getInt").invoke(compound,t)+"|int");
                         }else if((boolean)version.getMethodRef("hasKeyOfType").invoke(compound,t,6)) {
-                            //double
+
                             nbtList.add(t+"|"+version.getMethodRef("getDouble").invoke(compound,t)+"|double");
                         }else if((boolean)version.getMethodRef("hasKeyOfType").invoke(compound,t,10)){
-                            //Compound
+
                             nbtList.add(t+"|"+version.getMethodRef("getCompound").invoke(compound,t)+"|compound");
                         }else if((boolean)version.getMethodRef("hasKeyOfType").invoke(compound,t,8)) {
-                            //String
+
                             nbtList.add(t+"|"+version.getMethodRef("getString").invoke(compound,t));
                         }
-                        /*
-                        else if((boolean)version.getMethodRef("hasKeyOfType").invoke(compound,t,9)){
-                            nbtList.add(t+"|"+version.getMethodRef("get").invoke(compound,t)+"|list");
-                        }
-                        */
+
                         else {
-                            //Other
+
                             nbtList.add(t+"|"+version.getMethodRef("get").invoke(compound,t));
                         }
                     }
@@ -272,7 +267,7 @@ public class NMSManager {
         }
 
         try {
-            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item); //ItemStackNMS
+            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item);
             Object compound = getNBTCompound(newItem);
             for(int i=0;i<nbtList.size();i++) {
                 String nbt = nbtList.get(i);
@@ -291,19 +286,7 @@ public class NMSManager {
                     Object compoundNew = version.getMethodRef("parse").invoke(null,finalNBT);
                     version.getMethodRef("set").invoke(compound,sep[0],compoundNew);
                 }else if(type.equals("list")){
-                    /*
-                    String finalNBT = nbt.replace(id+"|", "").replace("|list", "");
-                    JsonArray jsonArray = new Gson().fromJson(finalNBT, JsonArray.class);
-                    Object list = version.getClassRef("NBTTagList").newInstance();
-                    for (int c=0;c<jsonArray.size();i++) {
-                        if(finalNBT.startsWith("{")){
-                            Object compoundNew = version.getMethodRef("parse").invoke(null,jsonArray.get(i).toString());
-                            version.getMethodRef("listAdd").invoke(list,compoundNew);
-                        }else{
 
-                        }
-                    }
-                     */
                 }
                 else {
                     version.getMethodRef("setString").invoke(compound,sep[0],nbt.replace(id+"|", ""));
@@ -320,12 +303,12 @@ public class NMSManager {
 
     public List<String> getAttributes(ItemStack item) {
         try {
-            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item); //ItemStackNMS
-            if((boolean)version.getMethodRef("hasTag").invoke(newItem,null)) {
-                Object compound = version.getMethodRef("getTag").invoke(newItem, null);
+            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item);
+            if((boolean)version.getMethodRef("hasTag").invoke(newItem)) {
+                Object compound = version.getMethodRef("getTag").invoke(newItem);
                 if((boolean)version.getMethodRef("hasKey").invoke(compound,"AttributeModifiers")){
                     List<String> attributeList = new ArrayList<>();
-                    Object attributes = version.getMethodRef("getList").invoke(compound,"AttributeModifiers",10); //NBTTagList
+                    Object attributes = version.getMethodRef("getList").invoke(compound,"AttributeModifiers",10);
                     for(int i=0;i<(int)version.getMethodRef("listSize").invoke(attributes);i++){
                         Object compoundI = version.getMethodRef("listGet").invoke(attributes,i);
                         String attributeName = (String)version.getMethodRef("getString").invoke(compoundI,"AttributeName");
@@ -353,11 +336,11 @@ public class NMSManager {
 
     public ItemStack setAttributes(ItemStack item, List<String> attributeList) {
         try{
-            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item); //ItemStackNMS
+            Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item);
             Object compound = getNBTCompound(newItem);
-            Object attributesList = version.getClassRef("NBTTagList").newInstance();
+            Object attributesList = version.getClassRef("NBTTagList").getDeclaredConstructor().newInstance();
             for(int i=0;i<attributeList.size();i++){
-                Object attributeCompound = version.getClassRef("NBTTagCompound").newInstance();
+                Object attributeCompound = version.getClassRef("NBTTagCompound").getDeclaredConstructor().newInstance();
 
                 String[] data = attributeList.get(i).split(";");
                 String attributeName = data[0];
@@ -384,7 +367,7 @@ public class NMSManager {
             version.getMethodRef("setTag").invoke(newItem,compound);
 
             return (ItemStack)version.getMethodRef("asBukkitCopy").invoke(null,newItem);
-        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
             e.printStackTrace();
         }
 
@@ -393,17 +376,15 @@ public class NMSManager {
 
     private Object getNBTCompound(Object newItem){
         try {
-            boolean hasTag = (boolean)version.getMethodRef("hasTag").invoke(newItem,null);
-            Object compound = hasTag ? version.getMethodRef("getTag").invoke(newItem,null) :
-                    version.getClassRef("NBTTagCompound").newInstance();
+            boolean hasTag = (boolean)version.getMethodRef("hasTag").invoke(newItem);
+            Object compound = hasTag ? version.getMethodRef("getTag").invoke(newItem) :
+                    version.getClassRef("NBTTagCompound").getDeclaredConstructor().newInstance();
             return compound;
-        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
             e.printStackTrace();
         }
         return null;
     }
-
-
 
     private boolean serverVersionGreaterEqualThan(ServerVersion version){
         return serverVersion.ordinal() >= version.ordinal();

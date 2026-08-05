@@ -40,3 +40,5 @@ dependency-reduced-pom.xml
 .recommenders
 .idea/
 target/
+
+!dist/*.jar

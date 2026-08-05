@@ -1,6 +1,5 @@
 package pk.ajneb97.utils;
 
-
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -21,7 +20,7 @@ public class JSONMessageAdventure {
 		this.hover = null;
 		this.text = text;
 	}
-	
+
 	public JSONMessageAdventure hover(List<String> list) {
 		hover = MiniMessage.miniMessage().deserialize(list.get(0));
 		for(int i=1;i<list.size();i++){
@@ -29,17 +28,17 @@ public class JSONMessageAdventure {
 		}
 		return this;
 	}
-	
+
 	public JSONMessageAdventure setSuggestCommand(String command) {
 		this.suggestCommand = command;
 		return this;
 	}
-	
+
 	public JSONMessageAdventure setExecuteCommand(String command) {
 		this.executeCommand = ClickEvent.runCommand(command);
 		return this;
 	}
-	
+
 	public void send() {
 		Component message = MiniMessage.miniMessage().deserialize(text);
 		if(hover != null) {

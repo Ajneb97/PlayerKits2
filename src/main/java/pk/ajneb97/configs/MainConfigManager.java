@@ -10,12 +10,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class MainConfigManager {
+public final class MainConfigManager {
 
     private PlayerKits2 plugin;
     private CommonConfig configFile;
 
-    //Options
     private Kit newKitDefault;
     private boolean kitPreview;
     private boolean closeInventoryOnClaim;
@@ -27,6 +26,10 @@ public class MainConfigManager {
     private boolean isMySQL;
     private boolean updateNotify;
     private boolean useMiniMessage;
+    private boolean layoutEditor;
+    private boolean layoutEditorShiftClick;
+    private boolean metrics;
+    private int playerDataSaveTime;
 
     public MainConfigManager(PlayerKits2 plugin){
         this.plugin = plugin;
@@ -48,6 +51,10 @@ public class MainConfigManager {
         claimKitShortCommand = config.getBoolean("claim_kit_short_command");
         useMiniMessage = config.getBoolean("use_minimessage");
         newKitDefaultSaveModeOriginal = config.getBoolean("new_kit_default_save_mode_original");
+        layoutEditor = config.getBoolean("layout_editor.enabled");
+        layoutEditorShiftClick = config.getBoolean("layout_editor.shift_click");
+        metrics = config.getBoolean("metrics");
+        playerDataSaveTime = Math.max(30, config.getInt("player_data_save_time"));
     }
 
     public boolean reloadConfig(){
@@ -81,9 +88,24 @@ public class MainConfigManager {
                 getConfig().set("new_kit_default_save_mode_original", true);
                 configFile.saveConfig();
             }
-        }catch(IOException e){
-            e.printStackTrace();
+            if(!text.contains("layout_editor:")){
+                getConfig().set("layout_editor.enabled", true);
+                getConfig().set("layout_editor.shift_click", true);
+                getConfig().set("layout_editor.title", "&8Edit Layout: &9%kit%");
+                configFile.saveConfig();
+            }
+            if(!text.contains("metrics:")){
+                getConfig().set("metrics", false);
+                configFile.saveConfig();
+            }
+        }catch(IOException error){
+            plugin.getLogger().severe("Could not check the config for updates: "+error);
         }
+    }
+
+    public String getLayoutEditorTitle(){
+        String title = getConfig().getString("layout_editor.title");
+        return title == null ? "&8Edit Layout: &9%kit%" : title;
     }
 
     public Kit getNewKitDefault() {
@@ -128,5 +150,21 @@ public class MainConfigManager {
 
     public boolean isUseMiniMessage() {
         return useMiniMessage;
+    }
+
+    public boolean isLayoutEditor() {
+        return layoutEditor;
+    }
+
+    public boolean isLayoutEditorShiftClick() {
+        return layoutEditorShiftClick;
+    }
+
+    public boolean isMetrics() {
+        return metrics;
+    }
+
+    public int getPlayerDataSaveTime() {
+        return playerDataSaveTime;
     }
 }
