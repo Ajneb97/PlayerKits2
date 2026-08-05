@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,16 +46,21 @@ public final class InventoryManager {
 
     private static final String TYPE_LAYOUT_EDITOR = "layout_editor";
     private static final String KIT_TYPE_PREFIX = "kit: ";
+    private static final long CLAIM_DEBOUNCE_MILLIS = 200L;
 
     private final PlayerKits2 plugin;
     private Map<String, KitInventory> inventories;
     private final Map<UUID, InventoryPlayer> players;
+    private final Set<UUID> pendingClaims;
+    private final Map<UUID, Long> lastClaimMillis;
     private final InventoryRequirementsManager inventoryRequirementsManager;
 
     public InventoryManager(PlayerKits2 plugin) {
         this.plugin = plugin;
         this.inventories = new ConcurrentHashMap<>();
         this.players = new ConcurrentHashMap<>();
+        this.pendingClaims = ConcurrentHashMap.newKeySet();
+        this.lastClaimMillis = new ConcurrentHashMap<>();
         this.inventoryRequirementsManager = new InventoryRequirementsManager(plugin, this);
     }
 
@@ -188,9 +194,13 @@ public final class InventoryManager {
     public void openInventoryLater(InventoryPlayer inventoryPlayer) {
         Player player = inventoryPlayer.getPlayer();
         plugin.getPlatformScheduler().runForEntityLater(player, () -> {
-            if (player.isOnline()) {
-                openInventory(inventoryPlayer);
+            if (!player.isOnline()) {
+                return;
             }
+            if (players.get(player.getUniqueId()) != inventoryPlayer) {
+                return;
+            }
+            openInventory(inventoryPlayer);
         }, 1L);
     }
 
@@ -356,28 +366,106 @@ public final class InventoryManager {
             return;
         }
 
-        PlayerKitsMessageResult result = plugin.getKitsManager().giveKit(player, kitName, new GiveKitInstructions());
-        if (result.isError()) {
-            msgManager.sendMessage(player, result.getMessage(), true);
+        if (!beginClaim(player)) {
             return;
         }
 
-        if (result.isProceedToBuy()) {
-            inventoryPlayer.setPreviousInventoryName(inventoryPlayer.getInventoryName());
-            inventoryPlayer.setInventoryName("buy_requirements_inventory");
-            inventoryPlayer.setKitName(kitName);
-            openInventoryLater(inventoryPlayer);
-            return;
+        plugin.getPlatformScheduler().runForEntityLater(player,
+                () -> performClaim(inventoryPlayer, kitName),
+                () -> pendingClaims.remove(player.getUniqueId()), 1L);
+    }
+
+    private void performClaim(InventoryPlayer inventoryPlayer, String kitName) {
+        Player player = inventoryPlayer.getPlayer();
+        try {
+            if (player == null || !player.isOnline()) {
+                return;
+            }
+
+            MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
+            FileConfiguration messagesConfig = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
+            MessagesManager msgManager = plugin.getMessagesManager();
+
+            PlayerKitsMessageResult result = plugin.getKitsManager().giveKit(player, kitName, new GiveKitInstructions());
+            syncInventory(player);
+
+            if (result.isError()) {
+                msgManager.sendMessage(player, result.getMessage(), true);
+                return;
+            }
+
+            if (result.isProceedToBuy()) {
+                if (!isViewingOwnGui(inventoryPlayer)) {
+                    return;
+                }
+                inventoryPlayer.setPreviousInventoryName(inventoryPlayer.getInventoryName());
+                inventoryPlayer.setInventoryName("buy_requirements_inventory");
+                inventoryPlayer.setKitName(kitName);
+                openInventory(inventoryPlayer);
+                return;
+            }
+
+            msgManager.sendMessage(player, messagesConfig.getString("kitReceived").replace("%kit%", kitName), true);
+
+            if (mainConfigManager.isCloseInventoryOnClaim()) {
+                player.closeInventory();
+                return;
+            }
+
+            if (isViewingOwnGui(inventoryPlayer)) {
+                openInventory(inventoryPlayer);
+            }
+        } finally {
+            if (player != null) {
+                pendingClaims.remove(player.getUniqueId());
+            }
         }
+    }
 
-        msgManager.sendMessage(player, messagesConfig.getString("kitReceived").replace("%kit%", kitName), true);
-
-        if (mainConfigManager.isCloseInventoryOnClaim()) {
-            closeLater(player);
-            return;
+    public boolean beginClaim(Player player) {
+        UUID uuid = player.getUniqueId();
+        long now = System.currentTimeMillis();
+        Long last = lastClaimMillis.get(uuid);
+        if (last != null && now - last < CLAIM_DEBOUNCE_MILLIS) {
+            return false;
         }
+        if (!pendingClaims.add(uuid)) {
+            return false;
+        }
+        lastClaimMillis.put(uuid, now);
+        return true;
+    }
 
-        openInventoryLater(inventoryPlayer);
+    public void endClaim(Player player) {
+        pendingClaims.remove(player.getUniqueId());
+    }
+
+    public void forgetPlayer(Player player) {
+        UUID uuid = player.getUniqueId();
+        pendingClaims.remove(uuid);
+        lastClaimMillis.remove(uuid);
+    }
+
+    private boolean isViewingOwnGui(InventoryPlayer inventoryPlayer) {
+        Player player = inventoryPlayer.getPlayer();
+        if (player == null || !player.isOnline()) {
+            return false;
+        }
+        if (players.get(player.getUniqueId()) != inventoryPlayer) {
+            return false;
+        }
+        return InventoryUtils.getKitGuiHolder(InventoryUtils.getTopInventory(player)) == inventoryPlayer.getHolder();
+    }
+
+    @SuppressWarnings({"deprecation", "removal"})
+    public void syncInventory(Player player) {
+        if (player != null && player.isOnline()) {
+            player.updateInventory();
+        }
+    }
+
+    public void syncInventoryLater(Player player) {
+        plugin.getPlatformScheduler().runForEntityLater(player, () -> syncInventory(player), 1L);
     }
 
     public void closeLater(Player player) {

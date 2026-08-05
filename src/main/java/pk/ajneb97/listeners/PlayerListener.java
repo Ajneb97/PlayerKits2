@@ -50,6 +50,7 @@ public class PlayerListener implements Listener {
     public void onLeave(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         plugin.getInventoryManager().removeInventoryPlayer(player);
+        plugin.getInventoryManager().forgetPlayer(player);
         plugin.getLayoutEditorManager().endSession(player);
         plugin.getPlayerDataManager().manageLeave(player);
     }
@@ -61,10 +62,15 @@ public class PlayerListener implements Listener {
             return;
         }
         Player player = (Player) human;
-        if (InventoryUtils.isKitGui(event.getInventory(), KitGuiHolder.Type.LAYOUT)) {
+        KitGuiHolder holder = InventoryUtils.getKitGuiHolder(event.getInventory());
+        if (holder == null) {
+            return;
+        }
+        if (holder.getType() == KitGuiHolder.Type.LAYOUT) {
             plugin.getLayoutEditorManager().endSession(player);
         }
         plugin.getInventoryManager().removeInventoryPlayer(player);
+        plugin.getInventoryManager().syncInventoryLater(player);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)

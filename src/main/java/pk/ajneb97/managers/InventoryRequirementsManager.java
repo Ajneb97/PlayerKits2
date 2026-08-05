@@ -104,23 +104,54 @@ public class InventoryRequirementsManager {
     }
 
     public void requirementsInventoryBuy(InventoryPlayer inventoryPlayer){
-        Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
         Player player = inventoryPlayer.getPlayer();
-        MessagesManager msgManager = plugin.getMessagesManager();
-
-        KitsManager kitsManager = plugin.getKitsManager();
-        PlayerKitsMessageResult result = kitsManager.giveKit(player,inventoryPlayer.getKitName(),
-                new GiveKitInstructions(false,true,false,false));
-        if(!result.isError()){
-            if(plugin.getConfigsManager().getMainConfigManager().isCloseInventoryOnClaim()){
-                inventoryManager.closeLater(player);
-                return;
-            }
-
-            requirementsInventoryCancel(inventoryPlayer);
-        }else{
-            msgManager.sendMessage(player, result.getMessage(), true);
+        String kitName = inventoryPlayer.getKitName();
+        if(player == null || kitName == null){
+            return;
         }
+
+        if(!inventoryManager.beginClaim(player)){
+            return;
+        }
+
+        plugin.getPlatformScheduler().runForEntityLater(player,
+                () -> performPurchase(inventoryPlayer, kitName),
+                () -> inventoryManager.endClaim(player), 1L);
+    }
+
+    private void performPurchase(InventoryPlayer inventoryPlayer, String kitName){
+        Player player = inventoryPlayer.getPlayer();
+        try{
+            performPurchaseInternal(inventoryPlayer, kitName);
+        }finally{
+            if(player != null){
+                inventoryManager.endClaim(player);
+            }
+        }
+    }
+
+    private void performPurchaseInternal(InventoryPlayer inventoryPlayer, String kitName){
+        Player player = inventoryPlayer.getPlayer();
+        if(player == null || !player.isOnline()){
+            return;
+        }
+
+        MessagesManager msgManager = plugin.getMessagesManager();
+        PlayerKitsMessageResult result = plugin.getKitsManager().giveKit(player, kitName,
+                new GiveKitInstructions(false,true,false,false));
+        inventoryManager.syncInventory(player);
+
+        if(result.isError()){
+            msgManager.sendMessage(player, result.getMessage(), true);
+            return;
+        }
+
+        if(plugin.getConfigsManager().getMainConfigManager().isCloseInventoryOnClaim()){
+            player.closeInventory();
+            return;
+        }
+
+        requirementsInventoryCancel(inventoryPlayer);
     }
 
     public void requirementsInventoryCancel(InventoryPlayer inventoryPlayer){
