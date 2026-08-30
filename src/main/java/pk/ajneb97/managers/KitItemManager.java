@@ -31,7 +31,7 @@ public class KitItemManager {
     }
 
     public KitItem createKitItemFromItemStack(ItemStack item,boolean exactItem){
-        if(exactItem){
+        if(exactItem || isShulkerBox(item)){
             return new KitItem(item.clone());
         }
 
@@ -195,6 +195,15 @@ public class KitItemManager {
         kitItem.setTrimData(ItemUtils.getArmorTrimData(item));
 
         return kitItem;
+    }
+
+    private boolean isShulkerBox(ItemStack item){
+        if(item == null){
+            return false;
+        }
+
+        String typeName = item.getType().name();
+        return typeName.contains("SHULKER_BOX") || typeName.contains("SHULKER");
     }
 
     public ItemStack createItemFromKitItem(KitItem kitItem, Player player, Kit kit){
