@@ -12,8 +12,8 @@ import java.nio.file.Paths;
 
 public final class MessagesConfigManager {
 
-    private PlayerKits2 plugin;
-    private CommonConfig configFile;
+    private final PlayerKits2 plugin;
+    private final CommonConfig configFile;
 
     public MessagesConfigManager(PlayerKits2 plugin){
         this.plugin = plugin;

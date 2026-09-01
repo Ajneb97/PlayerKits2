@@ -1,12 +1,22 @@
 # BetterPlayerKits2
 
-A fork of **PlayerKits2 by Ajneb97** — https://www.spigotmc.org/resources/playerkits-2-fully-configurable-kits-1-8-1-20.112616/
+A fork of **PlayerKits2 by Ajneb97** — https://www.spigotmc.org/resources/playerkits-2-fully-configurable-kits-1-8-26-2.112616/
 
 Modernised for Paper / Folia / Purpur / CanvasMC, hardened against duplication and GUI exploits, and
 extended with a per-player kit layout editor. All original functionality, configuration formats and
 multi-version support (1.8 → 26.2) are preserved.
 
-**Credits:** original plugin and all of its design by **Ajneb97**. Fork maintained by **Jules(forked it)**.
+**Credits:** original plugin and all of its design by **Ajneb97**. Fork maintained by **Jules (forked it)**.
+
+Synced with upstream **PlayerKits2 1.23.3** (`Ajneb97/PlayerKits2@608b61f`).
+
+### Upstream links
+
+- [PlayerKits2 on SpigotMC](https://www.spigotmc.org/resources/playerkits-2-fully-configurable-kits-1-8-26-2.112616/)
+- [PlayerKits2 on Modrinth](https://modrinth.com/plugin/playerkits-2)
+- [PlayerKits2 Wiki](https://ajneb97.gitbook.io/playerkits-2)
+- [bStats](https://bstats.org/plugin/bukkit/PlayerKits%202/19795)
+- [Support Ajneb97 on Ko-fi](https://ko-fi.com/ajneb97)
 
 ## What this fork changes
 

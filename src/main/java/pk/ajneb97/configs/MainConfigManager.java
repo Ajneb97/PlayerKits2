@@ -12,8 +12,8 @@ import java.nio.file.Paths;
 
 public final class MainConfigManager {
 
-    private PlayerKits2 plugin;
-    private CommonConfig configFile;
+    private final PlayerKits2 plugin;
+    private final CommonConfig configFile;
 
     private Kit newKitDefault;
     private boolean kitPreview;
