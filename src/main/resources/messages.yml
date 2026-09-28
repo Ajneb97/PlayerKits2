@@ -39,6 +39,7 @@ days: 'd'
 cooldownPlaceholderReady: "&a&lReady!"
 pluginCriticalErrors: "&cThe plugin has detected some errors. Check them using &7/kit verify"
 kitPreviewDisabled: "&cKit preview is disabled."
+kitMenuDisabled: "&cThe kit menu is currently disabled."
 inventoryNotExists: "&cThat inventory doesn't exists."
 onlyPlayerCommand: "&cOnly a player can use this command."
 commandPreviewOtherCorrect: "&aPreviewing kit &7%kit% &ato &e%player%&a."

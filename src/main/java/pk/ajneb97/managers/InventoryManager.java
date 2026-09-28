@@ -82,6 +82,14 @@ public class InventoryManager {
     public void openInventory(InventoryPlayer inventoryPlayer){
         KitInventory kitInventory = getInventory(inventoryPlayer.getInventoryName());
         MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
+        Player player = inventoryPlayer.getPlayer();
+
+        if(inventoryPlayer.getInventoryName().equals("main_inventory")){
+            if(!mainConfigManager.isKitMenuEnabled()){
+                plugin.getMessagesManager().sendMessage(player, plugin.getConfigsManager().getMessagesConfigManager().getConfig().getString("kitMenuDisabled"), true);
+                return;
+            }
+        }
 
         String title = kitInventory.getTitle();
         if(inventoryPlayer.getInventoryName().equals("buy_requirements_inventory") || inventoryPlayer.getInventoryName().equals("preview_inventory")){
