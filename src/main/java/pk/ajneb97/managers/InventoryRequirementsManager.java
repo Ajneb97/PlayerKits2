@@ -61,7 +61,8 @@ public class InventoryRequirementsManager {
         List<String> extraRequirements = requirements.getExtraRequirements();
         List<Boolean> requirementsBooleans = new ArrayList<>();
 
-        boolean passPrice = plugin.getKitsManager().passPrice(requirements.getPrice(),player);
+//        boolean passPrice = plugin.getKitsManager().passPrice(requirements.getPrice(),player);
+        boolean passPrice = plugin.getKitsManager().checkPrice(player.getUniqueId(), requirements);
         String priceRequirementStatusSymbol =
                 passPrice ? msgManager.getRequirementsMessageStatusSymbolTrue()
                         : msgManager.getRequirementsMessageStatusSymbolFalse();

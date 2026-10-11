@@ -108,6 +108,12 @@ public class KitsConfigManager extends DataFolderConfigManager{
             if(requirements.getPrice() != 0){
                 config.set("requirements.price",requirements.getPrice());
             }
+            if(requirements.getCurrency() != null){
+                config.set("requirements.currency",requirements.getCurrency());
+            }
+            if(requirements.getCurrencyProvider() != null){
+                config.set("requirements.currency_provider",requirements.getCurrencyProvider());
+            }
         }
 
         kitConfig.saveConfig();
@@ -172,7 +178,12 @@ public class KitsConfigManager extends DataFolderConfigManager{
             List<String> message = config.getStringList("requirements.message");
             List<String> actionsOnBuy = config.getStringList("requirements.actions_on_buy");
             double price = config.contains("requirements.price") ? config.getDouble("requirements.price") : 0;
-            kitRequirements = new KitRequirements(oneTimeRequirements,extraRequirements,message,actionsOnBuy,price);
+            String currency = config.contains("requirements.currency") ? config.getString("requirements.currency") : null;
+            String currencyProvider = config.contains("requirements.currency_provider") ? config.getString("requirements.currency_provider") : null;
+            boolean failOnMissingCurrency = config.contains("requirements.fail_on_missing_currency") && config.getBoolean("requirements.fail_on_missing_currency");
+            boolean failOnMissingDefaultCurrencyProvider = config.contains("requirements.fail_on_missing_default_currency_provider") && config.getBoolean("requirements.fail_on_missing_default_currency_provider");
+            boolean failOnMissingSpecificCurrencyProvider = config.contains("requirements.fail_on_missing_specific_currency_provider") && config.getBoolean("requirements.fail_on_missing_specific_currency_provider");
+            kitRequirements = new KitRequirements(oneTimeRequirements,extraRequirements,message,actionsOnBuy,price,currency,currencyProvider,failOnMissingCurrency, failOnMissingDefaultCurrencyProvider,failOnMissingSpecificCurrencyProvider);
         }
 
 
