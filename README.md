@@ -4,11 +4,11 @@ A fork of **PlayerKits2 by Ajneb97** — https://www.spigotmc.org/resources/play
 
 Modernised for Paper / Folia / Purpur / CanvasMC, hardened against duplication and GUI exploits, and
 extended with a per-player kit layout editor. All original functionality, configuration formats and
-multi-version support (1.8 → 26.2) are preserved.
+multi-version support (1.8 → 26.3) are preserved.
 
 **Credits:** original plugin and all of its design by **Ajneb97**. Fork maintained by **Jules (forked it)**.
 
-Synced with upstream **PlayerKits2 1.23.3** (`Ajneb97/PlayerKits2@608b61f`).
+Synced with upstream **PlayerKits2 1.24.1** (`Ajneb97/PlayerKits2@48c8891`).
 
 ### Upstream links
 

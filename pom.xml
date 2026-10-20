@@ -6,7 +6,7 @@
 
     <groupId>pk.ajneb97</groupId>
     <artifactId>BetterPlayerKits2</artifactId>
-    <version>1.24.1</version>
+    <version>1.24.2</version>
 
     <name>BetterPlayerKits2</name>
     <description>Fork of PlayerKits2 by Ajneb97 with Folia support, hardening and per-player kit layouts.</description>
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>26.2-R0.1-SNAPSHOT</version>
+            <version>26.3-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
