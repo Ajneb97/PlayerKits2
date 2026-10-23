@@ -238,6 +238,21 @@ public class KitsManager {
 
         boolean clearInventory = kit.isClearInventory();
 
+        //Only use heads or elytra when the kit has no armor for that slot.
+        boolean hasHelmetForAutoArmor = false;
+        boolean hasChestplateForAutoArmor = false;
+        if(kit.isAutoArmor()){
+            for(KitItem item : items){
+                String id = item.getOriginalItem() != null
+                        ? item.getOriginalItem().getType().name() : item.getId();
+                if(id.contains("_HELMET")){
+                    hasHelmetForAutoArmor = true;
+                }else if(id.contains("_CHESTPLATE")){
+                    hasChestplateForAutoArmor = true;
+                }
+            }
+        }
+
         PlayerInventory playerInventory = player.getInventory();
         for(KitItem item : items){
             if(kit.isAutoArmor()){
@@ -247,28 +262,24 @@ public class KitsManager {
                 }
 
                 //Check if the item must be put in the player equipment
-                if((id.contains("_HELMET") || id.contains("PLAYER_HEAD") || id.contains("SKULL_ITEM")) && itemHelmet == null){
+                if((id.contains("_HELMET") || (!hasHelmetForAutoArmor && (id.contains("PLAYER_HEAD") || id.contains("SKULL_ITEM")))) && itemHelmet == null){
                     if(playerInventory.getHelmet() == null || playerInventory.getHelmet().getType().equals(Material.AIR) || clearInventory){
                         itemHelmet = item;
-                        freeSlots++;
                         continue;
                     }
-                }else if((id.contains("_CHESTPLATE") || id.contains("ELYTRA")) && itemChestplate == null){
+                }else if((id.contains("_CHESTPLATE") || (!hasChestplateForAutoArmor && id.contains("ELYTRA"))) && itemChestplate == null){
                     if(playerInventory.getChestplate() == null || playerInventory.getChestplate().getType().equals(Material.AIR) || clearInventory){
                         itemChestplate = item;
-                        freeSlots++;
                         continue;
                     }
                 }else if(id.contains("_LEGGINGS") && itemLeggings == null){
                     if(playerInventory.getLeggings() == null || playerInventory.getLeggings().getType().equals(Material.AIR) || clearInventory){
                         itemLeggings = item;
-                        freeSlots++;
                         continue;
                     }
                 }else if(id.contains("_BOOTS") && itemBoots == null){
                     if(playerInventory.getBoots() == null || playerInventory.getBoots().getType().equals(Material.AIR) || clearInventory){
                         itemBoots = item;
-                        freeSlots++;
                         continue;
                     }
                 }
@@ -277,7 +288,6 @@ public class KitsManager {
             if(item.isOffhand() && itemOffhand == null){
                 if(playerInventory.getItemInOffHand() == null || playerInventory.getItemInOffHand().getType().equals(Material.AIR) || clearInventory){
                     itemOffhand = item;
-                    freeSlots++;
                     continue;
                 }
             }
@@ -291,10 +301,10 @@ public class KitsManager {
             }
         }
 
-        boolean enoughSpace = freeSlots < inventoryKitItems;
+        boolean notEnoughSpace = freeSlots < inventoryKitItems;
         boolean dropItemsIfFullInventory = configFile.getBoolean("drop_items_if_full_inventory");
 
-        if(enoughSpace && !dropItemsIfFullInventory && !clearInventory){
+        if(notEnoughSpace && !dropItemsIfFullInventory && !clearInventory){
             sendKitActions(kit.getErrorActions(),player,false);
             return PlayerKitsMessageResult.error(messagesFile.getString("noSpaceError"));
         }
