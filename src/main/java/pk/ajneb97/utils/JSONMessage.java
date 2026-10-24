@@ -1,7 +1,6 @@
 package pk.ajneb97.utils;
 
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
@@ -9,14 +8,12 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
-@SuppressWarnings({"deprecation", "removal"})
+@SuppressWarnings("deprecation")
 public class JSONMessage {
 
-	private Player player;
-	private String text;
+	private final Player player;
+	private final String text;
 	private BaseComponent[] hover;
-	private String suggestCommand;
-	private String executeCommand;
 
 	public JSONMessage(Player player, String text) {
 		this.player = player;
@@ -38,27 +35,11 @@ public class JSONMessage {
 		return this;
 	}
 
-	public JSONMessage setSuggestCommand(String command) {
-		this.suggestCommand = command;
-		return this;
-	}
-
-	public JSONMessage setExecuteCommand(String command) {
-		this.executeCommand = command;
-		return this;
-	}
-
 	public void send() {
 		TextComponent message = new TextComponent();
 		message.setText(ChatColor.translateAlternateColorCodes('&', text));
 		if(hover != null) {
 			message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover));
-		}
-		if(suggestCommand != null) {
-			message.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggestCommand));
-		}
-		if(executeCommand != null) {
-			message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, executeCommand));
 		}
 		player.spigot().sendMessage(message);
 	}

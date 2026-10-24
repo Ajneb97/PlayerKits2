@@ -9,12 +9,13 @@ import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.utils.ServerVersion;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.logging.Level;
 
 public class NMSManager {
 
-    private Version version;
-    private ServerVersion serverVersion;
-    private PlayerKits2 plugin;
+    private final Version version;
+    private final ServerVersion serverVersion;
+    private final PlayerKits2 plugin;
 
     public NMSManager(PlayerKits2 plugin){
         this.plugin = plugin;
@@ -80,31 +81,23 @@ public class NMSManager {
                 version.addMethod("parse",version.getClassRef("MojangsonParser").getMethod("parse",String.class));
             }else{
 
-                String methodName = null;
-                switch(serverVersion){
-                    case v1_18_R1: methodName = "r"; break;
-                    case v1_18_R2: methodName = "s"; break;
-                    case v1_19_R1:
-                    case v1_19_R2:
-                    case v1_19_R3: methodName = "t"; break;
-                    case v1_20_R1:
-                    case v1_20_R2:
-                    case v1_20_R3: methodName = "u"; break;
-                }
-                version.addMethod("hasTag",version.getClassRef("ItemStackNMS").getMethod(methodName));
+                String hasTagMethod = switch(serverVersion){
+                    case v1_18_R1 -> "r";
+                    case v1_18_R2 -> "s";
+                    case v1_19_R1, v1_19_R2, v1_19_R3 -> "t";
+                    case v1_20_R1, v1_20_R2, v1_20_R3 -> "u";
+                    default -> throw new NoSuchMethodException("Unsupported server version "+serverVersion);
+                };
+                version.addMethod("hasTag",version.getClassRef("ItemStackNMS").getMethod(hasTagMethod));
 
-                methodName = null;
-                switch(serverVersion){
-                    case v1_18_R1: methodName = "s"; break;
-                    case v1_18_R2: methodName = "t"; break;
-                    case v1_19_R1:
-                    case v1_19_R2:
-                    case v1_19_R3: methodName = "u"; break;
-                    case v1_20_R1:
-                    case v1_20_R2:
-                    case v1_20_R3: methodName = "v"; break;
-                }
-                version.addMethod("getTag",version.getClassRef("ItemStackNMS").getMethod(methodName));
+                String getTagMethod = switch(serverVersion){
+                    case v1_18_R1 -> "s";
+                    case v1_18_R2 -> "t";
+                    case v1_19_R1, v1_19_R2, v1_19_R3 -> "u";
+                    case v1_20_R1, v1_20_R2, v1_20_R3 -> "v";
+                    default -> throw new NoSuchMethodException("Unsupported server version "+serverVersion);
+                };
+                version.addMethod("getTag",version.getClassRef("ItemStackNMS").getMethod(getTagMethod));
 
                 version.addMethod("setTag",version.getClassRef("ItemStackNMS").getMethod("c",version.getClassRef("NBTTagCompound")));
                 version.addMethod("setString",version.getClassRef("NBTTagCompound").getMethod("a",String.class,String.class));
@@ -122,23 +115,17 @@ public class NMSManager {
                 version.addMethod("get",version.getClassRef("NBTTagCompound").getMethod("c",String.class));
                 version.addMethod("remove",version.getClassRef("NBTTagCompound").getMethod("r",String.class));
 
-                methodName = null;
-                switch(serverVersion){
-                    case v1_18_R1:
-                    case v1_18_R2:
-                    case v1_19_R1: methodName = "d"; break;
-                    case v1_19_R2:
-                    case v1_19_R3:
-                    case v1_20_R1:
-                    case v1_20_R2:
-                    case v1_20_R3: methodName = "e"; break;
-                }
-                version.addMethod("getKeys",version.getClassRef("NBTTagCompound").getMethod(methodName));
+                String getKeysMethod = switch(serverVersion){
+                    case v1_18_R1, v1_18_R2, v1_19_R1 -> "d";
+                    case v1_19_R2, v1_19_R3, v1_20_R1, v1_20_R2, v1_20_R3 -> "e";
+                    default -> throw new NoSuchMethodException("Unsupported server version "+serverVersion);
+                };
+                version.addMethod("getKeys",version.getClassRef("NBTTagCompound").getMethod(getKeysMethod));
                 version.addMethod("hasKeyOfType",version.getClassRef("NBTTagCompound").getMethod("b",String.class,int.class));
                 version.addMethod("parse",version.getClassRef("MojangsonParser").getMethod("a",String.class));
             }
         } catch (ClassNotFoundException | NoSuchMethodException e) {
-            e.printStackTrace();
+            plugin.getLogger().log(Level.WARNING,"NMS operation failed",e);
         }
     }
 
@@ -159,7 +146,7 @@ public class NMSManager {
             version.getMethodRef("setTag").invoke(newItem,compound);
             return (ItemStack)version.getMethodRef("asBukkitCopy").invoke(null,newItem);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            plugin.getLogger().log(Level.WARNING,"NMS operation failed",e);
         }
         return item;
     }
@@ -182,7 +169,7 @@ public class NMSManager {
                 return (String)version.getMethodRef("getString").invoke(compound,key);
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            plugin.getLogger().log(Level.WARNING,"NMS operation failed",e);
         }
         return null;
     }
@@ -207,12 +194,12 @@ public class NMSManager {
             version.getMethodRef("setTag").invoke(newItem,compound);
             return (ItemStack)version.getMethodRef("asBukkitCopy").invoke(null,newItem);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            plugin.getLogger().log(Level.WARNING,"NMS operation failed",e);
         }
         return item;
     }
 
-    @SuppressWarnings({"deprecation", "removal", "unchecked"})
+    @SuppressWarnings("unchecked")
     public List<String> getNBT(ItemStack item){
         List<String> nbtList = new ArrayList<>();
         try {
@@ -256,7 +243,7 @@ public class NMSManager {
                 }
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            plugin.getLogger().log(Level.WARNING,"NMS operation failed",e);
         }
         return nbtList;
     }
@@ -269,34 +256,30 @@ public class NMSManager {
         try {
             Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item);
             Object compound = getNBTCompound(newItem);
-            for(int i=0;i<nbtList.size();i++) {
-                String nbt = nbtList.get(i);
-                String[] sep = nbtList.get(i).split("\\|");
+            for(String nbt : nbtList) {
+                String[] sep = nbt.split("\\|");
                 String id = sep[0];
                 String type = sep[sep.length-1];
-
-                if(type.equals("boolean")) {
-                    version.getMethodRef("setBoolean").invoke(compound,sep[0],Boolean.parseBoolean(sep[1]));
-                }else if(type.equals("double")) {
-                    version.getMethodRef("setDouble").invoke(compound,sep[0],Double.parseDouble(sep[1]));
-                }else if(type.equals("int")) {
-                    version.getMethodRef("setInt").invoke(compound,sep[0],Integer.parseInt(sep[1]));
-                }else if(type.equals("compound")) {
-                    String finalNBT = nbt.replace(id+"|", "").replace("|compound", "");
-                    Object compoundNew = version.getMethodRef("parse").invoke(null,finalNBT);
-                    version.getMethodRef("set").invoke(compound,sep[0],compoundNew);
-                }else if(type.equals("list")){
-
-                }
-                else {
-                    version.getMethodRef("setString").invoke(compound,sep[0],nbt.replace(id+"|", ""));
+                if(type.equals("list")) {
+                    continue;
                 }
 
+                switch(type) {
+                    case "boolean" -> version.getMethodRef("setBoolean").invoke(compound,id,Boolean.parseBoolean(sep[1]));
+                    case "double" -> version.getMethodRef("setDouble").invoke(compound,id,Double.parseDouble(sep[1]));
+                    case "int" -> version.getMethodRef("setInt").invoke(compound,id,Integer.parseInt(sep[1]));
+                    case "compound" -> {
+                        String finalNBT = nbt.replace(id+"|", "").replace("|compound", "");
+                        Object compoundNew = version.getMethodRef("parse").invoke(null,finalNBT);
+                        version.getMethodRef("set").invoke(compound,id,compoundNew);
+                    }
+                    default -> version.getMethodRef("setString").invoke(compound,id,nbt.replace(id+"|", ""));
+                }
             }
             version.getMethodRef("setTag").invoke(newItem,compound);
             return (ItemStack)version.getMethodRef("asBukkitCopy").invoke(null,newItem);
         }catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
-            e.printStackTrace();
+            plugin.getLogger().log(Level.WARNING,"NMS operation failed",e);
         }
         return null;
     }
@@ -329,7 +312,7 @@ public class NMSManager {
                 }
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            plugin.getLogger().log(Level.WARNING,"NMS operation failed",e);
         }
         return null;
     }
@@ -339,16 +322,16 @@ public class NMSManager {
             Object newItem = version.getMethodRef("asNMSCopy").invoke(null,item);
             Object compound = getNBTCompound(newItem);
             Object attributesList = version.getClassRef("NBTTagList").getDeclaredConstructor().newInstance();
-            for(int i=0;i<attributeList.size();i++){
+            for(String attribute : attributeList){
                 Object attributeCompound = version.getClassRef("NBTTagCompound").getDeclaredConstructor().newInstance();
 
-                String[] data = attributeList.get(i).split(";");
+                String[] data = attribute.split(";");
                 String attributeName = data[0];
                 String name = data[1];
-                double amount = Double.valueOf(data[2]);
-                int operation = Integer.valueOf(data[3]);
-                int uuidLeast = Integer.valueOf(data[4]);
-                int uuidMost = Integer.valueOf(data[5]);
+                double amount = Double.parseDouble(data[2]);
+                int operation = Integer.parseInt(data[3]);
+                int uuidLeast = Integer.parseInt(data[4]);
+                int uuidMost = Integer.parseInt(data[5]);
 
                 version.getMethodRef("setString").invoke(attributeCompound,"AttributeName",attributeName);
                 version.getMethodRef("setString").invoke(attributeCompound,"Name",name);
@@ -368,7 +351,7 @@ public class NMSManager {
 
             return (ItemStack)version.getMethodRef("asBukkitCopy").invoke(null,newItem);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
-            e.printStackTrace();
+            plugin.getLogger().log(Level.WARNING,"NMS operation failed",e);
         }
 
         return null;
@@ -377,11 +360,10 @@ public class NMSManager {
     private Object getNBTCompound(Object newItem){
         try {
             boolean hasTag = (boolean)version.getMethodRef("hasTag").invoke(newItem);
-            Object compound = hasTag ? version.getMethodRef("getTag").invoke(newItem) :
+            return hasTag ? version.getMethodRef("getTag").invoke(newItem) :
                     version.getClassRef("NBTTagCompound").getDeclaredConstructor().newInstance();
-            return compound;
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
-            e.printStackTrace();
+            plugin.getLogger().log(Level.WARNING,"NMS operation failed",e);
         }
         return null;
     }

@@ -1,15 +1,12 @@
 package pk.ajneb97.utils;
 
 import me.clip.placeholderapi.PlaceholderAPI;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import pk.ajneb97.PlayerKits2;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class PlayerUtils {
 
@@ -37,18 +34,13 @@ public class PlayerUtils {
 
     public static int getUsedSlots(Player player){
 
-        ItemStack[] contents = null;
         ServerVersion serverVersion = PlayerKits2.serverVersion;
-        if(!serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_9_R1)) {
-
-            contents = player.getInventory().getContents();
-        }else{
-            contents = player.getInventory().getStorageContents();
-        }
+        ItemStack[] contents = serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_9_R1)
+                ? player.getInventory().getStorageContents() : player.getInventory().getContents();
 
         int usedSlots = 0;
-        for(int i=0;i<contents.length;i++) {
-            if(contents[i] != null && !contents[i].getType().equals(Material.AIR)) {
+        for(ItemStack content : contents) {
+            if(content != null && !content.getType().equals(Material.AIR)) {
                 usedSlots++;
             }
         }
@@ -60,12 +52,12 @@ public class PlayerUtils {
         return sender.hasPermission("playerkits.admin");
     }
 
-    public static boolean hasCooldownBypassPermission(CommandSender sender){
-        return sender.hasPermission("playerkits.bypass.cooldown");
+    public static boolean lacksCooldownBypassPermission(CommandSender sender){
+        return !sender.hasPermission("playerkits.bypass.cooldown");
     }
 
-    public static boolean hasOneTimeBypassPermission(CommandSender sender){
-        return sender.hasPermission("playerkits.bypass.onetime");
+    public static boolean lacksOneTimeBypassPermission(CommandSender sender){
+        return !sender.hasPermission("playerkits.bypass.onetime");
     }
 
     public static boolean passCondition(Player player,String condition) {
@@ -111,18 +103,13 @@ public class PlayerUtils {
             return false;
         }
 
-        switch(conditional){
-            case ">=":
-                return valueFinalVariable >= valueFinal;
-            case "<=":
-                return valueFinalVariable <= valueFinal;
-            case ">":
-                return valueFinalVariable > valueFinal;
-            case "<":
-                return valueFinalVariable < valueFinal;
-            default:
-                return false;
-        }
+        return switch(conditional){
+            case ">=" -> valueFinalVariable >= valueFinal;
+            case "<=" -> valueFinalVariable <= valueFinal;
+            case ">" -> valueFinalVariable > valueFinal;
+            case "<" -> valueFinalVariable < valueFinal;
+            default -> false;
+        };
     }
 
 }

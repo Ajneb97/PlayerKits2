@@ -44,7 +44,7 @@ public class InventoryUtils {
         }
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings("deprecation")
     public static Inventory createInventory(KitGuiHolder holder, int slots, String title, boolean useMiniMessage) {
         Inventory inventory;
         if (useMiniMessage) {
@@ -62,10 +62,5 @@ public class InventoryUtils {
         }
         InventoryHolder holder = inventory.getHolder();
         return holder instanceof KitGuiHolder ? (KitGuiHolder) holder : null;
-    }
-
-    public static boolean isKitGui(Inventory inventory, KitGuiHolder.Type type) {
-        KitGuiHolder holder = getKitGuiHolder(inventory);
-        return holder != null && holder.getType() == type;
     }
 }
