@@ -117,7 +117,6 @@ public class PlayersConfigManager extends DataFolderConfigManager {
         }
     }
 
-    @Override
     public void saveConfigs() {
         if (plugin.getConfigsManager().getMainConfigManager().isMySQL()) {
             return;

@@ -7,16 +7,17 @@ import pk.ajneb97.PlayerKits2;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 
 public class CommonConfig {
 
-    private String fileName;
+    private final String fileName;
     private FileConfiguration fileConfiguration = null;
     private File file = null;
     private String route;
-    private PlayerKits2 plugin;
-    private String folderName;
-    private boolean newFile;
+    private final PlayerKits2 plugin;
+    private final String folderName;
+    private final boolean newFile;
     private boolean isFirstTime;
 
     public CommonConfig(String fileName, PlayerKits2 plugin, String folderName, boolean newFile){
@@ -44,9 +45,11 @@ public class CommonConfig {
             isFirstTime = true;
             if(newFile) {
                 try {
-                    file.createNewFile();
+                    if(!file.createNewFile()){
+                        plugin.getLogger().warning("Could not create "+file.getPath()+" because it already exists.");
+                    }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    plugin.getLogger().log(Level.SEVERE,"Could not create "+file.getPath(),e);
                 }
             }else {
                 if(folderName != null){
@@ -61,17 +64,15 @@ public class CommonConfig {
         fileConfiguration = new YamlConfiguration();
         try {
             fileConfiguration.load(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InvalidConfigurationException e) {
-            e.printStackTrace();
+        } catch (IOException | InvalidConfigurationException e) {
+            plugin.getLogger().log(Level.SEVERE,"Could not load "+file.getPath(),e);
         }
     }
     public void saveConfig() {
         try {
             fileConfiguration.save(file);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getLogger().log(Level.SEVERE,"Could not save "+file.getPath(),e);
         }
     }
 
@@ -91,12 +92,18 @@ public class CommonConfig {
             }
 
         }
-        fileConfiguration = YamlConfiguration.loadConfiguration(file);
-
-        if(file != null) {
-            YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(file);
-            fileConfiguration.setDefaults(defConfig);
+        YamlConfiguration loadedConfiguration = new YamlConfiguration();
+        try {
+            loadedConfiguration.load(file);
+        } catch (IOException | InvalidConfigurationException e) {
+            plugin.getLogger().log(Level.SEVERE,"Could not reload "+file.getPath(),e);
+            if(fileConfiguration == null) {
+                fileConfiguration = loadedConfiguration;
+            }
+            return false;
         }
+        loadedConfiguration.setDefaults(YamlConfiguration.loadConfiguration(file));
+        fileConfiguration = loadedConfiguration;
         return true;
     }
 
@@ -106,9 +113,5 @@ public class CommonConfig {
 
     public boolean isFirstTime() {
         return isFirstTime;
-    }
-
-    public void setFirstTime(boolean firstTime) {
-        isFirstTime = firstTime;
     }
 }

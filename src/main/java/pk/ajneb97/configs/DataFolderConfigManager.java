@@ -7,8 +7,8 @@ import java.io.File;
 import java.util.ArrayList;
 
 public abstract class DataFolderConfigManager {
-    protected String folderName;
-    protected PlayerKits2 plugin;
+    protected final String folderName;
+    protected final PlayerKits2 plugin;
 
     public DataFolderConfigManager(PlayerKits2 plugin, String folderName){
         this.plugin = plugin;
@@ -21,15 +21,17 @@ public abstract class DataFolderConfigManager {
     }
 
     public void createFolder(){
-        File folder;
         try {
-            folder = new File(plugin.getDataFolder() + File.separator + folderName);
+            File folder = new File(plugin.getDataFolder() + File.separator + folderName);
             if(!folder.exists()){
-                folder.mkdirs();
+                if(!folder.mkdirs()){
+                    plugin.getLogger().warning("Could not create folder "+folder.getPath());
+                    return;
+                }
                 createFiles();
             }
         } catch(SecurityException e) {
-            folder = null;
+            plugin.getLogger().warning("Could not create folder "+folderName+": "+e.getMessage());
         }
     }
 
@@ -69,6 +71,4 @@ public abstract class DataFolderConfigManager {
     public abstract void createFiles();
 
     public abstract void loadConfigs();
-
-    public abstract void saveConfigs();
 }

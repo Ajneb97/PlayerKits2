@@ -4,13 +4,13 @@ import pk.ajneb97.PlayerKits2;
 
 public class ConfigsManager {
 
-    private PlayerKits2 plugin;
+    private final PlayerKits2 plugin;
 
-    private KitsConfigManager kitsConfigManager;
-    private MessagesConfigManager messagesConfigManager;
-    private MainConfigManager mainConfigManager;
-    private PlayersConfigManager playersConfigManager;
-    private InventoryConfigManager inventoryConfigManager;
+    private final KitsConfigManager kitsConfigManager;
+    private final MessagesConfigManager messagesConfigManager;
+    private final MainConfigManager mainConfigManager;
+    private final PlayersConfigManager playersConfigManager;
+    private final InventoryConfigManager inventoryConfigManager;
 
     public ConfigsManager(PlayerKits2 plugin){
         this.plugin = plugin;
