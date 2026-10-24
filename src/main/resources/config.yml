@@ -44,6 +44,11 @@ new_kit_default_values:
 player_data_save_time: 300
 update_notify: true
 use_minimessage: false
+metrics: false
+layout_editor:
+  enabled: true
+  shift_click: true
+  title: "&8Edit Layout: &9%kit%"
 mysql_database:
   enabled: false
   host: localhost

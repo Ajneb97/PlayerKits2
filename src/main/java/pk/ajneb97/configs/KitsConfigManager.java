@@ -1,5 +1,7 @@
 package pk.ajneb97.configs;
 
+import pk.ajneb97.utils.OtherUtils;
+
 import org.bukkit.configuration.file.FileConfiguration;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.configs.model.CommonConfig;
@@ -41,11 +43,6 @@ public class KitsConfigManager extends DataFolderConfigManager{
         plugin.getKitsManager().setKits(kits);
     }
 
-    @Override
-    public void saveConfigs(){
-
-    }
-
     public void saveConfig(Kit kit){
         String kitName = kit.getName();
         CommonConfig kitConfig = getConfigFile(kitName+".yml",true);
@@ -68,7 +65,6 @@ public class KitsConfigManager extends DataFolderConfigManager{
             kitItemManager.saveKitItemOnConfig(kitItem,config,"items."+currentPos);
             currentPos++;
         }
-
 
         config.set("actions",null);
         saveActions(kit.getClaimActions(),"claim",config,kitItemManager);
@@ -130,24 +126,25 @@ public class KitsConfigManager extends DataFolderConfigManager{
 
     public void removeKitFile(String kitName){
         File file = new File(plugin.getDataFolder()+File.separator+folderName,kitName+".yml");
-        file.delete();
+        if(file.exists() && !file.delete()){
+            plugin.getLogger().warning("Could not delete kit file "+file.getPath());
+        }
     }
 
-    // mainPath must include a "." at the end
     public static Kit getKitFromConfig(FileConfiguration config, PlayerKits2 plugin, String name, String mainPath){
         KitItemManager kitItemManager = plugin.getKitItemManager();
         int cooldown = config.contains(mainPath+"cooldown") ? config.getInt(mainPath+"cooldown") : 0;
-        boolean permissionRequired = config.contains(mainPath+"permission_required") ? config.getBoolean(mainPath+"permission_required") : false;
+        boolean permissionRequired = config.getBoolean(mainPath+"permission_required");
         String customPermission = config.contains(mainPath+"custom_permission") ? config.getString(mainPath+"custom_permission") : null;
-        boolean autoArmor = config.contains(mainPath+"auto_armor") ? config.getBoolean(mainPath+"auto_armor") : false;
-        boolean oneTime = config.contains(mainPath+"one_time") ? config.getBoolean(mainPath+"one_time") : false;
-        boolean clearInventory = config.contains(mainPath+"clear_inventory") ? config.getBoolean(mainPath+"clear_inventory") : false;
-        boolean saveOriginalItems = config.contains(mainPath+"save_original_items") ? config.getBoolean(mainPath+"save_original_items") : false;
-        boolean allowPlaceholdersOnOriginalItems = config.contains(mainPath+"allow_placeholders_on_original_items") ? config.getBoolean(mainPath+"allow_placeholders_on_original_items") : false;
+        boolean autoArmor = config.getBoolean(mainPath+"auto_armor");
+        boolean oneTime = config.getBoolean(mainPath+"one_time");
+        boolean clearInventory = config.getBoolean(mainPath+"clear_inventory");
+        boolean saveOriginalItems = config.getBoolean(mainPath+"save_original_items");
+        boolean allowPlaceholdersOnOriginalItems = config.getBoolean(mainPath+"allow_placeholders_on_original_items");
 
         ArrayList<KitItem> items = new ArrayList<>();
         if(config.contains(mainPath+"items")){
-            for(String key : config.getConfigurationSection(mainPath+"items").getKeys(false)){
+            for(String key : OtherUtils.getSectionKeys(config,mainPath+"items")){
                 KitItem item = kitItemManager.getKitItemFromConfig(config,mainPath+"items."+key);
                 items.add(item);
             }
@@ -175,7 +172,6 @@ public class KitsConfigManager extends DataFolderConfigManager{
             kitRequirements = new KitRequirements(oneTimeRequirements,extraRequirements,message,actionsOnBuy,price);
         }
 
-
         Kit kit = new Kit(name);
         kit.setCooldown(cooldown);
 
@@ -202,11 +198,11 @@ public class KitsConfigManager extends DataFolderConfigManager{
     public static ArrayList<KitAction> getActions(FileConfiguration config,String actionType,String mainPath,KitItemManager kitItemManager){
         ArrayList<KitAction> actions = new ArrayList<>();
         if(config.contains(mainPath+"actions."+actionType)){
-            for(String key : config.getConfigurationSection(mainPath+"actions."+actionType).getKeys(false)){
+            for(String key : OtherUtils.getSectionKeys(config,mainPath+"actions."+actionType)){
                 String path = mainPath+"actions."+actionType+"."+key;
                 String action = config.getString(path+".action");
-                boolean executeBeforeItem = config.contains(path+".execute_before_items") ? config.getBoolean(path+".execute_before_items") : false;
-                boolean countAsItem = config.contains(path+".count_as_item") ? config.getBoolean(path+".count_as_item") : false;
+                boolean executeBeforeItem = config.getBoolean(path+".execute_before_items");
+                boolean countAsItem = config.getBoolean(path+".count_as_item");
                 KitItem item = config.contains(path+".display_item") ? kitItemManager.getKitItemFromConfig(config,path+".display_item") : null;
 
                 actions.add(new KitAction(action,item,executeBeforeItem,countAsItem));

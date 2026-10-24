@@ -37,6 +37,17 @@ inventories:
         id: "ARROW"
         name: "&7Go Back"
       open_inventory: previous
+    53:
+      item:
+        id: "CRAFTING_TABLE"
+        name: "&b&lEdit Layout"
+        lore:
+          - "&7Arrange this kit the way you want"
+          - "&7it to arrive in your inventory."
+          - ""
+          - "&7Only you see your own layout and the"
+          - "&7original kit is never changed."
+      type: layout_editor
   buy_requirements_inventory:
     slots: 27
     title: "&4&lBuy Kit Requirements"

@@ -3,13 +3,12 @@ package pk.ajneb97.managers.edit;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.KitRequirements;
+import pk.ajneb97.model.inventory.KitGuiHolder;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.utils.InventoryItem;
 
@@ -18,25 +17,27 @@ import java.util.List;
 
 public class InventoryEditRequirementsManager {
 
-    private PlayerKits2 plugin;
-    private InventoryEditManager inventoryEditManager;
+    private final PlayerKits2 plugin;
+    private final InventoryEditManager inventoryEditManager;
     public InventoryEditRequirementsManager(PlayerKits2 plugin, InventoryEditManager inventoryEditManager){
         this.plugin = plugin;
         this.inventoryEditManager = inventoryEditManager;
     }
 
+    @SuppressWarnings("deprecation")
     public void openInventory(InventoryPlayer inventoryPlayer) {
         inventoryPlayer.setInventoryName("edit_requirements");
-        Inventory inv = Bukkit.createInventory(null, 27, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.EDIT, inventoryPlayer.getUuid());
+        Inventory inv = Bukkit.createInventory(holder, 27, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        holder.setInventory(inv);
+        inventoryPlayer.setHolder(holder);
 
-        //Set Go Back
         new InventoryItem(inv, 18, Material.ARROW).name("&eGo Back").ready();
 
         Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
         KitRequirements kitRequirements = kit.getRequirements();
 
-        //Set Price
-        List<String> lore = new ArrayList<String>();
+        List<String> lore = new ArrayList<>();
         lore.add("&7Click to define the price of");
         lore.add("&7the kit. Requires Vault and an");
         lore.add("&7economy plugin.");
@@ -48,8 +49,7 @@ public class InventoryEditRequirementsManager {
         lore.add("&7Current Price: &a$" + currentPrice);
         new InventoryItem(inv, 11, Material.EMERALD).name("&eSet &6&lPrice").lore(lore).ready();
 
-        //Set Auto Armor
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to enable/disable whether players");
         lore.add("&7must accomplish the requirements of this");
         lore.add("&7kit only once.");
@@ -61,8 +61,7 @@ public class InventoryEditRequirementsManager {
         lore.add("&7Current Status: " + oneTimeRequirements);
         new InventoryItem(inv, 13, Material.GHAST_TEAR).name("&eSet &6&lOne Time Requirements").lore(lore).ready();
 
-        //Set Extra Requirements
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to add/edit extra requirements.");
         lore.add("");
         lore.add("&cThis feature is not available yet on");
@@ -70,7 +69,7 @@ public class InventoryEditRequirementsManager {
         new InventoryItem(inv, 15, Material.REDSTONE).name("&eSet &6&lExtra Requirements").lore(lore).ready();
 
         inventoryPlayer.getPlayer().openInventory(inv);
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.trackInventoryPlayer(inventoryPlayer);
     }
 
     public void setOneTimeRequirements(InventoryPlayer inventoryPlayer){
@@ -91,7 +90,7 @@ public class InventoryEditRequirementsManager {
 
         player.closeInventory();
         inventoryPlayer.setInventoryName("edit_chat_price");
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.trackInventoryPlayer(inventoryPlayer);
     }
 
     public void setPrice(InventoryPlayer inventoryPlayer,String message){
@@ -111,11 +110,12 @@ public class InventoryEditRequirementsManager {
                 plugin.getConfigsManager().getKitsConfigManager().saveConfig(kit);
                 return;
             }
-        }catch(Exception e){}
+        }catch(NumberFormatException ignored){
+        }
         player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&cYou must use a valid number."));
     }
 
-    public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, int slot, ClickType clickType) {
+    public void clickInventory(InventoryPlayer inventoryPlayer, int slot) {
         if (slot == 18) {
             inventoryEditManager.openInventory(inventoryPlayer);
         }else if(slot == 11){

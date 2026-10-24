@@ -2,8 +2,8 @@ package pk.ajneb97.model.internal;
 
 public class UpdateCheckerResult {
 
-    private String latestVersion;
-    private boolean error;
+    private final String latestVersion;
+    private final boolean error;
 
     public UpdateCheckerResult(String latestVersion, boolean error){
         this.latestVersion = latestVersion;

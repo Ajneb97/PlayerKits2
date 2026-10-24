@@ -2,6 +2,7 @@ package pk.ajneb97.managers;
 
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import pk.ajneb97.api.PlayerKitsAPI;
 import pk.ajneb97.utils.MiniMessageUtils;
 import pk.ajneb97.utils.OtherUtils;
@@ -19,7 +20,6 @@ public class MessagesManager {
 	private String requirementsMessageStatusSymbolFalse;
 	private String cooldownPlaceholderReady;
 	private String prefix;
-
 
 	public String getTimeSeconds() {
 		return timeSeconds;
@@ -53,10 +53,6 @@ public class MessagesManager {
 		this.timeDays = timeDays;
 	}
 
-	public String getPrefix() {
-		return prefix;
-	}
-
 	public void setPrefix(String prefix) {
 		this.prefix = prefix;
 	}
@@ -86,7 +82,7 @@ public class MessagesManager {
 	}
 
 	public void sendMessage(CommandSender sender, String message, boolean prefix){
-		if(!message.isEmpty()){
+		if(message != null && !message.isEmpty()){
 			if(PlayerKitsAPI.getPlugin().getConfigsManager().getMainConfigManager().isUseMiniMessage()){
 				MiniMessageUtils.messagePrefix(sender,message,prefix,this.prefix);
 			}else{
@@ -99,15 +95,21 @@ public class MessagesManager {
 		}
 	}
 
+	public static String getMessage(FileConfiguration config, String path) {
+		String message = config.getString(path);
+		return message != null ? message : "";
+	}
+
+	@SuppressWarnings("deprecation")
 	public static String getLegacyColoredMessage(String message) {
 		if(OtherUtils.isNew()) {
 			Pattern pattern = Pattern.compile("#[a-fA-F0-9]{6}");
 			Matcher match = pattern.matcher(message);
-			
+
 			while(match.find()) {
 				String color = message.substring(match.start(),match.end());
 				message = message.replace(color, ChatColor.of(color)+"");
-				
+
 				match = pattern.matcher(message);
 			}
 		}

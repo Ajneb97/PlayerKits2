@@ -2,10 +2,10 @@ package pk.ajneb97.model;
 
 public class PlayerDataKit {
 
-    private String name;
-    private long cooldown; //Cooldown calculated
-    private boolean oneTime;
-    private boolean bought;
+    private final String name;
+    private volatile long cooldown;
+    private volatile boolean oneTime;
+    private volatile boolean bought;
 
     public PlayerDataKit(String name) {
         this.name = name;
@@ -16,10 +16,6 @@ public class PlayerDataKit {
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public long getCooldown() {

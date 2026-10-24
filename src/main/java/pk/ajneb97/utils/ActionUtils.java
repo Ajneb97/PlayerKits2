@@ -27,7 +27,15 @@ public class ActionUtils {
         }
     }
 
-    public static void consoleCommand(String actionLine){
+    public static void consoleCommand(PlayerKits2 plugin,String actionLine){
+        if(plugin.getPlatformScheduler().isRegionised()){
+            plugin.getPlatformScheduler().runGlobal(() -> dispatchConsoleCommand(actionLine));
+            return;
+        }
+        dispatchConsoleCommand(actionLine);
+    }
+
+    private static void dispatchConsoleCommand(String actionLine){
         ConsoleCommandSender sender = Bukkit.getConsoleSender();
         Bukkit.dispatchCommand(sender, actionLine);
     }
@@ -38,13 +46,13 @@ public class ActionUtils {
 
     public static void playSound(Player player,String actionLine){
         String[] sep = actionLine.split(";");
-        Sound sound = null;
-        int volume = 0;
-        float pitch = 0;
+        Sound sound;
+        int volume;
+        float pitch;
         try {
             sound = getSoundByName(sep[0]);
-            volume = Integer.valueOf(sep[1]);
-            pitch = Float.valueOf(sep[2]);
+            volume = Integer.parseInt(sep[1]);
+            pitch = Float.parseFloat(sep[2]);
         }catch(Exception e ) {
             Bukkit.getConsoleSender().sendMessage(PlayerKits2.prefix+
                     MessagesManager.getLegacyColoredMessage("&7Sound Name: &c"+sep[0]+" &7is not valid. Change it in the config!"));
@@ -75,15 +83,15 @@ public class ActionUtils {
     public static void actionbar(Player player, String actionLine, PlayerKits2 plugin){
         String[] sep = actionLine.split(";");
         String text = sep[0];
-        int duration = Integer.valueOf(sep[1]);
+        int duration = Integer.parseInt(sep[1]);
         ActionBarAPI.sendActionBar(player,text,duration,plugin);
     }
 
     public static void title(Player player,String actionLine){
         String[] sep = actionLine.split(";");
-        int fadeIn = Integer.valueOf(sep[0]);
-        int stay = Integer.valueOf(sep[1]);
-        int fadeOut = Integer.valueOf(sep[2]);
+        int fadeIn = Integer.parseInt(sep[0]);
+        int stay = Integer.parseInt(sep[1]);
+        int fadeOut = Integer.parseInt(sep[2]);
 
         String title = sep[3];
         String subtitle = sep[4];
@@ -96,10 +104,11 @@ public class ActionUtils {
         TitleAPI.sendTitle(player,fadeIn,stay,fadeOut,title,subtitle);
     }
 
+    @SuppressWarnings("deprecation")
     public static void firework(Player player,String actionLine,PlayerKits2 plugin){
-        ArrayList<Color> colors = new ArrayList<Color>();
-        FireworkEffect.Type type = null;
-        ArrayList<Color> fadeColors = new ArrayList<Color>();
+        ArrayList<Color> colors = new ArrayList<>();
+        FireworkEffect.Type type = FireworkEffect.Type.BALL;
+        ArrayList<Color> fadeColors = new ArrayList<>();
         int power = 0;
 
         String[] sep = actionLine.split(" ");
@@ -121,19 +130,15 @@ public class ActionUtils {
                 }
             }else if(s.startsWith("power:")) {
                 s = s.replace("power:", "");
-                power = Integer.valueOf(s);
+                power = Integer.parseInt(s);
             }
         }
 
         Location location = player.getLocation();
 
         ServerVersion serverVersion = PlayerKits2.serverVersion;
-        EntityType entityType = null;
-        if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)){
-            entityType = EntityType.FIREWORK_ROCKET;
-        }else{
-            entityType = EntityType.valueOf("FIREWORK");
-        }
+        EntityType entityType = serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_20_R4)
+                ? EntityType.FIREWORK_ROCKET : EntityType.valueOf("FIREWORK");
         Firework firework = (Firework) location.getWorld().spawnEntity(location, entityType);
         FireworkMeta fireworkMeta = firework.getFireworkMeta();
         FireworkEffect effect = FireworkEffect.builder().flicker(false)

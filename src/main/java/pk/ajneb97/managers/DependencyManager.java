@@ -3,19 +3,14 @@ package pk.ajneb97.managers;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
-import pk.ajneb97.PlayerKits2;
 
 public class DependencyManager {
-
-    private PlayerKits2 plugin;
 
     private boolean isPlaceholderAPI;
     private Economy vaultEconomy;
     private boolean isPaper;
 
-    public DependencyManager(PlayerKits2 plugin){
-        this.plugin = plugin;
-
+    public DependencyManager(){
         if(Bukkit.getServer().getPluginManager().getPlugin("PlaceholderAPI") != null){
             isPlaceholderAPI = true;
         }
@@ -28,8 +23,8 @@ public class DependencyManager {
         try{
             Class.forName("com.destroystokyo.paper.ParticleBuilder");
             isPaper = true;
-        }catch(Exception e){
-
+        }catch(ClassNotFoundException e){
+            isPaper = false;
         }
     }
 

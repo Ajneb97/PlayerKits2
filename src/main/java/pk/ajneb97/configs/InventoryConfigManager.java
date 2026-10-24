@@ -1,5 +1,6 @@
 package pk.ajneb97.configs;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.configs.model.CommonConfig;
@@ -11,11 +12,10 @@ import pk.ajneb97.utils.OtherUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InventoryConfigManager {
+public final class InventoryConfigManager {
 
-    private PlayerKits2 plugin;
-    private CommonConfig configFile;
-
+    private final PlayerKits2 plugin;
+    private final CommonConfig configFile;
 
     public InventoryConfigManager(PlayerKits2 plugin){
         this.plugin = plugin;
@@ -25,6 +25,64 @@ public class InventoryConfigManager {
             checkAndFix();
         }
         checkClickCommands();
+        checkLayoutEditorItem();
+    }
+
+    public void checkLayoutEditorItem(){
+        FileConfiguration config = configFile.getConfig();
+        if(config.getBoolean("layout_editor_button_added")){
+            return;
+        }
+        config.set("layout_editor_button_added",true);
+
+        ConfigurationSection inventories = config.getConfigurationSection("inventories");
+        if(inventories == null){
+            configFile.saveConfig();
+            return;
+        }
+
+        for(String inventoryKey : inventories.getKeys(false)){
+            ConfigurationSection inventory = inventories.getConfigurationSection(inventoryKey);
+            if(inventory == null){
+                continue;
+            }
+            for(String slotKey : inventory.getKeys(false)){
+                if("layout_editor".equals(inventory.getString(slotKey+".type"))){
+                    configFile.saveConfig();
+                    return;
+                }
+            }
+        }
+
+        ConfigurationSection preview = inventories.getConfigurationSection("preview_inventory");
+        if(preview == null){
+            configFile.saveConfig();
+            return;
+        }
+
+        int slots = preview.getInt("slots");
+        int target = slots-1;
+        while(target >= 0 && preview.contains(String.valueOf(target))){
+            target--;
+        }
+        if(target < 0){
+            configFile.saveConfig();
+            return;
+        }
+
+        String path = "inventories.preview_inventory."+target;
+        config.set(path+".item.id","CRAFTING_TABLE");
+        config.set(path+".item.name","&b&lEdit Layout");
+        List<String> lore = new ArrayList<>();
+        lore.add("&7Arrange this kit the way you want");
+        lore.add("&7it to arrive in your inventory.");
+        lore.add("");
+        lore.add("&7Only you see your own layout and the");
+        lore.add("&7original kit is never changed.");
+        config.set(path+".item.lore",lore);
+        config.set(path+".type","layout_editor");
+
+        configFile.saveConfig();
     }
 
     public void checkAndFix(){
@@ -40,8 +98,8 @@ public class InventoryConfigManager {
         boolean needsSave = false;
         FileConfiguration config = configFile.getConfig();
         if(config.contains("inventories")) {
-            for (String key : config.getConfigurationSection("inventories").getKeys(false)) {
-                for(String slotString : config.getConfigurationSection("inventories."+key).getKeys(false)) {
+            for (String key : OtherUtils.getSectionKeys(config,"inventories")) {
+                for(String slotString : OtherUtils.getSectionKeys(config,"inventories."+key)) {
                     String path = "inventories."+key+"."+slotString;
                     if(config.contains(path+".click_commands")){
                         List<String> clickActions = new ArrayList<>();
@@ -71,15 +129,15 @@ public class InventoryConfigManager {
     public void configure(){
         FileConfiguration config = configFile.getConfig();
 
-        ArrayList<KitInventory> inventories = new ArrayList<KitInventory>();
+        ArrayList<KitInventory> inventories = new ArrayList<>();
         KitItemManager kitItemManager = plugin.getKitItemManager();
         if(config.contains("inventories")) {
-            for(String key : config.getConfigurationSection("inventories").getKeys(false)) {
+            for(String key : OtherUtils.getSectionKeys(config,"inventories")) {
                 int slots = config.getInt("inventories."+key+".slots");
                 String title = config.getString("inventories."+key+".title");
 
                 List<ItemKitInventory> items = new ArrayList<>();
-                for(String slotString : config.getConfigurationSection("inventories."+key).getKeys(false)) {
+                for(String slotString : OtherUtils.getSectionKeys(config,"inventories."+key)) {
                     if(!slotString.equals("slots") && !slotString.equals("title")) {
                         String path = "inventories."+key+"."+slotString;
                         KitItem item = null;
@@ -122,10 +180,10 @@ public class InventoryConfigManager {
 
         KitItemManager kitItemManager = plugin.getKitItemManager();
         for(KitInventory kitInventory : plugin.getInventoryManager().getInventories()){
-            String name = kitInventory.getName();
-            config.set("inventories."+name+".slots",kitInventory.getSlots());
-            config.set("inventories."+name+".title",kitInventory.getTitle());
-            for(ItemKitInventory item : kitInventory.getItems()){
+            String name = kitInventory.name();
+            config.set("inventories."+name+".slots",kitInventory.slots());
+            config.set("inventories."+name+".title",kitInventory.title());
+            for(ItemKitInventory item : kitInventory.items()){
                 String slotsString = item.getSlotsString();
                 String path = "inventories."+name+"."+slotsString;
                 if(item.getType() != null){
@@ -152,9 +210,5 @@ public class InventoryConfigManager {
         }
         configure();
         return true;
-    }
-
-    public FileConfiguration getConfig(){
-        return configFile.getConfig();
     }
 }

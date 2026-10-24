@@ -1,7 +1,7 @@
 package pk.ajneb97.managers;
 
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -17,61 +17,70 @@ import pk.ajneb97.model.internal.GiveKitInstructions;
 import pk.ajneb97.model.internal.PlayerKitsMessageResult;
 import pk.ajneb97.model.inventory.KitInventory;
 import pk.ajneb97.model.item.KitItem;
+import pk.ajneb97.model.layout.PlayerKitLayout;
 import pk.ajneb97.utils.ActionUtils;
 import pk.ajneb97.utils.OtherUtils;
 import pk.ajneb97.utils.PlayerUtils;
+
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 public class KitsManager {
 
-    private PlayerKits2 plugin;
-    private ArrayList<Kit> kits;
-    public KitsManager(PlayerKits2 plugin){
-        this.plugin = plugin;
-    }
+    private static final Pattern VALID_KIT_NAME = Pattern.compile("[A-Za-z0-9_\\-]{1,48}");
 
-    public PlayerKits2 getPlugin() {
-        return plugin;
-    }
+    private final PlayerKits2 plugin;
+    private Map<String, Kit> kits;
+    private final Set<UUID> claiming;
 
-    public void setPlugin(PlayerKits2 plugin) {
+    public KitsManager(PlayerKits2 plugin) {
         this.plugin = plugin;
+        this.kits = new ConcurrentHashMap<>();
+        this.claiming = ConcurrentHashMap.newKeySet();
     }
 
     public ArrayList<Kit> getKits() {
-        return kits;
+        return new ArrayList<>(kits.values());
     }
 
-    public void setKits(ArrayList<Kit> kits) {
-        this.kits = kits;
-    }
-
-    public Kit getKitByName(String name){
-        for(Kit kit : kits){
-            if(kit.getName().equals(name)){
-                return kit;
+    public void setKits(ArrayList<Kit> newKits) {
+        Map<String, Kit> replacement = new ConcurrentHashMap<>();
+        for (Kit kit : newKits) {
+            if (kit.getName() != null) {
+                replacement.put(kit.getName(), kit);
             }
         }
-        return null;
+        this.kits = replacement;
     }
 
-    public void removeKit(String name){
-        for(int i=0;i<kits.size();i++){
-            if(kits.get(i).getName().equals(name)){
-                kits.remove(i);
-                return;
-            }
-        }
+    public Kit getKitByName(String name) {
+        return name == null ? null : kits.get(name);
     }
 
-    public void createKit(String kitName,Player player,boolean saveOriginalItems){
-        Kit kit = getKitByName(kitName);
+    public void removeKit(String name) {
+        kits.remove(name);
+    }
+
+    public static boolean isValidKitName(String name) {
+        return name != null && VALID_KIT_NAME.matcher(name).matches();
+    }
+
+    public void createKit(String kitName, Player player, boolean saveOriginalItems) {
         FileConfiguration messagesFile = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
         MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
         MessagesManager msgManager = plugin.getMessagesManager();
-        if(kit != null){
-            msgManager.sendMessage(player,messagesFile.getString("kitAlreadyExists").replace("%kit%",kitName),true);
+
+        if (!isValidKitName(kitName)) {
+            msgManager.sendMessage(player, messagesFile.getString("invalidKitName"), true);
+            return;
+        }
+
+        if (getKitByName(kitName) != null) {
+            msgManager.sendMessage(player, MessagesManager.getMessage(messagesFile,"kitAlreadyExists").replace("%kit%", kitName), true);
             return;
         }
 
@@ -80,65 +89,61 @@ public class KitsManager {
         KitItemManager kitItemManager = plugin.getKitItemManager();
         ArrayList<KitItem> items = new ArrayList<>();
         boolean hasArmor = false;
-        for(int i=0;i<inventoryContents.length;i++){
+        for (int i = 0; i < inventoryContents.length; i++) {
             ItemStack item = inventoryContents[i];
-            if(item == null || item.getType().equals(Material.AIR)){
+            if (item == null || item.getType() == Material.AIR) {
                 continue;
             }
 
-            KitItem kitItem = kitItemManager.createKitItemFromItemStack(item,saveOriginalItems);
+            KitItem kitItem = kitItemManager.createKitItemFromItemStack(item, saveOriginalItems);
 
-            //Check for armor/offhand
-            if(i >= 36 && i<=39){
+            if (i >= 36 && i <= 39) {
                 hasArmor = true;
             }
-            if(i == 40){
+            if (i == 40) {
                 kitItem.setOffhand(true);
             }
 
             items.add(kitItem);
         }
 
-        if(items.size() == 0){
-            msgManager.sendMessage(player,messagesFile.getString("inventoryEmpty"),true);
+        if (items.isEmpty()) {
+            msgManager.sendMessage(player, messagesFile.getString("inventoryEmpty"), true);
             return;
         }
 
-        //Set defaults
-        kit = new Kit(kitName);
+        Kit kit = new Kit(kitName);
         kit.setItems(items);
         kit.setDefaults(mainConfigManager.getNewKitDefault());
         kit.setAutoArmor(hasArmor);
         kit.setSaveOriginalItems(saveOriginalItems);
 
-        kits.add(kit);
+        kits.put(kitName, kit);
         plugin.getConfigsManager().getKitsConfigManager().saveConfig(kit);
 
-        msgManager.sendMessage(player,messagesFile.getString("kitCreated").replace("%kit%",kitName),true);
+        msgManager.sendMessage(player, MessagesManager.getMessage(messagesFile,"kitCreated").replace("%kit%", kitName), true);
 
-        //Add on inventory
         InventoryManager inventoryManager = plugin.getInventoryManager();
         String newKitDefaultInventory = mainConfigManager.getNewKitDefaultInventory();
         KitInventory inventory = inventoryManager.getInventory(newKitDefaultInventory);
-        if(inventory != null){
+        if (inventory != null) {
             int resultSlot = inventory.addKitItemOnFirstEmptySlot(kitName);
-            if(resultSlot == -1){
-                msgManager.sendMessage(player,messagesFile.getString("kitNotAddedToInventory"),true);
-            }else{
-                msgManager.sendMessage(player,messagesFile.getString("kitAddedToInventory")
-                        .replace("%inventory%",newKitDefaultInventory).replace("%slot%",resultSlot+""),true);
-                //Update inventory file
-                plugin.getConfigsManager().getInventoryConfigManager().saveKitItemOnConfig(newKitDefaultInventory,resultSlot,kitName);
+            if (resultSlot == -1) {
+                msgManager.sendMessage(player, messagesFile.getString("kitNotAddedToInventory"), true);
+            } else {
+                msgManager.sendMessage(player, MessagesManager.getMessage(messagesFile,"kitAddedToInventory")
+                        .replace("%inventory%", newKitDefaultInventory).replace("%slot%", String.valueOf(resultSlot)), true);
+                plugin.getConfigsManager().getInventoryConfigManager().saveKitItemOnConfig(newKitDefaultInventory, resultSlot, kitName);
             }
         }
     }
 
-    public void deleteKit(String kitName,CommandSender sender){
+    public void deleteKit(String kitName, CommandSender sender) {
         FileConfiguration messagesFile = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
         MessagesManager msgManager = plugin.getMessagesManager();
-        if(getKitByName(kitName) == null){
-            msgManager.sendMessage(sender,messagesFile.getString("kitDoesNotExists")
-                    .replace("%kit%",kitName),true);
+        if (getKitByName(kitName) == null) {
+            msgManager.sendMessage(sender, MessagesManager.getMessage(messagesFile,"kitDoesNotExists")
+                    .replace("%kit%", kitName), true);
             return;
         }
 
@@ -147,72 +152,86 @@ public class KitsManager {
         plugin.getInventoryManager().removeKitFromInventory(kitName);
         plugin.getConfigsManager().getInventoryConfigManager().save();
 
-        msgManager.sendMessage(sender,messagesFile.getString("kitDeleted").replace("%kit%",kitName),true);
+        msgManager.sendMessage(sender, MessagesManager.getMessage(messagesFile,"kitDeleted").replace("%kit%", kitName), true);
     }
 
-    public PlayerKitsMessageResult giveKit(Player player, String kitName, GiveKitInstructions giveKitInstructions){
+    public PlayerKitsMessageResult giveKit(Player player, String kitName, GiveKitInstructions giveKitInstructions) {
+        UUID uuid = player.getUniqueId();
+        if (!claiming.add(uuid)) {
+            FileConfiguration messagesFile = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
+            return PlayerKitsMessageResult.error(messagesFile.getString("kitClaimInProgress"));
+        }
+        try {
+            return giveKitInternal(player, kitName, giveKitInstructions);
+        } finally {
+            claiming.remove(uuid);
+        }
+    }
+
+    private PlayerKitsMessageResult giveKitInternal(Player player, String kitName, GiveKitInstructions giveKitInstructions) {
         Kit kit = getKitByName(kitName);
         FileConfiguration messagesFile = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
         FileConfiguration configFile = plugin.getConfigsManager().getMainConfigManager().getConfig();
         PlayerDataManager playerDataManager = plugin.getPlayerDataManager();
         MessagesManager msgManager = plugin.getMessagesManager();
 
-        if(kit == null){
-            return PlayerKitsMessageResult.error(messagesFile.getString("kitDoesNotExists").replace("%kit%",kitName));
+        if (kit == null) {
+            return PlayerKitsMessageResult.error(MessagesManager.getMessage(messagesFile,"kitDoesNotExists").replace("%kit%", kitName));
         }
 
-        //Check properties
-        if(!giveKitInstructions.isFromCommand()){
-            //Permission
-            if(!giveKitInstructions.isIgnorePermission() && !kit.playerHasPermission(player)){
-                sendKitActions(kit.getErrorActions(),player,false);
+        if (!player.isOnline()) {
+            return PlayerKitsMessageResult.error(MessagesManager.getMessage(messagesFile,"playerNotOnline")
+                    .replace("%player%", player.getName()));
+        }
+
+        boolean fromCommand = giveKitInstructions.isFromCommand();
+
+        if (!fromCommand && !playerDataManager.isDataReady(player)) {
+            return PlayerKitsMessageResult.error(messagesFile.getString("playerDataNotLoaded"));
+        }
+
+        if (!fromCommand) {
+            if (!giveKitInstructions.isIgnorePermission() && !kit.playerHasPermission(player)) {
+                sendKitActions(kit.getErrorActions(), player, false);
                 return PlayerKitsMessageResult.error(messagesFile.getString("kitNoPermissions"));
             }
 
-            //One time
-            if(kit.isOneTime() && !PlayerUtils.isPlayerKitsAdmin(player) && !PlayerUtils.hasOneTimeBypassPermission(player)
-                    && playerDataManager.isKitOneTime(player,kit.getName())){
-                sendKitActions(kit.getErrorActions(),player,false);
+            if (kit.isOneTime() && !PlayerUtils.isPlayerKitsAdmin(player) && PlayerUtils.lacksOneTimeBypassPermission(player)
+                    && playerDataManager.isKitOneTime(player, kit.getName())) {
+                sendKitActions(kit.getErrorActions(), player, false);
                 return PlayerKitsMessageResult.error(messagesFile.getString("oneTimeError"));
             }
 
-            //Cooldown
-            long playerCooldown = playerDataManager.getKitCooldown(player,kit.getName());
-            if(kit.getCooldown() != 0 && !PlayerUtils.isPlayerKitsAdmin(player) && !PlayerUtils.hasCooldownBypassPermission(player)){
-                long currentMillis = System.currentTimeMillis();
-                long millisDif = playerCooldown-currentMillis;
-                String timeStringMillisDif = OtherUtils.getTime(millisDif/1000, msgManager);
-                if(!timeStringMillisDif.isEmpty()) {
-                    sendKitActions(kit.getErrorActions(),player,false);
-                    return PlayerKitsMessageResult.error(messagesFile.getString("cooldownError")
-                            .replace("%time%",timeStringMillisDif));
+            if (kit.getCooldown() != 0 && !PlayerUtils.isPlayerKitsAdmin(player) && PlayerUtils.lacksCooldownBypassPermission(player)) {
+                long playerCooldown = playerDataManager.getKitCooldown(player, kit.getName());
+                long millisDif = playerCooldown - System.currentTimeMillis();
+                String timeStringMillisDif = OtherUtils.getTime(millisDif / 1000, msgManager);
+                if (!timeStringMillisDif.isEmpty()) {
+                    sendKitActions(kit.getErrorActions(), player, false);
+                    return PlayerKitsMessageResult.error(MessagesManager.getMessage(messagesFile,"cooldownError")
+                            .replace("%time%", timeStringMillisDif));
                 }
             }
 
-            //Requirements - Buy
             KitRequirements kitRequirements = kit.getRequirements();
-            if(!giveKitInstructions.isIgnoreRequirements() && kitRequirements != null &&
-                    (kitRequirements.getPrice() != 0 || !kitRequirements.getExtraRequirements().isEmpty())){
-                if(!(kitRequirements.isOneTimeRequirements() && playerDataManager.isKitBought(player,kit.getName()))){
-                    if(!giveKitInstructions.isRequirementsSatisfied()){
-                        //Player must buy it first
+            if (giveKitInstructions.shouldCheckRequirements() && kitRequirements != null &&
+                    (kitRequirements.getPrice() != 0 || !kitRequirements.getExtraRequirements().isEmpty())) {
+                if (!(kitRequirements.isOneTimeRequirements() && playerDataManager.isKitBought(player, kit.getName()))) {
+                    if (!giveKitInstructions.isRequirementsSatisfied()) {
                         PlayerKitsMessageResult result = PlayerKitsMessageResult.success();
                         result.setProceedToBuy(true);
                         return result;
                     }
 
-                    //Check price
-                    if(!passPrice(kitRequirements.getPrice(),player)){
-                        sendKitActions(kit.getErrorActions(),player,false);
+                    if (!passPrice(kitRequirements.getPrice(), player)) {
+                        sendKitActions(kit.getErrorActions(), player, false);
                         return PlayerKitsMessageResult.error(messagesFile.getString("requirementsError"));
                     }
-                    //Check requirements
-                    List<String> requirementsConditions = kitRequirements.getExtraRequirements();
-                    if(plugin.getDependencyManager().isPlaceholderAPI()) {
-                        for(String condition : requirementsConditions) {
-                            boolean passCondition = PlayerUtils.passCondition(player, condition);
-                            if(!passCondition) {
-                                sendKitActions(kit.getErrorActions(),player,false);
+
+                    if (plugin.getDependencyManager().isPlaceholderAPI()) {
+                        for (String condition : kitRequirements.getExtraRequirements()) {
+                            if (!PlayerUtils.passCondition(player, condition)) {
+                                sendKitActions(kit.getErrorActions(), player, false);
                                 return PlayerKitsMessageResult.error(messagesFile.getString("requirementsError"));
                             }
                         }
@@ -221,14 +240,12 @@ public class KitsManager {
             }
         }
 
-
         KitItemManager kitItemManager = plugin.getKitItemManager();
         ArrayList<KitItem> items = kit.getItems();
 
-        //Check amount of free slots, including auto-armor
-        int usedSlots = PlayerUtils.getUsedSlots(player); //storage contents, 36 slots
-        int freeSlots = 36-usedSlots;
-        int inventoryKitItems = 0; //Items that will be put in the player inventory (not equipment)
+        int usedSlots = PlayerUtils.getUsedSlots(player);
+        int freeSlots = 36 - usedSlots;
+        int inventoryKitItems = 0;
 
         KitItem itemHelmet = null;
         KitItem itemChestplate = null;
@@ -237,56 +254,60 @@ public class KitsManager {
         KitItem itemOffhand = null;
 
         boolean clearInventory = kit.isClearInventory();
+        boolean autoArmor = kit.isAutoArmor();
 
-        //Only use heads or elytra when the kit has no armor for that slot.
         boolean hasHelmetForAutoArmor = false;
         boolean hasChestplateForAutoArmor = false;
-        if(kit.isAutoArmor()){
-            for(KitItem item : items){
-                String id = item.getOriginalItem() != null
-                        ? item.getOriginalItem().getType().name() : item.getId();
-                if(id.contains("_HELMET")){
+        if (autoArmor) {
+            for (KitItem item : items) {
+                String id = item.getOriginalItem() != null ? item.getOriginalItem().getType().name() : item.getId();
+                if (id == null) {
+                    continue;
+                }
+                if (id.contains("_HELMET")) {
                     hasHelmetForAutoArmor = true;
-                }else if(id.contains("_CHESTPLATE")){
+                } else if (id.contains("_CHESTPLATE")) {
                     hasChestplateForAutoArmor = true;
                 }
             }
         }
 
         PlayerInventory playerInventory = player.getInventory();
-        for(KitItem item : items){
-            if(kit.isAutoArmor()){
+        for (KitItem item : items) {
+            if (autoArmor) {
                 String id = item.getId();
-                if(item.getOriginalItem() != null){
+                if (item.getOriginalItem() != null) {
                     id = item.getOriginalItem().getType().name();
                 }
+                if (id == null) {
+                    id = "";
+                }
 
-                //Check if the item must be put in the player equipment
-                if((id.contains("_HELMET") || (!hasHelmetForAutoArmor && (id.contains("PLAYER_HEAD") || id.contains("SKULL_ITEM")))) && itemHelmet == null){
-                    if(playerInventory.getHelmet() == null || playerInventory.getHelmet().getType().equals(Material.AIR) || clearInventory){
+                if ((id.contains("_HELMET") || (!hasHelmetForAutoArmor && (id.contains("PLAYER_HEAD") || id.contains("SKULL_ITEM")))) && itemHelmet == null) {
+                    if (isEmptySlot(playerInventory.getHelmet()) || clearInventory) {
                         itemHelmet = item;
                         continue;
                     }
-                }else if((id.contains("_CHESTPLATE") || (!hasChestplateForAutoArmor && id.contains("ELYTRA"))) && itemChestplate == null){
-                    if(playerInventory.getChestplate() == null || playerInventory.getChestplate().getType().equals(Material.AIR) || clearInventory){
+                } else if ((id.contains("_CHESTPLATE") || (!hasChestplateForAutoArmor && id.contains("ELYTRA"))) && itemChestplate == null) {
+                    if (isEmptySlot(playerInventory.getChestplate()) || clearInventory) {
                         itemChestplate = item;
                         continue;
                     }
-                }else if(id.contains("_LEGGINGS") && itemLeggings == null){
-                    if(playerInventory.getLeggings() == null || playerInventory.getLeggings().getType().equals(Material.AIR) || clearInventory){
+                } else if (id.contains("_LEGGINGS") && itemLeggings == null) {
+                    if (isEmptySlot(playerInventory.getLeggings()) || clearInventory) {
                         itemLeggings = item;
                         continue;
                     }
-                }else if(id.contains("_BOOTS") && itemBoots == null){
-                    if(playerInventory.getBoots() == null || playerInventory.getBoots().getType().equals(Material.AIR) || clearInventory){
+                } else if (id.contains("_BOOTS") && itemBoots == null) {
+                    if (isEmptySlot(playerInventory.getBoots()) || clearInventory) {
                         itemBoots = item;
                         continue;
                     }
                 }
             }
 
-            if(item.isOffhand() && itemOffhand == null){
-                if(playerInventory.getItemInOffHand() == null || playerInventory.getItemInOffHand().getType().equals(Material.AIR) || clearInventory){
+            if (item.isOffhand() && itemOffhand == null) {
+                if (isEmptySlot(getOffhand(playerInventory)) || clearInventory) {
                     itemOffhand = item;
                     continue;
                 }
@@ -294,9 +315,10 @@ public class KitsManager {
 
             inventoryKitItems++;
         }
+
         ArrayList<KitAction> claimActions = kit.getClaimActions();
-        for(KitAction action : claimActions){
-            if(action.isCountAsItem()){
+        for (KitAction action : claimActions) {
+            if (action.isCountAsItem()) {
                 inventoryKitItems++;
             }
         }
@@ -304,151 +326,226 @@ public class KitsManager {
         boolean notEnoughSpace = freeSlots < inventoryKitItems;
         boolean dropItemsIfFullInventory = configFile.getBoolean("drop_items_if_full_inventory");
 
-        if(notEnoughSpace && !dropItemsIfFullInventory && !clearInventory){
-            sendKitActions(kit.getErrorActions(),player,false);
+        if (notEnoughSpace && !dropItemsIfFullInventory && !clearInventory) {
+            sendKitActions(kit.getErrorActions(), player, false);
             return PlayerKitsMessageResult.error(messagesFile.getString("noSpaceError"));
         }
 
-        if(clearInventory){
-            player.getInventory().clear();
-        }
-
-        //Actions before
-        sendKitActions(kit.getClaimActions(),player,true);
-
-        //Give kit items
-        for(KitItem kitItem : items){
-            ItemStack item = kitItemManager.createItemFromKitItem(kitItem,player,kit);
-
-            if(itemHelmet != null && kitItem.equals(itemHelmet)){
-                playerInventory.setHelmet(item);
-            }else if(itemChestplate != null && kitItem.equals(itemChestplate)){
-                playerInventory.setChestplate(item);
-            }else if(itemLeggings != null && kitItem.equals(itemLeggings)){
-                playerInventory.setLeggings(item);
-            }else if(itemBoots != null && kitItem.equals(itemBoots)){
-                playerInventory.setBoots(item);
-            }else if(itemOffhand != null && kitItem.equals(itemOffhand)){
-                playerInventory.setItemInOffHand(item);
-            }else{
-                if(playerInventory.firstEmpty() == -1 && dropItemsIfFullInventory){
-                    player.getWorld().dropItemNaturally(player.getLocation(), item);
-                }else{
-                    playerInventory.addItem(item);
-                }
-            }
-        }
-
-        //Actions after
-        sendKitActions(kit.getClaimActions(),player,false);
-
-        //Update properties
-        if(!giveKitInstructions.isFromCommand()){
-            //One time
-            if(kit.isOneTime() && !PlayerUtils.isPlayerKitsAdmin(player) && !PlayerUtils.hasOneTimeBypassPermission(player)){
-                playerDataManager.setKitOneTime(player,kit.getName());
-            }
-
-            //Cooldown
-            if(kit.getCooldown() != 0 && !PlayerUtils.isPlayerKitsAdmin(player) && !PlayerUtils.hasCooldownBypassPermission(player)){
-                long millisMax = System.currentTimeMillis()+(kit.getCooldown()* 1000L);
-                playerDataManager.setKitCooldown(player,kit.getName(),millisMax);
-            }
-
-            //Requirements - Buy
+        if (!fromCommand) {
             KitRequirements kitRequirements = kit.getRequirements();
-            if(!giveKitInstructions.isIgnoreRequirements() && kitRequirements != null && giveKitInstructions.isRequirementsSatisfied()){
-                //Check price and update balance
+            boolean chargeRequirements = giveKitInstructions.shouldCheckRequirements()
+                    && kitRequirements != null && giveKitInstructions.isRequirementsSatisfied();
+
+            if (chargeRequirements) {
                 double price = kitRequirements.getPrice();
                 Economy economy = plugin.getDependencyManager().getVaultEconomy();
-                if(price > 0 && economy != null){
-                    economy.withdrawPlayer(player,price);
+                if (price > 0 && economy != null) {
+                    EconomyResponse response = economy.withdrawPlayer(player, price);
+                    if (response == null || !response.transactionSuccess()) {
+                        sendKitActions(kit.getErrorActions(), player, false);
+                        return PlayerKitsMessageResult.error(messagesFile.getString("requirementsError"));
+                    }
                 }
+            }
 
-                //Actions
-                List<String> actions = kitRequirements.getActionsOnBuy();
-                for(String action : actions){
-                    executeAction(player,action);
+            if (kit.isOneTime() && !PlayerUtils.isPlayerKitsAdmin(player) && PlayerUtils.lacksOneTimeBypassPermission(player)) {
+                playerDataManager.setKitOneTime(player, kit.getName());
+            }
+
+            if (kit.getCooldown() != 0 && !PlayerUtils.isPlayerKitsAdmin(player) && PlayerUtils.lacksCooldownBypassPermission(player)) {
+                long millisMax = System.currentTimeMillis() + (kit.getCooldown() * 1000L);
+                playerDataManager.setKitCooldown(player, kit.getName(), millisMax);
+            }
+
+            if (chargeRequirements) {
+                for (String action : kitRequirements.getActionsOnBuy()) {
+                    executeAction(player, action);
                 }
-
-                //Data
-                if(kitRequirements.isOneTimeRequirements()){
-                    playerDataManager.setKitBought(player,kitName);
+                if (kitRequirements.isOneTimeRequirements()) {
+                    playerDataManager.setKitBought(player, kitName);
                 }
             }
         }
+
+        if (clearInventory) {
+            playerInventory.clear();
+        }
+
+        sendKitActions(claimActions, player, true);
+
+        PlayerKitLayout layout = plugin.getConfigsManager().getMainConfigManager().isLayoutEditor()
+                ? playerDataManager.getLayout(player, kit.getName()) : null;
+        boolean[] layoutSlotUsed = layout != null ? new boolean[PlayerKitLayout.MAX_SLOT + 1] : null;
+
+        for (int index = 0; index < items.size(); index++) {
+            KitItem kitItem = items.get(index);
+            ItemStack item;
+            try {
+                item = kitItemManager.createItemFromKitItem(kitItem, player, kit);
+            } catch (Exception error) {
+                plugin.getLogger().severe("Could not build item " + index + " of kit " + kit.getName() + ": " + error);
+                continue;
+            }
+            if (item == null || item.getType() == Material.AIR) {
+                continue;
+            }
+
+            if (itemHelmet == kitItem) {
+                playerInventory.setHelmet(item);
+            } else if (itemChestplate == kitItem) {
+                playerInventory.setChestplate(item);
+            } else if (itemLeggings == kitItem) {
+                playerInventory.setLeggings(item);
+            } else if (itemBoots == kitItem) {
+                playerInventory.setBoots(item);
+            } else if (itemOffhand == kitItem) {
+                setOffhand(playerInventory, item);
+            } else {
+                giveInventoryItem(player, playerInventory, item, layout, layoutSlotUsed, index, dropItemsIfFullInventory);
+            }
+        }
+
+        sendKitActions(claimActions, player, false);
 
         return PlayerKitsMessageResult.success();
     }
 
-    public void giveFirstJoinKit(Player player){
-        // Will ignore:
-        // - requirements
-        // - permissions
-        String firstJoinKit = plugin.getConfigsManager().getMainConfigManager().getFirstJoinKit();
-        if(firstJoinKit.equals("none")){
+    private void giveInventoryItem(Player player, PlayerInventory playerInventory, ItemStack item,
+                                   PlayerKitLayout layout, boolean[] layoutSlotUsed, int index,
+                                   boolean dropItemsIfFullInventory) {
+        if (layout != null) {
+            int slot = layout.getSlot(index);
+            if (slot >= 0 && slot <= PlayerKitLayout.MAX_SLOT && !layoutSlotUsed[slot]
+                    && isEmptySlot(playerInventory.getItem(slot))) {
+                playerInventory.setItem(slot, item);
+                layoutSlotUsed[slot] = true;
+                return;
+            }
+        }
+
+        if (playerInventory.firstEmpty() == -1 && dropItemsIfFullInventory) {
+            dropItem(player, item);
             return;
         }
-        giveKit(player,firstJoinKit,new GiveKitInstructions(false,false,true,true));
-    }
 
-    public void executeAction(Player player,String actionText){
-        if(actionText.equals("close_inventory")){
-            ActionUtils.closeInventory(player);
+        Map<Integer, ItemStack> leftovers = playerInventory.addItem(item);
+        if (leftovers.isEmpty()) {
             return;
         }
-        int indexFirst = actionText.indexOf(" ");
-        String actionType = actionText.substring(0,indexFirst).replace(":","");
-        String actionLine = actionText.substring(indexFirst+1);
-        actionLine = OtherUtils.replaceGlobalVariables(actionLine,player,plugin);
-
-        switch(actionType){
-            case "message":
-                ActionUtils.message(player,actionLine);
-                break;
-            case "console_command":
-                ActionUtils.consoleCommand(actionLine);
-                break;
-            case "player_command":
-                ActionUtils.playerCommand(player,actionLine);
-                break;
-            case "playsound":
-                ActionUtils.playSound(player,actionLine);
-                break;
-            case "playsound_resource_pack":
-                ActionUtils.playSoundResourcePack(player,actionLine);
-                break;
-            case "actionbar":
-                ActionUtils.actionbar(player,actionLine,plugin);
-                break;
-            case "title":
-                ActionUtils.title(player,actionLine);
-                break;
-            case "firework":
-                ActionUtils.firework(player,actionLine,plugin);
-                break;
-        }
-    }
-
-    public void sendKitActions(ArrayList<KitAction> actions,Player player,boolean beforeItems){
-        for(KitAction action : actions){
-            if(action.isExecuteBeforeItems() == beforeItems){
-                String actionText = action.getAction();
-                executeAction(player,actionText);
+        for (ItemStack leftover : leftovers.values()) {
+            if (leftover != null && leftover.getType() != Material.AIR) {
+                dropItem(player, leftover);
             }
         }
     }
 
-    public boolean passPrice(double price,Player player){
-        if(price != 0){
+    private void dropItem(Player player, ItemStack item) {
+        try {
+            player.getWorld().dropItemNaturally(player.getLocation(), item);
+        } catch (Exception error) {
+            plugin.getLogger().severe("Could not drop overflow kit item: " + error);
+        }
+    }
+
+    private static boolean isEmptySlot(ItemStack item) {
+        return item == null || item.getType() == Material.AIR;
+    }
+
+    private static ItemStack getOffhand(PlayerInventory inventory) {
+        try {
+            return inventory.getItemInOffHand();
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    private static void setOffhand(PlayerInventory inventory, ItemStack item) {
+        try {
+            inventory.setItemInOffHand(item);
+        } catch (Throwable ignored) {
+            inventory.addItem(item);
+        }
+    }
+
+    public void giveFirstJoinKit(Player player) {
+        String firstJoinKit = plugin.getConfigsManager().getMainConfigManager().getFirstJoinKit();
+        if (firstJoinKit == null || firstJoinKit.equals("none")) {
+            return;
+        }
+        giveKit(player, firstJoinKit, new GiveKitInstructions(false, false, true, true));
+    }
+
+    public void executeAction(Player player, String actionText) {
+        if (actionText == null || actionText.isEmpty()) {
+            return;
+        }
+        try {
+            if (actionText.equals("close_inventory")) {
+                ActionUtils.closeInventory(player);
+                return;
+            }
+
+            int indexFirst = actionText.indexOf(' ');
+            if (indexFirst <= 0) {
+                plugin.getLogger().warning("Ignoring malformed kit action: " + actionText);
+                return;
+            }
+
+            String actionType = actionText.substring(0, indexFirst).replace(":", "");
+            String actionLine = OtherUtils.replaceGlobalVariables(actionText.substring(indexFirst + 1), player, plugin);
+
+            switch (actionType) {
+                case "message":
+                    ActionUtils.message(player, actionLine);
+                    break;
+                case "console_command":
+                    ActionUtils.consoleCommand(plugin, actionLine);
+                    break;
+                case "player_command":
+                    ActionUtils.playerCommand(player, actionLine);
+                    break;
+                case "playsound":
+                    ActionUtils.playSound(player, actionLine);
+                    break;
+                case "playsound_resource_pack":
+                    ActionUtils.playSoundResourcePack(player, actionLine);
+                    break;
+                case "actionbar":
+                    ActionUtils.actionbar(player, actionLine, plugin);
+                    break;
+                case "title":
+                    ActionUtils.title(player, actionLine);
+                    break;
+                case "firework":
+                    ActionUtils.firework(player, actionLine, plugin);
+                    break;
+                default:
+                    plugin.getLogger().warning("Ignoring unknown kit action type: " + actionType);
+                    break;
+            }
+        } catch (Exception error) {
+            plugin.getLogger().severe("Error while executing kit action '" + actionText + "': " + error);
+        }
+    }
+
+    public void sendKitActions(ArrayList<KitAction> actions, Player player, boolean beforeItems) {
+        if (actions == null) {
+            return;
+        }
+        for (KitAction action : actions) {
+            if (action.isExecuteBeforeItems() == beforeItems) {
+                executeAction(player, action.getAction());
+            }
+        }
+    }
+
+    public boolean passPrice(double price, Player player) {
+        if (price != 0) {
             Economy economy = plugin.getDependencyManager().getVaultEconomy();
-            if(economy != null){
-                if(economy.getBalance(player) < price){
-                    return false;
-                }
+            if (economy != null) {
+                return economy.getBalance(player) >= price;
             }
         }
         return true;
     }
-
 }

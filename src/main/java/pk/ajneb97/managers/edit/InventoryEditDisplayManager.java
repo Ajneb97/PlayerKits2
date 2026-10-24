@@ -2,7 +2,6 @@ package pk.ajneb97.managers.edit;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -10,6 +9,7 @@ import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.KitAction;
+import pk.ajneb97.model.inventory.KitGuiHolder;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.InventoryItem;
@@ -21,18 +21,21 @@ import java.util.List;
 
 public class InventoryEditDisplayManager {
 
-    private PlayerKits2 plugin;
-    private InventoryEditManager inventoryEditManager;
+    private final PlayerKits2 plugin;
+    private final InventoryEditManager inventoryEditManager;
     public InventoryEditDisplayManager(PlayerKits2 plugin, InventoryEditManager inventoryEditManager){
         this.plugin = plugin;
         this.inventoryEditManager = inventoryEditManager;
     }
 
+    @SuppressWarnings("deprecation")
     public void openInventory(InventoryPlayer inventoryPlayer, String type) {
         inventoryPlayer.setInventoryName("edit_display_" + type);
-        Inventory inv = Bukkit.createInventory(null, 27, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.EDIT, inventoryPlayer.getUuid());
+        Inventory inv = Bukkit.createInventory(holder, 27, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        holder.setInventory(inv);
+        inventoryPlayer.setHolder(holder);
 
-        //Decoration
         ArrayList<Integer> slots = new ArrayList<>();
         OtherUtils.addRangeToList(0,11,slots);
         OtherUtils.addRangeToList(15,26,slots);
@@ -44,16 +47,9 @@ public class InventoryEditDisplayManager {
             }
         }
 
-        //Set Go Back
         new InventoryItem(inv, 18, Material.ARROW).name("&eGo Back").ready();
 
-        //Info Heads
-        Material headMaterial = null;
-        if(OtherUtils.isLegacy()){
-            headMaterial = Material.valueOf("SKULL_ITEM");
-        }else{
-            headMaterial = Material.PLAYER_HEAD;
-        }
+        Material headMaterial = OtherUtils.isLegacy() ? Material.valueOf("SKULL_ITEM") : Material.PLAYER_HEAD;
         List<String> lore = new ArrayList<>();
         lore.add("&7On this empty space you can place an");
         lore.add("&7already created custom item, or you can");
@@ -68,7 +64,6 @@ public class InventoryEditDisplayManager {
         Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
         KitItem kitItem = getKitDisplayItemFromType(kit,type);
 
-        //Set Info Item
         lore = new ArrayList<>();
         lore.add("&7You are currently editing the");
         if(type.equals("permission")){
@@ -89,7 +84,6 @@ public class InventoryEditDisplayManager {
         }
         new InventoryItem(inv, 0, Material.COMPASS).name("&6&lInfo").lore(lore).ready();
 
-        //Save Item
         lore = new ArrayList<>();
         lore.add("&7Click here if you made changes");
         lore.add("&7to the item, before leaving this");
@@ -101,7 +95,7 @@ public class InventoryEditDisplayManager {
         }
 
         inventoryPlayer.getPlayer().openInventory(inv);
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.trackInventoryPlayer(inventoryPlayer);
     }
 
     public void saveKitItem(InventoryPlayer inventoryPlayer){
@@ -136,13 +130,12 @@ public class InventoryEditDisplayManager {
         }
     }
 
-    public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, int slot, ClickType clickType,InventoryClickEvent event){
-        if(event.getSlotType() == null || event.getClickedInventory() == null){
+    public void clickInventory(InventoryPlayer inventoryPlayer, int slot, InventoryClickEvent event){
+        if(event.getClickedInventory() == null){
             return;
         }
         if(event.getClickedInventory().equals(InventoryUtils.getTopInventory(inventoryPlayer.getPlayer()))){
-            //Top inventory
-            //Cancel unless is slot 13
+
             if(slot != 13){
                 event.setCancelled(true);
                 if(slot == 18){
@@ -170,28 +163,17 @@ public class InventoryEditDisplayManager {
             KitAction kitAction = getKitActionsFromType(kit,actionType).get(actionSlot);
             return kitAction.getDisplayItem();
         }else{
-            KitItem kitItem = kit.getDisplayItemDefault();
-            switch(type){
-                case "permission":
-                    return kit.getDisplayItemNoPermission();
-                case "onetime":
-                    return kit.getDisplayItemOneTime();
-                case "cooldown":
-                    return kit.getDisplayItemCooldown();
-                case "requirements":
-                    return kit.getDisplayItemOneTimeRequirements();
-            }
-            return kitItem;
+            return switch(type){
+                case "permission" -> kit.getDisplayItemNoPermission();
+                case "onetime" -> kit.getDisplayItemOneTime();
+                case "cooldown" -> kit.getDisplayItemCooldown();
+                case "requirements" -> kit.getDisplayItemOneTimeRequirements();
+                default -> kit.getDisplayItemDefault();
+            };
         }
     }
 
     public ArrayList<KitAction> getKitActionsFromType(Kit kit,String type){
-        ArrayList<KitAction> actions = null;
-        if(type.equals("claim")){
-            actions = kit.getClaimActions();
-        }else{
-            actions = kit.getErrorActions();
-        }
-        return actions;
+        return type.equals("claim") ? kit.getClaimActions() : kit.getErrorActions();
     }
 }

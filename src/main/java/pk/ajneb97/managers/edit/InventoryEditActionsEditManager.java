@@ -3,7 +3,6 @@ package pk.ajneb97.managers.edit;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -11,6 +10,7 @@ import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.KitAction;
+import pk.ajneb97.model.inventory.KitGuiHolder;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.utils.InventoryItem;
 import pk.ajneb97.utils.OtherUtils;
@@ -20,25 +20,27 @@ import java.util.List;
 
 public class InventoryEditActionsEditManager {
 
-    private PlayerKits2 plugin;
-    private InventoryEditActionsManager inventoryEditActionsManager;
+    private final PlayerKits2 plugin;
+    private final InventoryEditActionsManager inventoryEditActionsManager;
 
     public InventoryEditActionsEditManager(PlayerKits2 plugin, InventoryEditActionsManager inventoryEditActionsManager) {
         this.plugin = plugin;
         this.inventoryEditActionsManager = inventoryEditActionsManager;
     }
 
+    @SuppressWarnings("deprecation")
     public void openInventory(InventoryPlayer inventoryPlayer, String type, int actionSlot) {
         inventoryPlayer.setInventoryName("edit_action_slot_" + type + "_" + actionSlot);
-        Inventory inv = Bukkit.createInventory(null, 27, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.EDIT, inventoryPlayer.getUuid());
+        Inventory inv = Bukkit.createInventory(holder, 27, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        holder.setInventory(inv);
+        inventoryPlayer.setHolder(holder);
 
-        //Set Go Back
         new InventoryItem(inv, 18, Material.ARROW).name("&eGo Back").ready();
 
         Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
         KitAction kitAction = inventoryEditActionsManager.getKitActionsFromType(kit, type).get(actionSlot);
 
-        //Set Edit Action
         List<String> lore = new ArrayList<>();
         lore.add(MessagesManager.getLegacyColoredMessage("&7Click to change the action."));
         lore.add("");
@@ -51,7 +53,6 @@ public class InventoryEditActionsEditManager {
         item.setItemMeta(meta);
         inv.setItem(10, item);
 
-        //Set Execute before giving items
         lore = new ArrayList<>();
         lore.add("&7Click to enable whether the action should");
         lore.add("&7be executed before giving the kit items");
@@ -64,7 +65,6 @@ public class InventoryEditActionsEditManager {
         lore.add("&7Current Status: " + executeBeforeGivingItems);
         new InventoryItem(inv, 12, Material.BEACON).name("&eSet &6&lExecute Before Giving Items").lore(lore).ready();
 
-        //Set Count As Item
         lore = new ArrayList<>();
         lore.add("&7Click to enable whether this action should");
         lore.add("&7count as an item, and therefore will be used");
@@ -79,14 +79,8 @@ public class InventoryEditActionsEditManager {
         lore.add("&7Current Status: " + countAsItem);
         new InventoryItem(inv, 14, Material.LADDER).name("&eSet &6&lCount As Item").lore(lore).ready();
 
-        //Set Display Item
-        Material headMaterial = null;
-        if (OtherUtils.isLegacy()) {
-            headMaterial = Material.valueOf("SKULL_ITEM");
-        } else {
-            headMaterial = Material.PLAYER_HEAD;
-        }
-        lore = new ArrayList<String>();
+        Material headMaterial = OtherUtils.isLegacy() ? Material.valueOf("SKULL_ITEM") : Material.PLAYER_HEAD;
+        lore = new ArrayList<>();
         lore.add("&7Click to edit the display item for");
         lore.add("&7this action.");
         lore.add("");
@@ -95,12 +89,11 @@ public class InventoryEditActionsEditManager {
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMWNkZTUxNGFmYTE5NGQ1Y2JkMDQ3N2MwNWI3Y2IxODVmZjFkZmZkMGMyZmFkZmFlMWE1YmI4MDY0ODU2Yzg5MiJ9fX0=")
                 .name("&eSet &6&lDisplay Item").lore(lore).ready();
 
-
         inventoryPlayer.getPlayer().openInventory(inv);
-        inventoryEditActionsManager.getInventoryEditManager().getPlayers().add(inventoryPlayer);
+        inventoryEditActionsManager.getInventoryEditManager().trackInventoryPlayer(inventoryPlayer);
     }
 
-    public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, int slot, ClickType clickType){
+    public void clickInventory(InventoryPlayer inventoryPlayer, int slot){
         if(slot == 18){
             inventoryEditActionsManager.openInventory(inventoryPlayer,getType(inventoryPlayer));
         }else if(slot == 10){
@@ -148,7 +141,7 @@ public class InventoryEditActionsEditManager {
 
         player.closeInventory();
         inventoryPlayer.setInventoryName("edit_chat_action_slot_" + getType(inventoryPlayer) + "_" + getActionSlot(inventoryPlayer));
-        inventoryEditActionsManager.getInventoryEditManager().getPlayers().add(inventoryPlayer);
+        inventoryEditActionsManager.getInventoryEditManager().trackInventoryPlayer(inventoryPlayer);
     }
 
     public void editAction(InventoryPlayer inventoryPlayer,String message){

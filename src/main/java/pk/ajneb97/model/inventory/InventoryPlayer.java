@@ -2,17 +2,26 @@ package pk.ajneb97.model.inventory;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import pk.ajneb97.platform.PlatformTask;
+
+import java.util.UUID;
 
 public class InventoryPlayer {
-    private Player player;
+
+    private final Player player;
+    private final UUID uuid;
     private String inventoryName;
 
     private String previousInventoryName;
     private String kitName;
     private ItemStack[] savedInventoryContents;
+    private PlatformTask updateTask;
+    private KitGuiHolder holder;
+    private int editSelectedSlot = -1;
 
     public InventoryPlayer(Player player, String inventoryName) {
         this.player = player;
+        this.uuid = player.getUniqueId();
         this.inventoryName = inventoryName;
     }
 
@@ -20,8 +29,8 @@ public class InventoryPlayer {
         return player;
     }
 
-    public void setPlayer(Player player) {
-        this.player = player;
+    public UUID getUuid() {
+        return uuid;
     }
 
     public String getInventoryName() {
@@ -48,17 +57,52 @@ public class InventoryPlayer {
         this.kitName = kitName;
     }
 
+    public KitGuiHolder getHolder() {
+        return holder;
+    }
+
+    public void setHolder(KitGuiHolder holder) {
+        this.holder = holder;
+    }
+
+    public int getEditSelectedSlot() {
+        return editSelectedSlot;
+    }
+
+    public void setEditSelectedSlot(int editSelectedSlot) {
+        this.editSelectedSlot = editSelectedSlot;
+    }
+
     public void restoreSavedInventoryContents() {
-        if(savedInventoryContents != null){
-            player.getInventory().setContents(savedInventoryContents);
-            //player.updateInventory();
+        if (savedInventoryContents != null) {
+            ItemStack[] contents = savedInventoryContents;
             savedInventoryContents = null;
+            if (player != null && player.isOnline()) {
+                player.getInventory().setContents(contents);
+            }
         }
     }
 
     public void saveInventoryContents() {
-        if(this.savedInventoryContents == null){
-            this.savedInventoryContents = player.getInventory().getContents();
+        if (this.savedInventoryContents == null) {
+            ItemStack[] contents = player.getInventory().getContents();
+            ItemStack[] copy = new ItemStack[contents.length];
+            for (int i = 0; i < contents.length; i++) {
+                copy[i] = contents[i] == null ? null : contents[i].clone();
+            }
+            this.savedInventoryContents = copy;
+        }
+    }
+
+    public void setUpdateTask(PlatformTask updateTask) {
+        cancelUpdateTask();
+        this.updateTask = updateTask;
+    }
+
+    public void cancelUpdateTask() {
+        if (updateTask != null) {
+            updateTask.cancel();
+            updateTask = null;
         }
     }
 }

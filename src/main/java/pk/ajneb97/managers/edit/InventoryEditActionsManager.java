@@ -11,6 +11,7 @@ import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.KitAction;
+import pk.ajneb97.model.inventory.KitGuiHolder;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.utils.InventoryItem;
 import pk.ajneb97.utils.OtherUtils;
@@ -18,22 +19,25 @@ import pk.ajneb97.utils.OtherUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InventoryEditActionsManager {
+public final class InventoryEditActionsManager {
 
-    private PlayerKits2 plugin;
-    private InventoryEditManager inventoryEditManager;
-    private InventoryEditActionsEditManager inventoryEditActionsEditManager;
+    private final PlayerKits2 plugin;
+    private final InventoryEditManager inventoryEditManager;
+    private final InventoryEditActionsEditManager inventoryEditActionsEditManager;
     public InventoryEditActionsManager(PlayerKits2 plugin, InventoryEditManager inventoryEditManager){
         this.plugin = plugin;
         this.inventoryEditManager = inventoryEditManager;
         this.inventoryEditActionsEditManager = new InventoryEditActionsEditManager(plugin,this);
     }
 
+    @SuppressWarnings("deprecation")
     public void openInventory(InventoryPlayer inventoryPlayer,String type) {
         inventoryPlayer.setInventoryName("edit_actions_"+type);
-        Inventory inv = Bukkit.createInventory(null, 54, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.EDIT, inventoryPlayer.getUuid());
+        Inventory inv = Bukkit.createInventory(holder, 54, MessagesManager.getLegacyColoredMessage("&9Editing Kit"));
+        holder.setInventory(inv);
+        inventoryPlayer.setHolder(holder);
 
-        //Decoration
         for(int i=45;i<=52;i++){
             if(OtherUtils.isLegacy()){
                 new InventoryItem(inv, i, Material.valueOf("STAINED_GLASS_PANE")).dataValue((short) 15).name("").ready();
@@ -42,14 +46,11 @@ public class InventoryEditActionsManager {
             }
         }
 
-        //Set Go Back
         new InventoryItem(inv, 45, Material.ARROW).name("&eGo Back").ready();
 
-        //Set Add Action
         new InventoryItem(inv, 53, Material.EMERALD_BLOCK).name("&6&lAdd Action").ready();
 
-        //Set Info Item
-        List<String> lore = new ArrayList<String>();
+        List<String> lore = new ArrayList<>();
         lore.add("&7You are currently editing the actions");
         if(type.equals("claim")){
             lore.add("&7when the player claims the kit.");
@@ -59,7 +60,6 @@ public class InventoryEditActionsManager {
         }
         new InventoryItem(inv, 49, Material.COMPASS).name("&6&lInfo").lore(lore).ready();
 
-        //Set Actions
         Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
         ArrayList<KitAction> actions = getKitActionsFromType(kit,type);
         int slot = 0;
@@ -92,7 +92,7 @@ public class InventoryEditActionsManager {
         }
 
         inventoryPlayer.getPlayer().openInventory(inv);
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.trackInventoryPlayer(inventoryPlayer);
     }
 
     public void removeAction(InventoryPlayer inventoryPlayer,int slot){
@@ -106,7 +106,6 @@ public class InventoryEditActionsManager {
         plugin.getConfigsManager().getKitsConfigManager().saveConfig(kit);
     }
 
-
     public void clickAddAction(InventoryPlayer inventoryPlayer){
         Player player = inventoryPlayer.getPlayer();
         player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&7Write the new action to add."));
@@ -115,7 +114,7 @@ public class InventoryEditActionsManager {
         player.closeInventory();
         String type = inventoryPlayer.getInventoryName().replace("edit_actions_","");
         inventoryPlayer.setInventoryName("edit_chat_add_action_"+type);
-        inventoryEditManager.getPlayers().add(inventoryPlayer);
+        inventoryEditManager.trackInventoryPlayer(inventoryPlayer);
     }
 
     public void addAction(InventoryPlayer inventoryPlayer,String message){
@@ -128,7 +127,6 @@ public class InventoryEditActionsManager {
         openInventory(inventoryPlayer,type);
         plugin.getConfigsManager().getKitsConfigManager().saveConfig(kit);
     }
-
 
     public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, int slot, ClickType clickType){
         if(slot == 45){
@@ -146,13 +144,7 @@ public class InventoryEditActionsManager {
     }
 
     public ArrayList<KitAction> getKitActionsFromType(Kit kit,String type){
-        ArrayList<KitAction> actions = null;
-        if(type.equals("claim")){
-            actions = kit.getClaimActions();
-        }else{
-            actions = kit.getErrorActions();
-        }
-        return actions;
+        return type.equals("claim") ? kit.getClaimActions() : kit.getErrorActions();
     }
 
     public InventoryEditManager getInventoryEditManager() {
