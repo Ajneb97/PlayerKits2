@@ -3,7 +3,6 @@ package pk.ajneb97.managers.edit;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -21,15 +20,15 @@ import java.util.List;
 
 public class InventoryEditActionsEditManager {
 
-    private PlayerKits2 plugin;
-    private InventoryEditActionsManager inventoryEditActionsManager;
+    private final PlayerKits2 plugin;
+    private final InventoryEditActionsManager inventoryEditActionsManager;
 
     public InventoryEditActionsEditManager(PlayerKits2 plugin, InventoryEditActionsManager inventoryEditActionsManager) {
         this.plugin = plugin;
         this.inventoryEditActionsManager = inventoryEditActionsManager;
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings("deprecation")
     public void openInventory(InventoryPlayer inventoryPlayer, String type, int actionSlot) {
         inventoryPlayer.setInventoryName("edit_action_slot_" + type + "_" + actionSlot);
         KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.EDIT, inventoryPlayer.getUuid());
@@ -80,13 +79,8 @@ public class InventoryEditActionsEditManager {
         lore.add("&7Current Status: " + countAsItem);
         new InventoryItem(inv, 14, Material.LADDER).name("&eSet &6&lCount As Item").lore(lore).ready();
 
-        Material headMaterial = null;
-        if (OtherUtils.isLegacy()) {
-            headMaterial = Material.valueOf("SKULL_ITEM");
-        } else {
-            headMaterial = Material.PLAYER_HEAD;
-        }
-        lore = new ArrayList<String>();
+        Material headMaterial = OtherUtils.isLegacy() ? Material.valueOf("SKULL_ITEM") : Material.PLAYER_HEAD;
+        lore = new ArrayList<>();
         lore.add("&7Click to edit the display item for");
         lore.add("&7this action.");
         lore.add("");
@@ -99,7 +93,7 @@ public class InventoryEditActionsEditManager {
         inventoryEditActionsManager.getInventoryEditManager().trackInventoryPlayer(inventoryPlayer);
     }
 
-    public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, int slot, ClickType clickType){
+    public void clickInventory(InventoryPlayer inventoryPlayer, int slot){
         if(slot == 18){
             inventoryEditActionsManager.openInventory(inventoryPlayer,getType(inventoryPlayer));
         }else if(slot == 10){

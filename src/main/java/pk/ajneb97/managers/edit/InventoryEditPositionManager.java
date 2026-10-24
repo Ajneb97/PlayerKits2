@@ -1,13 +1,10 @@
 package pk.ajneb97.managers.edit;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.configs.MainConfigManager;
 import pk.ajneb97.managers.*;
@@ -21,15 +18,14 @@ import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.InventoryItem;
 import pk.ajneb97.utils.InventoryUtils;
 import pk.ajneb97.utils.ItemUtils;
-import pk.ajneb97.utils.MiniMessageUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class InventoryEditPositionManager {
 
-    private PlayerKits2 plugin;
-    private InventoryEditManager inventoryEditManager;
+    private final PlayerKits2 plugin;
+    private final InventoryEditManager inventoryEditManager;
     public InventoryEditPositionManager(PlayerKits2 plugin, InventoryEditManager inventoryEditManager){
         this.plugin = plugin;
         this.inventoryEditManager = inventoryEditManager;
@@ -40,11 +36,11 @@ public class InventoryEditPositionManager {
 
         MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
         KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.EDIT_POSITION, inventoryPlayer.getUuid());
-        Inventory inv = InventoryUtils.createInventory(holder, kitInventory.getSlots(), kitInventory.getTitle(),
+        Inventory inv = InventoryUtils.createInventory(holder, kitInventory.slots(), kitInventory.title(),
                 mainConfigManager.isUseMiniMessage());
         inventoryPlayer.setHolder(holder);
 
-        List<ItemKitInventory> items = kitInventory.getItems();
+        List<ItemKitInventory> items = kitInventory.items();
         KitItemManager kitItemManager = plugin.getKitItemManager();
         KitsManager kitsManager = plugin.getKitsManager();
 
@@ -59,7 +55,7 @@ public class InventoryEditPositionManager {
                             continue;
                         }
 
-                        KitItem kitItem = kit.getDisplayItemDefault().clone();
+                        KitItem kitItem = kit.getDisplayItemDefault().copy();
 
                         if(kitName.equals(inventoryPlayer.getKitName())){
                             List<String> extraLore = new ArrayList<>();
@@ -107,7 +103,7 @@ public class InventoryEditPositionManager {
         inventoryPlayer.saveInventoryContents();
         inventoryPlayer.getPlayer().getInventory().clear();
 
-        List<String> lore = new ArrayList<String>();
+        List<String> lore = new ArrayList<>();
         lore.add("&7Just click on the position of the");
         lore.add("&7inventory, where you want the new kit");
         lore.add("&7item to be displayed.");
@@ -133,9 +129,9 @@ public class InventoryEditPositionManager {
         closeInventory(inventoryPlayer);
     }
 
-    public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, int slot, ClickType clickType, InventoryClickEvent event){
+    public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, int slot, InventoryClickEvent event){
         event.setCancelled(true);
-        if(event.getSlotType() == null || event.getClickedInventory() == null){
+        if(event.getClickedInventory() == null){
             return;
         }
         if(event.getClickedInventory().equals(InventoryUtils.getTopInventory(inventoryPlayer.getPlayer()))){

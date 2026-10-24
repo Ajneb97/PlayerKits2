@@ -22,14 +22,14 @@ import java.util.List;
 
 public class InventoryEditKitItemsManager {
 
-    private PlayerKits2 plugin;
-    private InventoryEditManager inventoryEditManager;
+    private final PlayerKits2 plugin;
+    private final InventoryEditManager inventoryEditManager;
     public InventoryEditKitItemsManager(PlayerKits2 plugin, InventoryEditManager inventoryEditManager){
         this.plugin = plugin;
         this.inventoryEditManager = inventoryEditManager;
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings("deprecation")
     public void openInventory(InventoryPlayer inventoryPlayer){
         inventoryPlayer.setInventoryName("edit_items");
         inventoryPlayer.setEditSelectedSlot(-1);
@@ -124,16 +124,17 @@ public class InventoryEditKitItemsManager {
         }
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings("deprecation")
     public void setItemOffHand(Inventory inv,ItemStack item,int slot){
         List<String> offHandLore = new ArrayList<>();
         offHandLore.add(" ");
         offHandLore.add(MessagesManager.getLegacyColoredMessage("&c&lRIGHT CLICK &cto remove from offhand"));
         ItemMeta meta = item.getItemMeta();
-        List<String> itemLore = new ArrayList<>();
-        if(meta.hasLore()){
-            itemLore = meta.getLore();
+        if(meta == null){
+            return;
         }
+        List<String> currentLore = meta.getLore();
+        List<String> itemLore = currentLore != null ? currentLore : new ArrayList<>();
         itemLore.addAll(offHandLore);
         meta.setLore(itemLore);
         item.setItemMeta(meta);
@@ -141,13 +142,21 @@ public class InventoryEditKitItemsManager {
         inv.setItem(slot,item);
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    private static void removeOffHandLoreLines(List<String> lines){
+        for(int i=0;i<2 && !lines.isEmpty();i++){
+            lines.removeLast();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
     public void removeItemOffHand(Inventory inv,ItemStack item,int slot){
         ItemMeta meta = item.getItemMeta();
-        if(meta.hasLore()){
-            List<String> itemLore = meta.getLore();
-            itemLore.remove(itemLore.size()-1);
-            itemLore.remove(itemLore.size()-1);
+        if(meta == null){
+            return;
+        }
+        List<String> itemLore = meta.getLore();
+        if(itemLore != null){
+            removeOffHandLoreLines(itemLore);
             meta.setLore(itemLore);
         }
         item.setItemMeta(meta);

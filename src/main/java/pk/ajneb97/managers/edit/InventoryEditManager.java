@@ -18,7 +18,6 @@ import pk.ajneb97.utils.InventoryItem;
 import pk.ajneb97.utils.OtherUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,13 +25,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class InventoryEditManager {
 
-    private PlayerKits2 plugin;
+    private final PlayerKits2 plugin;
     private final Map<UUID, InventoryPlayer> players;
-    private InventoryEditActionsManager inventoryEditActionsManager;
-    private InventoryEditDisplayManager inventoryEditDisplayManager;
-    private InventoryEditKitItemsManager inventoryEditKitItemsManager;
-    private InventoryEditPositionManager inventoryEditPositionManager;
-    private InventoryEditRequirementsManager inventoryEditRequirementsManager;
+    private final InventoryEditActionsManager inventoryEditActionsManager;
+    private final InventoryEditDisplayManager inventoryEditDisplayManager;
+    private final InventoryEditKitItemsManager inventoryEditKitItemsManager;
+    private final InventoryEditPositionManager inventoryEditPositionManager;
+    private final InventoryEditRequirementsManager inventoryEditRequirementsManager;
     public InventoryEditManager(PlayerKits2 plugin){
         this.plugin = plugin;
         this.players = new ConcurrentHashMap<>();
@@ -74,15 +73,11 @@ public final class InventoryEditManager {
         return inventoryEditPositionManager;
     }
 
-    public Collection<InventoryPlayer> getPlayers() {
-        return players.values();
-    }
-
     public void removeInventoryPlayer(Player player){
         players.remove(player.getUniqueId());
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings("deprecation")
     public void openInventory(InventoryPlayer inventoryPlayer) {
         inventoryPlayer.setInventoryName("edit_main_inventory");
         KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.EDIT, inventoryPlayer.getUuid());
@@ -92,7 +87,7 @@ public final class InventoryEditManager {
 
         Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
 
-        List<String> lore = new ArrayList<String>();
+        List<String> lore = new ArrayList<>();
         lore.add("&7Click to define the position of the display");
         lore.add("&7item of this kit in the Inventory.");
         lore.add("");
@@ -100,14 +95,14 @@ public final class InventoryEditManager {
         String inventoryName = "none";
         KitPosition kitPosition = plugin.getInventoryManager().getKitPositionByKitName(kit.getName());
         if (kitPosition != null) {
-            slot = kitPosition.getSlot() + "";
-            inventoryName = kitPosition.getInventoryName();
+            slot = kitPosition.slot() + "";
+            inventoryName = kitPosition.inventoryName();
         }
         lore.add("&7Current Slot: &a" + slot);
         lore.add("&7Current Inventory: &a" + inventoryName);
         new InventoryItem(inv, 10, Material.DROPPER).name("&eSet &6&lSlot").lore(lore).ready();
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to define the cooldown of");
         lore.add("&7the kit.");
         lore.add("");
@@ -118,7 +113,7 @@ public final class InventoryEditManager {
             new InventoryItem(inv, 11, Material.CLOCK).name("&eSet &6&lCooldown").lore(lore).ready();
         }
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to enable/disable whether this kit");
         lore.add("&7needs permissions to be claimed.");
         lore.add("&7The permission will be:");
@@ -131,7 +126,7 @@ public final class InventoryEditManager {
         lore.add("&7Current Status: " + permission);
         new InventoryItem(inv, 12, Material.REDSTONE_BLOCK).name("&eSet &6&lPermission Required").lore(lore).ready();
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to enable/disable whether this kit");
         lore.add("&7should be claimed just one time.");
         lore.add("");
@@ -142,7 +137,7 @@ public final class InventoryEditManager {
         lore.add("&7Current Status: " + oneTime);
         new InventoryItem(inv, 20, Material.GHAST_TEAR).name("&eSet &6&lOne Time").lore(lore).ready();
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to enable/disable whether armor");
         lore.add("&7should be equipped automatically when");
         lore.add("&7this kit is claimed.");
@@ -154,13 +149,8 @@ public final class InventoryEditManager {
         lore.add("&7Current Status: " + autoArmor);
         new InventoryItem(inv, 21, Material.IRON_CHESTPLATE).name("&eSet &6&lAuto Armor").lore(lore).ready();
 
-        Material headMaterial = null;
-        if(OtherUtils.isLegacy()){
-            headMaterial = Material.valueOf("SKULL_ITEM");
-        }else{
-            headMaterial = Material.PLAYER_HEAD;
-        }
-        lore = new ArrayList<String>();
+        Material headMaterial = OtherUtils.isLegacy() ? Material.valueOf("SKULL_ITEM") : Material.PLAYER_HEAD;
+        lore = new ArrayList<>();
         lore.add("&7Click to edit the default kit display");
         lore.add("&7item.");
         lore.add("");
@@ -169,7 +159,7 @@ public final class InventoryEditManager {
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMWNkZTUxNGFmYTE5NGQ1Y2JkMDQ3N2MwNWI3Y2IxODVmZjFkZmZkMGMyZmFkZmFlMWE1YmI4MDY0ODU2Yzg5MiJ9fX0=")
                 .name("&eSet &6&lDefault Display Item").lore(lore).ready();
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to edit the kit display item when");
         lore.add("&7player doesn't have the permissions to");
         lore.add("&7claim it.");
@@ -179,7 +169,7 @@ public final class InventoryEditManager {
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzdkNDk5YTlhZjUyOTllZGE0Y2NkYWMyMDE5ZWZlN2YyNDk2MWYzZTFmY2U3Njk0Y2I2ODIwMjlkMjllOWVhMSJ9fX0=")
                 .name("&eSet &6&lNo Permissions Display Item").lore(lore).ready();
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to edit the kit display item when");
         lore.add("&7one time option is enabled and the player");
         lore.add("&7has already claimed it.");
@@ -189,7 +179,7 @@ public final class InventoryEditManager {
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzU3NDc2NmUzZGVjNDkwNGZhNWFhMTU5MjA4ZGFlYzExYzYzYzVlMzI2MTU3YzM2NWViMTY5MDFiNjFmNjQ1YiJ9fX0=")
                 .name("&eSet &6&lOne Time Display Item").lore(lore).ready();
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to edit the kit display item when");
         lore.add("&7the player is on cooldown.");
         lore.add("");
@@ -198,7 +188,7 @@ public final class InventoryEditManager {
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODg3YTc1ZjZjYmNjOGUxN2I4ZmJmYWVlMzM3MGZlZjAyMWMyNWY3MDM1YjI1ZDRjNjU3OTZlZjMzODljZWYwMCJ9fX0=")
                 .name("&eSet &6&lCooldown Display Item").lore(lore).ready();
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to edit the kit display item when");
         lore.add("&7one time requirements option is enabled and");
         lore.add("&7the player has already accomplished the");
@@ -209,7 +199,7 @@ public final class InventoryEditManager {
                 .setSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGU4NmJlNTQ5OWViNDI0NWE0NjFiZGNiODZmZjE2M2M4NTVjMTgyODFmOTcxMDU0MmIxN2ZkMjhiYWU0MjQzYiJ9fX0=")
                 .name("&eSet &6&lOne Time Requirements Display Item").lore(lore).ready();
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to edit the kit items.");
         lore.add("");
         lore.add("&7Current Items:");
@@ -228,53 +218,38 @@ public final class InventoryEditManager {
         }
         new InventoryItem(inv, 14, Material.DIAMOND).name("&eSet &6&lKit Items").lore(lore).ready();
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to edit the kit requirements.");
         new InventoryItem(inv, 15, Material.REDSTONE).name("&eSet &6&lRequirements").lore(lore).ready();
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to edit the actions to execute");
         lore.add("&7when the player claims the kit.");
         lore.add("");
         lore.add("&7Current Actions:");
-        lore = setActionItemLore(kit.getClaimActions(),lore);
+        addActionItemLore(kit.getClaimActions(),lore);
         new InventoryItem(inv, 23, Material.IRON_INGOT).name("&eSet &6&lClaim Actions").lore(lore).ready();
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to edit the actions to execute");
         lore.add("&7when there is an error when claiming");
         lore.add("&7the kit.");
         lore.add("");
         lore.add("&7Current Actions:");
-        lore = setActionItemLore(kit.getErrorActions(),lore);
+        addActionItemLore(kit.getErrorActions(),lore);
         new InventoryItem(inv, 24, Material.NETHER_BRICK).name("&eSet &6&lError Actions").lore(lore).ready();
 
         inventoryPlayer.getPlayer().openInventory(inv);
         trackInventoryPlayer(inventoryPlayer);
     }
 
-    public List<String> setActionItemLore(ArrayList<KitAction> actions,List<String> lore){
+    public void addActionItemLore(ArrayList<KitAction> actions,List<String> lore){
         int max = 20;
         if(actions.isEmpty()){
             lore.add(MessagesManager.getLegacyColoredMessage("&cNONE"));
         }else{
             for(KitAction kitAction : actions){
-                String actionLine = kitAction.getAction();
-                List<String> separatedActionLine = new ArrayList<String>();
-                int currentPos = 0;
-                for(int i=0;i<actionLine.length();i++) {
-                    if(currentPos >= 35 && actionLine.charAt(i) == ' ') {
-                        String m = actionLine.substring(i-currentPos, i);
-                        currentPos = 0;
-                        separatedActionLine.add(m);
-                    }else {
-                        currentPos++;
-                    }
-                    if(i==actionLine.length()-1) {
-                        String m = actionLine.substring(i-currentPos+1, actionLine.length());
-                        separatedActionLine.add(m);
-                    }
-                }
+                List<String> separatedActionLine = OtherUtils.wrapText(kitAction.getAction(),35);
 
                 for(int i=0;i<separatedActionLine.size();i++){
                     if(i == 0){
@@ -290,7 +265,6 @@ public final class InventoryEditManager {
                 }
             }
         }
-        return lore;
     }
 
     public void setPermissionRequired(InventoryPlayer inventoryPlayer){
@@ -335,7 +309,8 @@ public final class InventoryEditManager {
                 plugin.getConfigsManager().getKitsConfigManager().saveConfig(kit);
                 return;
             }
-        }catch(Exception e){}
+        }catch(NumberFormatException ignored){
+        }
         player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&cYou must use a valid number."));
     }
 
@@ -390,9 +365,9 @@ public final class InventoryEditManager {
         }else if(inventory.startsWith("edit_actions_")){
             inventoryEditActionsManager.clickInventory(inventoryPlayer,item,slot,clickType);
         }else if(inventory.startsWith("edit_action_slot_")){
-            inventoryEditActionsManager.getInventoryEditActionsEditManager().clickInventory(inventoryPlayer,item,slot,clickType);
+            inventoryEditActionsManager.getInventoryEditActionsEditManager().clickInventory(inventoryPlayer,slot);
         }else if(inventory.equals("edit_requirements")){
-            inventoryEditRequirementsManager.clickInventory(inventoryPlayer,item,slot,clickType);
+            inventoryEditRequirementsManager.clickInventory(inventoryPlayer,slot);
         }
     }
 

@@ -3,9 +3,7 @@ package pk.ajneb97.managers.edit;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.Kit;
@@ -19,14 +17,14 @@ import java.util.List;
 
 public class InventoryEditRequirementsManager {
 
-    private PlayerKits2 plugin;
-    private InventoryEditManager inventoryEditManager;
+    private final PlayerKits2 plugin;
+    private final InventoryEditManager inventoryEditManager;
     public InventoryEditRequirementsManager(PlayerKits2 plugin, InventoryEditManager inventoryEditManager){
         this.plugin = plugin;
         this.inventoryEditManager = inventoryEditManager;
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings("deprecation")
     public void openInventory(InventoryPlayer inventoryPlayer) {
         inventoryPlayer.setInventoryName("edit_requirements");
         KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.EDIT, inventoryPlayer.getUuid());
@@ -39,7 +37,7 @@ public class InventoryEditRequirementsManager {
         Kit kit = plugin.getKitsManager().getKitByName(inventoryPlayer.getKitName());
         KitRequirements kitRequirements = kit.getRequirements();
 
-        List<String> lore = new ArrayList<String>();
+        List<String> lore = new ArrayList<>();
         lore.add("&7Click to define the price of");
         lore.add("&7the kit. Requires Vault and an");
         lore.add("&7economy plugin.");
@@ -51,7 +49,7 @@ public class InventoryEditRequirementsManager {
         lore.add("&7Current Price: &a$" + currentPrice);
         new InventoryItem(inv, 11, Material.EMERALD).name("&eSet &6&lPrice").lore(lore).ready();
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to enable/disable whether players");
         lore.add("&7must accomplish the requirements of this");
         lore.add("&7kit only once.");
@@ -63,7 +61,7 @@ public class InventoryEditRequirementsManager {
         lore.add("&7Current Status: " + oneTimeRequirements);
         new InventoryItem(inv, 13, Material.GHAST_TEAR).name("&eSet &6&lOne Time Requirements").lore(lore).ready();
 
-        lore = new ArrayList<String>();
+        lore = new ArrayList<>();
         lore.add("&7Click to add/edit extra requirements.");
         lore.add("");
         lore.add("&cThis feature is not available yet on");
@@ -112,11 +110,12 @@ public class InventoryEditRequirementsManager {
                 plugin.getConfigsManager().getKitsConfigManager().saveConfig(kit);
                 return;
             }
-        }catch(Exception e){}
+        }catch(NumberFormatException ignored){
+        }
         player.sendMessage(MessagesManager.getLegacyColoredMessage(PlayerKits2.prefix+"&cYou must use a valid number."));
     }
 
-    public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, int slot, ClickType clickType) {
+    public void clickInventory(InventoryPlayer inventoryPlayer, int slot) {
         if (slot == 18) {
             inventoryEditManager.openInventory(inventoryPlayer);
         }else if(slot == 11){

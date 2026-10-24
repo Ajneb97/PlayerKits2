@@ -21,16 +21,16 @@ import java.util.List;
 
 public final class InventoryEditActionsManager {
 
-    private PlayerKits2 plugin;
-    private InventoryEditManager inventoryEditManager;
-    private InventoryEditActionsEditManager inventoryEditActionsEditManager;
+    private final PlayerKits2 plugin;
+    private final InventoryEditManager inventoryEditManager;
+    private final InventoryEditActionsEditManager inventoryEditActionsEditManager;
     public InventoryEditActionsManager(PlayerKits2 plugin, InventoryEditManager inventoryEditManager){
         this.plugin = plugin;
         this.inventoryEditManager = inventoryEditManager;
         this.inventoryEditActionsEditManager = new InventoryEditActionsEditManager(plugin,this);
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings("deprecation")
     public void openInventory(InventoryPlayer inventoryPlayer,String type) {
         inventoryPlayer.setInventoryName("edit_actions_"+type);
         KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.EDIT, inventoryPlayer.getUuid());
@@ -50,7 +50,7 @@ public final class InventoryEditActionsManager {
 
         new InventoryItem(inv, 53, Material.EMERALD_BLOCK).name("&6&lAdd Action").ready();
 
-        List<String> lore = new ArrayList<String>();
+        List<String> lore = new ArrayList<>();
         lore.add("&7You are currently editing the actions");
         if(type.equals("claim")){
             lore.add("&7when the player claims the kit.");
@@ -144,13 +144,7 @@ public final class InventoryEditActionsManager {
     }
 
     public ArrayList<KitAction> getKitActionsFromType(Kit kit,String type){
-        ArrayList<KitAction> actions = null;
-        if(type.equals("claim")){
-            actions = kit.getClaimActions();
-        }else{
-            actions = kit.getErrorActions();
-        }
-        return actions;
+        return type.equals("claim") ? kit.getClaimActions() : kit.getErrorActions();
     }
 
     public InventoryEditManager getInventoryEditManager() {
