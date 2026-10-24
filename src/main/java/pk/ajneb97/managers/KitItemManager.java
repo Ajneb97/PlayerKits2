@@ -2,6 +2,7 @@ package pk.ajneb97.managers;
 
 import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -25,12 +26,12 @@ import java.util.stream.Collectors;
 
 public class KitItemManager {
 
-    private PlayerKits2 plugin;
+    private final PlayerKits2 plugin;
     public KitItemManager(PlayerKits2 plugin){
         this.plugin = plugin;
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings({"deprecation", "removal", "UnstableApiUsage"})
     public KitItem createKitItemFromItemStack(ItemStack item,boolean exactItem){
         if(exactItem){
             return new KitItem(item.clone());
@@ -68,15 +69,18 @@ public class KitItemManager {
                     if(isPaper && serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_19_R1)){
                         MiniMessageUtils.setCommonItemLoreLegacy(lore,meta);
                     }else{
-                        for(String l : meta.getLore()) {
-                            lore.add(l.replace("§", "&"));
+                        List<String> metaLore = meta.getLore();
+                        if(metaLore != null) {
+                            for(String l : metaLore) {
+                                lore.add(l.replace("§", "&"));
+                            }
                         }
                     }
                 }
                 kitItem.setLore(lore);
             }
             if(meta.hasEnchants()) {
-                List<String> enchants = new ArrayList<String>();
+                List<String> enchants = new ArrayList<>();
                 for(Map.Entry<Enchantment,Integer> entry : meta.getEnchants().entrySet()){
                     String enchant;
                     if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R1)){
@@ -90,8 +94,8 @@ public class KitItemManager {
                 kitItem.setEnchants(enchants);
             }
             Set<ItemFlag> flags = meta.getItemFlags();
-            if(flags != null && !flags.isEmpty()) {
-                List<String> flagsList = new ArrayList<String>();
+            if(!flags.isEmpty()) {
+                List<String> flagsList = new ArrayList<>();
                 for(ItemFlag flag : flags) {
                     flagsList.add(flag.name());
                 }
@@ -141,28 +145,26 @@ public class KitItemManager {
             }
 
             if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R2)){
-                if(meta.hasTooltipStyle()){
-                    NamespacedKey key = meta.getTooltipStyle();
+                NamespacedKey key = meta.getTooltipStyle();
+                if(meta.hasTooltipStyle() && key != null){
                     kitItem.setTooltipStyle(key.getNamespace()+":"+key.getKey());
                 }
             }
 
             if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R3)){
-                if(meta.hasItemModel()){
-                    NamespacedKey key = meta.getItemModel();
+                NamespacedKey key = meta.getItemModel();
+                if(meta.hasItemModel() && key != null){
                     kitItem.setModel(key.getNamespace()+":"+key.getKey());
                 }
             }
 
-            if(meta instanceof LeatherArmorMeta) {
-                LeatherArmorMeta meta2 = (LeatherArmorMeta) meta;
+            if(meta instanceof LeatherArmorMeta meta2) {
                 kitItem.setColor(meta2.getColor().asRGB());
             }
 
-            if(meta instanceof EnchantmentStorageMeta) {
-                EnchantmentStorageMeta meta2 = (EnchantmentStorageMeta) meta;
+            if(meta instanceof EnchantmentStorageMeta meta2) {
                 Map<Enchantment, Integer> enchants = meta2.getStoredEnchants();
-                List<String> enchantsList = new ArrayList<String>();
+                List<String> enchantsList = new ArrayList<>();
                 for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
                     String enchant;
                     if(serverVersion.serverVersionGreaterEqualThan(serverVersion,ServerVersion.v1_21_R1)){
@@ -197,7 +199,7 @@ public class KitItemManager {
         return kitItem;
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings({"deprecation", "UnstableApiUsage"})
     public ItemStack createItemFromKitItem(KitItem kitItem, Player player, Kit kit){
         if(kitItem.getOriginalItem() != null){
             ItemStack item = kitItem.getOriginalItem().clone();
@@ -208,8 +210,8 @@ public class KitItemManager {
                     String name = OtherUtils.replaceGlobalVariables(meta.getDisplayName(),player,plugin);
                     meta.setDisplayName(name);
                 }
-                if(meta.hasLore()){
-                    List<String> lore = meta.getLore();
+                List<String> lore = meta.getLore();
+                if(meta.hasLore() && lore != null){
                     lore.replaceAll(text -> OtherUtils.replaceGlobalVariables(text, player, plugin));
                     meta.setLore(lore);
                 }
@@ -245,10 +247,7 @@ public class KitItemManager {
             if(useMiniMessage){
                 MiniMessageUtils.setItemLore(meta,loreCopy,player,plugin);
             }else{
-                for(int i=0;i<loreCopy.size();i++) {
-                    String line = OtherUtils.replaceGlobalVariables(loreCopy.get(i),player,plugin);
-                    loreCopy.set(i, MessagesManager.getLegacyColoredMessage(line));
-                }
+                loreCopy.replaceAll(line -> MessagesManager.getLegacyColoredMessage(OtherUtils.replaceGlobalVariables(line,player,plugin)));
                 meta.setLore(loreCopy);
             }
         }
@@ -264,10 +263,10 @@ public class KitItemManager {
             if(kitItemCustomModelComponentData != null){
                 CustomModelDataComponent customModelDataComponent = meta.getCustomModelDataComponent();
 
-                List<String> cFloats = kitItemCustomModelComponentData.getFloats();
-                List<String> cColors = kitItemCustomModelComponentData.getColors();
-                List<String> cFlags = kitItemCustomModelComponentData.getFlags();
-                List<String> cStrings = kitItemCustomModelComponentData.getStrings();
+                List<String> cFloats = kitItemCustomModelComponentData.floats();
+                List<String> cColors = kitItemCustomModelComponentData.colors();
+                List<String> cFlags = kitItemCustomModelComponentData.flags();
+                List<String> cStrings = kitItemCustomModelComponentData.strings();
 
                 customModelDataComponent.setFlags(cFlags.stream()
                         .map(Boolean::parseBoolean)
@@ -285,12 +284,13 @@ public class KitItemManager {
 
         List<String> enchants = kitItem.getEnchants();
         if(enchants != null) {
-            for(int i=0;i<enchants.size();i++) {
-                String[] sep = enchants.get(i).split(";");
-                String enchantName = sep[0];
-                int enchantLevel = Integer.parseInt(sep[1]);
-
-                meta.addEnchant(Enchantment.getByName(enchantName), enchantLevel, true);
+            for(String enchantLine : enchants) {
+                String[] sep = enchantLine.split(";");
+                Enchantment enchantment = Enchantment.getByName(sep[0]);
+                if(enchantment == null) {
+                    continue;
+                }
+                meta.addEnchant(enchantment, Integer.parseInt(sep[1]), true);
             }
         }
 
@@ -319,20 +319,20 @@ public class KitItemManager {
         item.setItemMeta(meta);
 
         int color = kitItem.getColor();
-        if(color != 0) {
-            LeatherArmorMeta meta2 = (LeatherArmorMeta) item.getItemMeta();
+        if(color != 0 && item.getItemMeta() instanceof LeatherArmorMeta meta2) {
             meta2.setColor(Color.fromRGB(color));
             item.setItemMeta(meta2);
         }
 
         List<String> bookEnchants = kitItem.getBookEnchants();
-        if(bookEnchants != null && !bookEnchants.isEmpty()) {
-            EnchantmentStorageMeta meta2 = (EnchantmentStorageMeta) item.getItemMeta();
-            for(int i=0;i<bookEnchants.size();i++) {
-                String[] sep = bookEnchants.get(i).split(";");
-                String enchantName = sep[0];
-                int level = Integer.valueOf(sep[1]);
-                meta2.addStoredEnchant(Enchantment.getByName(enchantName), level, true);
+        if(bookEnchants != null && !bookEnchants.isEmpty() && item.getItemMeta() instanceof EnchantmentStorageMeta meta2) {
+            for(String bookEnchant : bookEnchants) {
+                String[] sep = bookEnchant.split(";");
+                Enchantment enchantment = Enchantment.getByName(sep[0]);
+                if(enchantment == null) {
+                    continue;
+                }
+                meta2.addStoredEnchant(enchantment, Integer.parseInt(sep[1]), true);
             }
             item.setItemMeta(meta2);
         }
@@ -406,10 +406,10 @@ public class KitItemManager {
 
             KitItemCustomModelComponentData customModelComponentData = item.getCustomModelComponentData();
             if(customModelComponentData != null){
-                if(!customModelComponentData.getFlags().isEmpty()) config.set(path+".custom_model_component_data.flags",customModelComponentData.getFlags());
-                if(!customModelComponentData.getFloats().isEmpty()) config.set(path+".custom_model_component_data.floats",customModelComponentData.getFloats());
-                if(!customModelComponentData.getColors().isEmpty()) config.set(path+".custom_model_component_data.colors",customModelComponentData.getColors());
-                if(!customModelComponentData.getStrings().isEmpty()) config.set(path+".custom_model_component_data.strings",customModelComponentData.getStrings());
+                if(!customModelComponentData.flags().isEmpty()) config.set(path+".custom_model_component_data.flags",customModelComponentData.flags());
+                if(!customModelComponentData.floats().isEmpty()) config.set(path+".custom_model_component_data.floats",customModelComponentData.floats());
+                if(!customModelComponentData.colors().isEmpty()) config.set(path+".custom_model_component_data.colors",customModelComponentData.colors());
+                if(!customModelComponentData.strings().isEmpty()) config.set(path+".custom_model_component_data.strings",customModelComponentData.strings());
             }
 
             if(item.isHideTooltip()){
@@ -443,55 +443,55 @@ public class KitItemManager {
 
             KitItemSkullData skullData = item.getSkullData();
             if(skullData != null) {
-                config.set(path+".skull_data.texture", skullData.getTexture());
-                config.set(path+".skull_data.id", skullData.getId());
-                config.set(path+".skull_data.owner", skullData.getOwner());
+                config.set(path+".skull_data.texture", skullData.texture());
+                config.set(path+".skull_data.id", skullData.id());
+                config.set(path+".skull_data.owner", skullData.owner());
             }
 
             KitItemPotionData potionData = item.getPotionData();
             if(potionData != null) {
-                if(potionData.getPotionEffects() != null && !potionData.getPotionEffects().isEmpty()) {
-                    config.set(path+".potion_data.effects", potionData.getPotionEffects());
+                if(potionData.potionEffects() != null && !potionData.potionEffects().isEmpty()) {
+                    config.set(path+".potion_data.effects", potionData.potionEffects());
                 }
-                config.set(path+".potion_data.extended", potionData.isExtended());
-                config.set(path+".potion_data.upgraded", potionData.isUpgraded());
-                config.set(path+".potion_data.type", potionData.getPotionType());
-                if(potionData.getPotionColor() != 0) {
-                    config.set(path+".potion_data.color", potionData.getPotionColor());
+                config.set(path+".potion_data.extended", potionData.extended());
+                config.set(path+".potion_data.upgraded", potionData.upgraded());
+                config.set(path+".potion_data.type", potionData.potionType());
+                if(potionData.potionColor() != 0) {
+                    config.set(path+".potion_data.color", potionData.potionColor());
                 }
             }
 
             KitItemFireworkData fireworkData = item.getFireworkData();
             if(fireworkData != null) {
-                if(fireworkData.getFireworkRocketEffects() != null && !fireworkData.getFireworkRocketEffects().isEmpty()) {
-                    config.set(path+".firework_data.rocket_effects", fireworkData.getFireworkRocketEffects());
+                if(fireworkData.fireworkRocketEffects() != null && !fireworkData.fireworkRocketEffects().isEmpty()) {
+                    config.set(path+".firework_data.rocket_effects", fireworkData.fireworkRocketEffects());
                 }
-                config.set(path+".firework_data.star_effect", fireworkData.getFireworkStarEffect());
-                if(fireworkData.getFireworkPower() != 0) {
-                    config.set(path+".firework_data.power", fireworkData.getFireworkPower());
+                config.set(path+".firework_data.star_effect", fireworkData.fireworkStarEffect());
+                if(fireworkData.fireworkPower() != 0) {
+                    config.set(path+".firework_data.power", fireworkData.fireworkPower());
                 }
             }
 
             KitItemBannerData bannerData = item.getBannerData();
             if(bannerData != null) {
-                if(bannerData.getPatterns() != null && !bannerData.getPatterns().isEmpty()) {
-                    config.set(path+".banner_data.patterns", bannerData.getPatterns());
+                if(bannerData.patterns() != null && !bannerData.patterns().isEmpty()) {
+                    config.set(path+".banner_data.patterns", bannerData.patterns());
                 }
-                config.set(path+".banner_data.base_color", bannerData.getBaseColor());
+                config.set(path+".banner_data.base_color", bannerData.baseColor());
             }
 
             KitItemBookData bookData = item.getBookData();
             if(bookData != null) {
-                config.set(path+".book_data.author", bookData.getAuthor());
-                config.set(path+".book_data.title", bookData.getTitle());
-                config.set(path+".book_data.pages", bookData.getPages());
-                config.set(path+".book_data.generation", bookData.getGeneration());
+                config.set(path+".book_data.author", bookData.author());
+                config.set(path+".book_data.title", bookData.title());
+                config.set(path+".book_data.pages", bookData.pages());
+                config.set(path+".book_data.generation", bookData.generation());
             }
 
             KitItemTrimData trimData = item.getTrimData();
             if(trimData != null){
-                config.set(path+".trim_data.pattern", trimData.getPattern());
-                config.set(path+".trim_data.material", trimData.getMaterial());
+                config.set(path+".trim_data.pattern", trimData.pattern());
+                config.set(path+".trim_data.material", trimData.material());
             }
         }
 
@@ -504,9 +504,9 @@ public class KitItemManager {
     }
 
     public KitItem getKitItemFromConfig(FileConfiguration config, String path){
-        boolean offhand = config.contains(path+".offhand") ? config.getBoolean(path+".offhand") : false;
+        boolean offhand = config.contains(path+".offhand") && config.getBoolean(path+".offhand");
         int previewSlot = config.contains(path+".preview_slot") ? config.getInt(path+".preview_slot") : -1;
-        KitItem kitItem = null;
+        KitItem kitItem;
         if(config.contains(path+".original")){
             kitItem = new KitItem(config.getItemStack(path+".original"));
         }else{
@@ -680,14 +680,22 @@ public class KitItemManager {
         return kitItem;
     }
 
+    private static int getLegacyInt(FileConfiguration config, String path, int defaultValue){
+        String value = config.getString(path);
+        if(value == null || value.isBlank()){
+            return defaultValue;
+        }
+        return Integer.parseInt(value.trim());
+    }
+
     public KitItem getKitItemFromV1Config(FileConfiguration config, String path){
         String id = config.getString(path+".id");
         String name = config.contains(path+".name") ? config.getString(path+".name") : null;
         List<String> lore = config.contains(path+".lore") ? config.getStringList(path+".lore") : null;
-        int amount = config.contains(path+".amount") ? Integer.parseInt(config.getString(path+".amount")) : 1;
-        short durability = config.contains(path+".durability") ? Short.parseShort(config.getString(path+".durability")) : 0;
-        int customModelData = config.contains(path+".custom_model_data") ? Integer.parseInt(config.getString(path+".custom_model_data")) : 0;
-        int color = config.contains(path+".color") ? Integer.parseInt(config.getString(path+".color")) : 0;
+        int amount = getLegacyInt(config,path+".amount",1);
+        short durability = (short) getLegacyInt(config,path+".durability",0);
+        int customModelData = getLegacyInt(config,path+".custom_model_data",0);
+        int color = getLegacyInt(config,path+".color",0);
         List<String> enchants = config.contains(path+".enchants") ? config.getStringList(path+".enchants") : null;
         List<String> flags = config.contains(path+".hide-flags") ? config.getStringList(path+".hide-flags") : null;
         List<String> bookEnchants = config.contains(path+".book-enchants") ? config.getStringList(path+".book-enchants") : null;
@@ -697,7 +705,6 @@ public class KitItemManager {
             List<String> potionEffects = null;
             boolean extended = false;
             boolean upgraded = false;
-            String potionType = null;
             int potionColor = 0;
             if(config.contains(path+".potion-effects")) {
                 potionEffects = config.getStringList(path+".potion-effects");
@@ -708,7 +715,7 @@ public class KitItemManager {
             if(config.contains(path+".potion-upgraded")) {
                 upgraded = Boolean.parseBoolean(config.getString(path+".potion-upgraded"));
             }
-            potionType = config.getString(path+".potion-type");
+            String potionType = config.getString(path+".potion-type");
             if(config.contains(path+".potion-color")) {
                 potionColor = config.getInt(path+".potion-color");
             }
@@ -720,35 +727,29 @@ public class KitItemManager {
             List<String> pages = config.getStringList(path+".book-pages");
             String author = null;
             String generation = null;
-            String title = null;
             if(config.contains(path+".book-author")) {
                 author = config.getString(path+".book-author");
             }
             if(config.contains(path+".book-generation")) {
                 generation = config.getString(path+".book-generation");
             }
-            title = config.getString(path+".book-title");
+            String title = config.getString(path+".book-title");
 
             bookData = new KitItemBookData(pages,author,generation,title);
         }
         KitItemFireworkData fireworkData = null;
         if(config.contains(path+".firework-effects")) {
-            List<String> rocketEffects = null;
-            int power = 0;
-            rocketEffects = config.getStringList(path+".firework-effects");
-            if(config.contains(path+".firework-power")) {
-                power = Integer.parseInt(config.getString(path+".firework-power"));
-            }
+            List<String> rocketEffects = config.getStringList(path+".firework-effects");
+            int power = getLegacyInt(config,path+".firework-power",0);
 
             fireworkData = new KitItemFireworkData(rocketEffects,null,power);
         }
         KitItemBannerData bannerData = null;
         if(config.contains(path+".banner-pattern")) {
-            List<String> patterns = null;
             String baseColor = null;
-            String[] pattern = config.getString(path+".banner-pattern").split(";");
-            patterns = new ArrayList<>();
-            for(String p : pattern){
+            String bannerPattern = config.getString(path+".banner-pattern","");
+            List<String> patterns = new ArrayList<>();
+            for(String p : bannerPattern.split(";")){
                 String[] pSep = p.split(":");
                 patterns.add(pSep[0]+";"+pSep[1]);
             }
@@ -760,10 +761,8 @@ public class KitItemManager {
         }
         KitItemSkullData skullData = null;
         if(config.contains(path+".skull-texture")) {
-            String skullTexture = null;
-            String skullId = null;
-            skullTexture = config.getString(path+".skull-texture");
-            skullId = UUID.randomUUID().toString();
+            String skullTexture = config.getString(path+".skull-texture");
+            String skullId = UUID.randomUUID().toString();
             skullData = new KitItemSkullData(null,skullTexture,skullId);
         }
 
@@ -776,14 +775,15 @@ public class KitItemManager {
         }
 
         List<String> attributes = new ArrayList<>();
-        if(config.contains(path+".attributes")){
-            for(String attributeName : config.getConfigurationSection(path+".attributes").getKeys(false)){
+        ConfigurationSection attributesSection = config.getConfigurationSection(path+".attributes");
+        if(attributesSection != null){
+            for(String attributeName : attributesSection.getKeys(false)){
                 String attribute = config.getString(path+".attributes."+attributeName+".modifiers");
                 attributes.add(attribute);
             }
         }
 
-        boolean offhand = config.contains(path+".offhand") ? config.getBoolean(path+".offhand") : false;
+        boolean offhand = config.contains(path+".offhand") && config.getBoolean(path+".offhand");
 
         KitItem kitItem = new KitItem(id);
         kitItem.setName(name);
@@ -812,7 +812,7 @@ public class KitItemManager {
         if(commonItem.getName() != null){
             String newName = commonItem.getName();
             for(KitVariable variable : variables){
-                newName = newName.replace(variable.getVariable(),variable.getValue());
+                newName = newName.replace(variable.variable(),variable.value());
             }
             newName = OtherUtils.replaceGlobalVariables(newName,player,plugin);
             commonItem.setName(newName);
@@ -822,7 +822,7 @@ public class KitItemManager {
             List<String> lore = commonItem.getLore();
             for(int i=0;i<lore.size();i++){
                 for(KitVariable variable : variables){
-                    String line = lore.get(i).replace(variable.getVariable(),variable.getValue());
+                    String line = lore.get(i).replace(variable.variable(),variable.value());
                     line = OtherUtils.replaceGlobalVariables(line,player,plugin);
                     lore.set(i,line);
                 }
