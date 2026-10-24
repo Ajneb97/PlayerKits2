@@ -68,7 +68,7 @@ public final class PlayerKits2 extends JavaPlugin {
         this.inventoryEditManager = new InventoryEditManager(this);
         this.layoutEditorManager = new LayoutEditorManager(this);
         this.kitsManager = new KitsManager(this);
-        this.dependencyManager = new DependencyManager(this);
+        this.dependencyManager = new DependencyManager();
         this.nmsManager = new NMSManager(this);
         this.playerDataManager = new PlayerDataManager(this);
 
@@ -92,7 +92,7 @@ public final class PlayerKits2 extends JavaPlugin {
             reloadPlayerDataSaveTask();
         }
 
-        new PlayerKitsAPI(this);
+        PlayerKitsAPI.initialize(this);
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new ExpansionPlayerKits(this).register();
         }

@@ -1,5 +1,7 @@
 package pk.ajneb97.managers;
 
+import pk.ajneb97.utils.OtherUtils;
+
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import pk.ajneb97.PlayerKits2;
@@ -10,13 +12,14 @@ import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.model.item.KitItemSkullData;
 
 import java.io.File;
+import java.util.logging.Level;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class MigrationManager {
 
-    private PlayerKits2 plugin;
+    private final PlayerKits2 plugin;
     public MigrationManager(PlayerKits2 plugin){
         this.plugin = plugin;
     }
@@ -43,15 +46,15 @@ public class MigrationManager {
         Kit defaultValues = plugin.getConfigsManager().getMainConfigManager().getNewKitDefault();
         KitsConfigManager kitsConfigManager = plugin.getConfigsManager().getKitsConfigManager();
         if(config.contains("Kits")){
-            for(String kitName : config.getConfigurationSection("Kits").getKeys(false)){
+            for(String kitName : OtherUtils.getSectionKeys(config,"Kits")){
                 try{
                     String path = "Kits."+kitName;
                     Kit kit = new Kit(kitName);
 
-                    boolean oneTime = config.contains(path+".one_time") ? config.getBoolean(path+".one_time") : false;
+                    boolean oneTime = config.getBoolean(path+".one_time");
                     int cooldown = config.contains(path+".cooldown") ? config.getInt(path+".cooldown") : 0;
                     boolean permissionRequired = config.contains(path+".permission");
-                    boolean autoArmor = config.contains(path+".auto_armor") ? config.getBoolean(path+".auto_armor") : false;
+                    boolean autoArmor = config.getBoolean(path+".auto_armor");
 
                     ArrayList<KitAction> claimActions = new ArrayList<>();
                     if(config.contains(path+".Commands")){
@@ -62,7 +65,7 @@ public class MigrationManager {
 
                     ArrayList<KitItem> items = new ArrayList<>();
                     if(config.contains(path+".Items")){
-                        for(String key : config.getConfigurationSection(path+".Items").getKeys(false)){
+                        for(String key : OtherUtils.getSectionKeys(config,path+".Items")){
                             String pathItem = path+".Items."+key;
                             KitItem kitItem = kitItemManager.getKitItemFromV1Config(config,pathItem);
                             items.add(kitItem);
@@ -73,7 +76,7 @@ public class MigrationManager {
                     if(config.contains(path+".price")){
                         kitRequirements = new KitRequirements();
                         kitRequirements.setPrice(config.getInt(path+".price"));
-                        boolean oneTimeBuy = config.contains(path+".one_time_buy") ? config.getBoolean(path+".one_time_buy") : false;
+                        boolean oneTimeBuy = config.getBoolean(path+".one_time_buy");
                         kitRequirements.setOneTimeRequirements(oneTimeBuy);
                     }
 
@@ -98,7 +101,7 @@ public class MigrationManager {
                     sender.sendMessage(PlayerKits2.prefix+MessagesManager.getLegacyColoredMessage(" &aKit &7"+kitName+" &amigrated."));
                 }catch(Exception e){
                     sender.sendMessage(PlayerKits2.prefix+MessagesManager.getLegacyColoredMessage(" &cError while trying to migrate kit &7"+kitName+"&c, check console."));
-                    e.printStackTrace();
+                    plugin.getLogger().log(Level.SEVERE,"Could not migrate kit "+kitName,e);
                 }
 
             }
@@ -123,12 +126,12 @@ public class MigrationManager {
         PlayersConfigManager playersConfigManager = plugin.getConfigsManager().getPlayersConfigManager();
 
         if(config.contains("Players")) {
-            for (String uuid : config.getConfigurationSection("Players").getKeys(false)) {
+            for (String uuid : OtherUtils.getSectionKeys(config,"Players")) {
                 try {
                     String path = "Players."+uuid;
                     String name = config.getString(path+".name");
                     PlayerData playerData = new PlayerData(UUID.fromString(uuid),name);
-                    for(String kitName : config.getConfigurationSection(path).getKeys(false)){
+                    for(String kitName : OtherUtils.getSectionKeys(config,path)){
                         if(kitName.equals("name")){
                            continue;
                         }
@@ -145,7 +148,7 @@ public class MigrationManager {
                     sender.sendMessage(PlayerKits2.prefix+MessagesManager.getLegacyColoredMessage(" &aPlayer &7"+name+" &amigrated."));
                 } catch (Exception e) {
                     sender.sendMessage(PlayerKits2.prefix + MessagesManager.getLegacyColoredMessage(" &cError while trying to migrate player data with uuid &7" + uuid + "&c, check console."));
-                    e.printStackTrace();
+                    plugin.getLogger().log(Level.SEVERE,"Could not migrate player data "+uuid,e);
                 }
             }
         }
@@ -160,8 +163,9 @@ public class MigrationManager {
         int customModelData = config.contains(path+".display_item_custom_model_data") ? config.getInt(path+".display_item_custom_model_data") : 0;
 
         KitItemSkullData skullData = null;
-        if(config.contains(path+".display_item_skulldata")) {
-            String[] fullSkull = config.getString(path+".display_item_skulldata").split(";");
+        String skullDataLine = config.getString(path+".display_item_skulldata");
+        if(skullDataLine != null && skullDataLine.contains(";")) {
+            String[] fullSkull = skullDataLine.split(";");
             skullData = new KitItemSkullData(null,fullSkull[1],fullSkull[0]);
         }
 

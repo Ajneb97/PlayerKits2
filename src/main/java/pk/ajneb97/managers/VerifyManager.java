@@ -4,7 +4,6 @@ import org.bukkit.entity.Player;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.model.Kit;
 import pk.ajneb97.model.KitAction;
-import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.inventory.ItemKitInventory;
 import pk.ajneb97.model.inventory.KitInventory;
 import pk.ajneb97.model.item.KitItem;
@@ -15,12 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VerifyManager {
-    private PlayerKits2 plugin;
+    private final PlayerKits2 plugin;
     private ArrayList<PKBaseError> errors;
     private boolean criticalErrors;
     public VerifyManager(PlayerKits2 plugin) {
         this.plugin = plugin;
-        this.errors = new ArrayList<PKBaseError>();
+        this.errors = new ArrayList<>();
         this.criticalErrors = false;
     }
 
@@ -40,7 +39,7 @@ public class VerifyManager {
     }
 
     public void verify() {
-        this.errors = new ArrayList<PKBaseError>();
+        this.errors = new ArrayList<>();
         this.criticalErrors = false;
 
         ArrayList<Kit> kits = plugin.getKitsManager().getKits();
@@ -76,7 +75,7 @@ public class VerifyManager {
         verifyActions(kit.getClaimActions(),"claim",kitName);
         verifyActions(kit.getErrorActions(),"error",kitName);
 
-        ArrayList<KitItem> allKitItems = new ArrayList<KitItem>();
+        ArrayList<KitItem> allKitItems = new ArrayList<>();
         allKitItems.add(kit.getDisplayItemDefault());
         allKitItems.add(kit.getDisplayItemCooldown());
         allKitItems.add(kit.getDisplayItemNoPermission());
@@ -94,7 +93,7 @@ public class VerifyManager {
                 if(kitItem.getOriginalItem() != null){
                     continue;
                 }
-                if(!verifyItem(kitItem.getId())){
+                if(isInvalidItem(kitItem.getId())){
                     errors.add(new PKInvalidItem(kit.getName()+".yml",null,true,kitItem.getId()));
                     criticalErrors = true;
                 }
@@ -119,16 +118,16 @@ public class VerifyManager {
 
     public void verifyInventory(KitInventory inventory){
         KitsManager kitsManager = plugin.getKitsManager();
-        List<ItemKitInventory> items = inventory.getItems();
+        List<ItemKitInventory> items = inventory.items();
         InventoryManager inventoryManager = plugin.getInventoryManager();
-        int maxSlots = inventory.getSlots();
+        int maxSlots = inventory.slots();
         for(ItemKitInventory item : items){
            String type = item.getType();
            if(type != null && type.startsWith("kit: ")){
                String kitName = type.replace("kit: ","");
                if(kitsManager.getKitByName(kitName) == null){
                    errors.add(new PKInventoryInvalidKitError("inventory.yml",null,true,kitName,
-                           inventory.getName(),item.getSlotsString()));
+                           inventory.name(),item.getSlotsString()));
                    criticalErrors = true;
                }
            }
@@ -136,7 +135,7 @@ public class VerifyManager {
            String openInventory = item.getOpenInventory();
            if(openInventory != null){
                if(!openInventory.equals("previous") && inventoryManager.getInventory(openInventory) == null){
-                   errors.add(new PKInventoryNotExistsError("inventory.yml",null,true,inventory.getName(),
+                   errors.add(new PKInventoryNotExistsError("inventory.yml",null,true,inventory.name(),
                            item.getSlotsString(),openInventory));
                    criticalErrors = true;
                }
@@ -144,7 +143,7 @@ public class VerifyManager {
 
            KitItem kitItem = item.getItem();
            if(kitItem != null){
-               if(!verifyItem(kitItem.getId())){
+               if(isInvalidItem(kitItem.getId())){
                    errors.add(new PKInvalidItem("inventory.yml",null,true,kitItem.getId()));
                    criticalErrors = true;
                }
@@ -153,7 +152,7 @@ public class VerifyManager {
            for(int slot : item.getSlots()){
                if(slot >= maxSlots){
                    errors.add(new PKInventoryInvalidSlotError("inventory.yml",null,true,slot,
-                           inventory.getName(),maxSlots));
+                           inventory.name(),maxSlots));
                    criticalErrors = true;
                }
            }
@@ -164,12 +163,12 @@ public class VerifyManager {
         return criticalErrors;
     }
 
-    public boolean verifyItem(String material){
+    public boolean isInvalidItem(String material){
         try{
             ItemUtils.createItemFromID(material);
-            return true;
-        }catch(Exception e){
             return false;
+        }catch(Exception e){
+            return true;
         }
     }
 }

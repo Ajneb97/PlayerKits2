@@ -10,7 +10,10 @@ import pk.ajneb97.utils.PlayerUtils;
 public class PlayerKitsAPI {
 
     private static PlayerKits2 plugin;
-    public PlayerKitsAPI(PlayerKits2 plugin){
+    private PlayerKitsAPI(){
+    }
+
+    public static void initialize(PlayerKits2 plugin){
         PlayerKitsAPI.plugin = plugin;
     }
 
