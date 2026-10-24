@@ -58,10 +58,9 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void closeInventory(InventoryCloseEvent event) {
         HumanEntity human = event.getPlayer();
-        if (!(human instanceof Player)) {
+        if (!(human instanceof Player player)) {
             return;
         }
-        Player player = (Player) human;
         KitGuiHolder holder = InventoryUtils.getKitGuiHolder(event.getInventory());
         if (holder == null) {
             return;
@@ -74,13 +73,12 @@ public class PlayerListener implements Listener {
         plugin.getInventoryManager().syncInventoryLater(player);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void clickInventory(InventoryClickEvent event) {
         HumanEntity human = event.getWhoClicked();
-        if (!(human instanceof Player)) {
+        if (!(human instanceof Player player)) {
             return;
         }
-        Player player = (Player) human;
 
         Inventory topInventory = InventoryUtils.getTopInventory(event);
         KitGuiHolder holder = InventoryUtils.getKitGuiHolder(topInventory);
@@ -95,7 +93,7 @@ public class PlayerListener implements Listener {
         event.setResult(org.bukkit.event.Event.Result.DENY);
         plugin.getInventoryManager().syncInventoryLater(player);
 
-        if (!holder.isOwner(player.getUniqueId())) {
+        if (holder.isNotOwner(player.getUniqueId())) {
             plugin.getInventoryManager().closeLater(player);
             return;
         }
@@ -131,7 +129,7 @@ public class PlayerListener implements Listener {
         invManager.clickInventory(inventoryPlayer, current, clickType);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void dragInventory(InventoryDragEvent event) {
         Inventory topInventory = InventoryUtils.getTopInventory(event);
         KitGuiHolder holder = InventoryUtils.getKitGuiHolder(topInventory);
@@ -146,8 +144,8 @@ public class PlayerListener implements Listener {
         event.setResult(org.bukkit.event.Event.Result.DENY);
 
         HumanEntity human = event.getWhoClicked();
-        if (human instanceof Player) {
-            plugin.getInventoryManager().syncInventoryLater((Player) human);
+        if (human instanceof Player player) {
+            plugin.getInventoryManager().syncInventoryLater(player);
         }
     }
 }

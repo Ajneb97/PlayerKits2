@@ -30,10 +30,9 @@ public class InventoryEditListener implements Listener {
     @EventHandler
     public void closeInventory(InventoryCloseEvent event) {
         HumanEntity human = event.getPlayer();
-        if (!(human instanceof Player)) {
+        if (!(human instanceof Player player)) {
             return;
         }
-        Player player = (Player) human;
         InventoryEditManager invManager = plugin.getInventoryEditManager();
         InventoryPlayer inventoryPlayer = invManager.getInventoryPlayer(player);
         if (inventoryPlayer != null) {
@@ -48,21 +47,20 @@ public class InventoryEditListener implements Listener {
         invManager.removeInventoryPlayer(player);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void clickInventory(InventoryClickEvent event) {
         HumanEntity human = event.getWhoClicked();
-        if (!(human instanceof Player)) {
+        if (!(human instanceof Player player)) {
             return;
         }
-        Player player = (Player) human;
 
         Inventory topInventory = InventoryUtils.getTopInventory(event);
         KitGuiHolder holder = InventoryUtils.getKitGuiHolder(topInventory);
-        if (holder == null || !isEditHolder(holder)) {
+        if (holder == null || isNotEditHolder(holder)) {
             return;
         }
 
-        if (!holder.isOwner(player.getUniqueId()) || !PlayerUtils.isPlayerKitsAdmin(player)) {
+        if (holder.isNotOwner(player.getUniqueId()) || !PlayerUtils.isPlayerKitsAdmin(player)) {
             event.setCancelled(true);
             event.setResult(org.bukkit.event.Event.Result.DENY);
             plugin.getInventoryManager().closeLater(player);
@@ -85,7 +83,7 @@ public class InventoryEditListener implements Listener {
 
         if (inventoryName.startsWith("edit_display_")) {
             invManager.getInventoryEditDisplayManager().clickInventory(inventoryPlayer,
-                    event.getCurrentItem(), event.getSlot(), clickType, event);
+                    event.getSlot(), event);
             return;
         }
         if (inventoryName.equals("edit_items")) {
@@ -95,7 +93,7 @@ public class InventoryEditListener implements Listener {
         }
         if (inventoryName.startsWith("edit_position")) {
             invManager.getInventoryEditPositionManager().clickInventory(inventoryPlayer,
-                    event.getCurrentItem(), event.getSlot(), clickType, event);
+                    event.getCurrentItem(), event.getSlot(), event);
             return;
         }
 
@@ -112,11 +110,11 @@ public class InventoryEditListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void dragInventory(InventoryDragEvent event) {
         Inventory topInventory = InventoryUtils.getTopInventory(event);
         KitGuiHolder holder = InventoryUtils.getKitGuiHolder(topInventory);
-        if (holder == null || !isEditHolder(holder)) {
+        if (holder == null || isNotEditHolder(holder)) {
             return;
         }
 
@@ -124,12 +122,12 @@ public class InventoryEditListener implements Listener {
         event.setResult(org.bukkit.event.Event.Result.DENY);
 
         HumanEntity human = event.getWhoClicked();
-        if (human instanceof Player) {
-            plugin.getInventoryManager().syncInventoryLater((Player) human);
+        if (human instanceof Player player) {
+            plugin.getInventoryManager().syncInventoryLater(player);
         }
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.LOWEST)
     public void onChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
@@ -149,10 +147,10 @@ public class InventoryEditListener implements Listener {
                 () -> invManager.writeChat(inventoryPlayer, message), 1L);
     }
 
-    private static boolean isEditHolder(KitGuiHolder holder) {
+    private static boolean isNotEditHolder(KitGuiHolder holder) {
         KitGuiHolder.Type type = holder.getType();
-        return type == KitGuiHolder.Type.EDIT
-                || type == KitGuiHolder.Type.EDIT_ITEMS
-                || type == KitGuiHolder.Type.EDIT_POSITION;
+        return type != KitGuiHolder.Type.EDIT
+                && type != KitGuiHolder.Type.EDIT_ITEMS
+                && type != KitGuiHolder.Type.EDIT_POSITION;
     }
 }
