@@ -271,6 +271,22 @@ public class KitsManager {
         boolean clearInventory = kit.isClearInventory();
         boolean autoArmor = kit.isAutoArmor();
 
+        boolean hasHelmetForAutoArmor = false;
+        boolean hasChestplateForAutoArmor = false;
+        if (autoArmor) {
+            for (KitItem item : items) {
+                String id = item.getOriginalItem() != null ? item.getOriginalItem().getType().name() : item.getId();
+                if (id == null) {
+                    continue;
+                }
+                if (id.contains("_HELMET")) {
+                    hasHelmetForAutoArmor = true;
+                } else if (id.contains("_CHESTPLATE")) {
+                    hasChestplateForAutoArmor = true;
+                }
+            }
+        }
+
         PlayerInventory playerInventory = player.getInventory();
         for (KitItem item : items) {
             if (autoArmor) {
@@ -282,28 +298,24 @@ public class KitsManager {
                     id = "";
                 }
 
-                if ((id.contains("_HELMET") || id.contains("PLAYER_HEAD") || id.contains("SKULL_ITEM")) && itemHelmet == null) {
+                if ((id.contains("_HELMET") || (!hasHelmetForAutoArmor && (id.contains("PLAYER_HEAD") || id.contains("SKULL_ITEM")))) && itemHelmet == null) {
                     if (isEmptySlot(playerInventory.getHelmet()) || clearInventory) {
                         itemHelmet = item;
-                        freeSlots++;
                         continue;
                     }
-                } else if ((id.contains("_CHESTPLATE") || id.contains("ELYTRA")) && itemChestplate == null) {
+                } else if ((id.contains("_CHESTPLATE") || (!hasChestplateForAutoArmor && id.contains("ELYTRA"))) && itemChestplate == null) {
                     if (isEmptySlot(playerInventory.getChestplate()) || clearInventory) {
                         itemChestplate = item;
-                        freeSlots++;
                         continue;
                     }
                 } else if (id.contains("_LEGGINGS") && itemLeggings == null) {
                     if (isEmptySlot(playerInventory.getLeggings()) || clearInventory) {
                         itemLeggings = item;
-                        freeSlots++;
                         continue;
                     }
                 } else if (id.contains("_BOOTS") && itemBoots == null) {
                     if (isEmptySlot(playerInventory.getBoots()) || clearInventory) {
                         itemBoots = item;
-                        freeSlots++;
                         continue;
                     }
                 }
@@ -312,7 +324,6 @@ public class KitsManager {
             if (item.isOffhand() && itemOffhand == null) {
                 if (isEmptySlot(getOffhand(playerInventory)) || clearInventory) {
                     itemOffhand = item;
-                    freeSlots++;
                     continue;
                 }
             }
