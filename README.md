@@ -1,17 +1,16 @@
 # PlayerKits2
+https://www.spigotmc.org/resources/playerkits-2-fully-configurable-kits-1-8-1-20.112616/
 
-Minecraft Plugin that allows you to create a variety of survival kits and put them on a GUI Inventory. Using a command, players will be able to claim these kits if they have the correct permission or even some requirements. Kits can also have a cooldown, so users can't claim them everytime.
+# Unofficial Discord  
 
-What makes PlayerKits 2 special is its easy way to create kits, just having the items on your inventory and executing a command. You can edit kits properties by using /kit edit command, or directly through the config.
+https://discord.gg/aT9z7q7hX8
 
-**Spigot / Paper 1.8.9+**
+# Building instructions
 
-## Download Links
-- [SpigotMC](https://www.spigotmc.org/resources/playerkits-2-fully-configurable-kits-1-8-26-2.112616/)
-- [Modrinth](https://modrinth.com/plugin/playerkits-2)
+mvn clean install
+ 
+# Folia inquisitors
 
-
-## Other Links
-- [Wiki](https://ajneb97.gitbook.io/playerkits-2)
-- [bStats](https://bstats.org/plugin/bukkit/PlayerKits%202/19795)
-- [Support me on Ko-fi](https://ko-fi.com/ajneb97)
+[<img src="https://github.com/Folia-Inquisitors.png" width=80 alt="Folia-Inquisitors">](https://github.com/orgs/Folia-Inquisitors/repositories)
+[<img src="https://github.com/KaspianDev.png" width=80 alt="KaspianDev">](https://github.com/KaspianDev)
+[<img src="https://github.com/HSGamer.png" width=80 alt="HSGamer">](https://github.com/HSGamer)
