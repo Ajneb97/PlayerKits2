@@ -1,5 +1,9 @@
 package pk.ajneb97.libs.actionbar;
 
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.logging.Level;
+
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -16,7 +20,7 @@ import java.lang.reflect.Method;
 public class ActionBarAPI
 {
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings("deprecation")
     public static void sendActionBar(Player player, String message) {
 	  if(OtherUtils.isNew()) {
           if(PlayerKitsAPI.getPlugin().getConfigsManager().getMainConfigManager().isUseMiniMessage()){
@@ -28,9 +32,9 @@ public class ActionBarAPI
 	  }
       message = MessagesManager.getLegacyColoredMessage(message);
 	  boolean useOldMethods = false;
-	  String nmsver = Bukkit.getServer().getClass().getPackage().getName();
-      nmsver = nmsver.substring(nmsver.lastIndexOf(".") + 1);
-      if ((nmsver.equalsIgnoreCase("v1_8_R1")) || (nmsver.startsWith("v1_7_"))) {
+	  String nmsVersion = Bukkit.getServer().getClass().getPackage().getName();
+      nmsVersion = nmsVersion.substring(nmsVersion.lastIndexOf(".") + 1);
+      if ((nmsVersion.equalsIgnoreCase("v1_8_R1")) || (nmsVersion.startsWith("v1_7_"))) {
           useOldMethods = true;
       }
       if (!player.isOnline()) {
@@ -38,23 +42,23 @@ public class ActionBarAPI
       }
 
       try {
-          Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + nmsver + ".entity.CraftPlayer");
+          Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + nmsVersion + ".entity.CraftPlayer");
           Object craftPlayer = craftPlayerClass.cast(player);
           Object packet;
-          Class<?> packetPlayOutChatClass = Class.forName("net.minecraft.server." + nmsver + ".PacketPlayOutChat");
-          Class<?> packetClass = Class.forName("net.minecraft.server." + nmsver + ".Packet");
+          Class<?> packetPlayOutChatClass = Class.forName("net.minecraft.server." + nmsVersion + ".PacketPlayOutChat");
+          Class<?> packetClass = Class.forName("net.minecraft.server." + nmsVersion + ".Packet");
           if (useOldMethods) {
-              Class<?> chatSerializerClass = Class.forName("net.minecraft.server." + nmsver + ".ChatSerializer");
-              Class<?> iChatBaseComponentClass = Class.forName("net.minecraft.server." + nmsver + ".IChatBaseComponent");
+              Class<?> chatSerializerClass = Class.forName("net.minecraft.server." + nmsVersion + ".ChatSerializer");
+              Class<?> iChatBaseComponentClass = Class.forName("net.minecraft.server." + nmsVersion + ".IChatBaseComponent");
               Method m3 = chatSerializerClass.getDeclaredMethod("a", String.class);
               Object cbc = iChatBaseComponentClass.cast(m3.invoke(chatSerializerClass, "{\"text\": \"" + message + "\"}"));
-              packet = packetPlayOutChatClass.getConstructor(new Class<?>[]{iChatBaseComponentClass, byte.class}).newInstance(cbc, (byte) 2);
+              packet = packetPlayOutChatClass.getConstructor(iChatBaseComponentClass, byte.class).newInstance(cbc, (byte) 2);
           } else {
-              Class<?> chatComponentTextClass = Class.forName("net.minecraft.server." + nmsver + ".ChatComponentText");
-              Class<?> iChatBaseComponentClass = Class.forName("net.minecraft.server." + nmsver + ".IChatBaseComponent");
+              Class<?> chatComponentTextClass = Class.forName("net.minecraft.server." + nmsVersion + ".ChatComponentText");
+              Class<?> iChatBaseComponentClass = Class.forName("net.minecraft.server." + nmsVersion + ".IChatBaseComponent");
               try {
 
-                  Class<?> chatMessageTypeClass = Class.forName("net.minecraft.server." + nmsver + ".ChatMessageType");
+                  Class<?> chatMessageTypeClass = Class.forName("net.minecraft.server." + nmsVersion + ".ChatMessageType");
                   Object[] chatMessageTypes = chatMessageTypeClass.getEnumConstants();
                   Object chatMessageType = null;
                   for (Object obj : chatMessageTypes) {
@@ -62,11 +66,11 @@ public class ActionBarAPI
                           chatMessageType = obj;
                       }
                   }
-                  Object chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[]{String.class}).newInstance(message);
-                  packet = packetPlayOutChatClass.getConstructor(new Class<?>[]{iChatBaseComponentClass, chatMessageTypeClass}).newInstance(chatCompontentText, chatMessageType);
-              } catch (ClassNotFoundException cnfe) {
-                  Object chatCompontentText = chatComponentTextClass.getConstructor(new Class<?>[]{String.class}).newInstance(message);
-                  packet = packetPlayOutChatClass.getConstructor(new Class<?>[]{iChatBaseComponentClass, byte.class}).newInstance(chatCompontentText, (byte) 2);
+                  Object chatComponentText = chatComponentTextClass.getConstructor(String.class).newInstance(message);
+                  packet = packetPlayOutChatClass.getConstructor(iChatBaseComponentClass, chatMessageTypeClass).newInstance(chatComponentText, chatMessageType);
+              } catch (ClassNotFoundException classNotFound) {
+                  Object chatComponentText = chatComponentTextClass.getConstructor(String.class).newInstance(message);
+                  packet = packetPlayOutChatClass.getConstructor(iChatBaseComponentClass, byte.class).newInstance(chatComponentText, (byte) 2);
               }
           }
           Method craftPlayerHandleMethod = craftPlayerClass.getDeclaredMethod("getHandle");
@@ -76,7 +80,7 @@ public class ActionBarAPI
           Method sendPacketMethod = playerConnection.getClass().getDeclaredMethod("sendPacket", packetClass);
           sendPacketMethod.invoke(playerConnection, packet);
       } catch (Exception e) {
-          e.printStackTrace();
+          JavaPlugin.getPlugin(PlayerKits2.class).getLogger().log(Level.WARNING, "Could not send action bar", e);
       }
     }
 
