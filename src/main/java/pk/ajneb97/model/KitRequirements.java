@@ -7,9 +7,9 @@ public class KitRequirements {
 
     private boolean oneTimeRequirements;
     private double price;
-    private List<String> extraRequirements;
-    private List<String> message;
-    private List<String> actionsOnBuy;
+    private final List<String> extraRequirements;
+    private final List<String> message;
+    private final List<String> actionsOnBuy;
 
     public KitRequirements(boolean oneTimeRequirements, List<String> extraRequirements, List<String> message,
                            List<String> actionsOnBuy,double price) {
@@ -40,16 +40,8 @@ public class KitRequirements {
         return message;
     }
 
-    public void setMessage(List<String> message) {
-        this.message = message;
-    }
-
     public List<String> getActionsOnBuy() {
         return actionsOnBuy;
-    }
-
-    public void setActionsOnBuy(List<String> actionsOnBuy) {
-        this.actionsOnBuy = actionsOnBuy;
     }
 
     public double getPrice() {
@@ -62,9 +54,5 @@ public class KitRequirements {
 
     public List<String> getExtraRequirements() {
         return extraRequirements;
-    }
-
-    public void setExtraRequirements(List<String> extraRequirements) {
-        this.extraRequirements = extraRequirements;
     }
 }

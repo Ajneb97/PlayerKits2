@@ -10,9 +10,9 @@ import java.util.List;
 
 public class PKKitActionError extends PKBaseError{
 
-    private String kitName;
-    private String actionGroup;
-    private String actionId;
+    private final String kitName;
+    private final String actionGroup;
+    private final String actionId;
 
     public PKKitActionError(String file, String errorText, boolean critical, String kitName, String actionGroup, String actionId) {
         super(file, errorText, critical);
@@ -23,7 +23,7 @@ public class PKKitActionError extends PKBaseError{
 
     @Override
     public void sendMessage(Player player) {
-        List<String> hover = new ArrayList<String>();
+        List<String> hover = new ArrayList<>();
 
         boolean isPaper = PlayerKitsAPI.getPlugin().getDependencyManager().isPaper();
         if(isPaper){

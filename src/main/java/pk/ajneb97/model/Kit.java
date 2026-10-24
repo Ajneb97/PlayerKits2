@@ -1,5 +1,7 @@
 package pk.ajneb97.model;
 
+import java.util.Objects;
+
 import org.bukkit.command.CommandSender;
 import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.PlayerUtils;
@@ -7,7 +9,7 @@ import pk.ajneb97.utils.PlayerUtils;
 import java.util.ArrayList;
 
 public class Kit {
-    private String name;
+    private final String name;
     private int cooldown;
     private boolean permissionRequired;
     private boolean clearInventory;
@@ -38,10 +40,6 @@ public class Kit {
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public int getCooldown() {
@@ -182,11 +180,8 @@ public class Kit {
 
     public boolean playerHasPermission(CommandSender player){
         if(permissionRequired){
-            if(customPermission != null){
-                return PlayerUtils.isPlayerKitsAdmin(player) || player.hasPermission(customPermission);
-            }else{
-                return PlayerUtils.isPlayerKitsAdmin(player) || player.hasPermission("playerkits.kit."+name);
-            }
+            return PlayerUtils.isPlayerKitsAdmin(player)
+                    || player.hasPermission(Objects.requireNonNullElse(customPermission, "playerkits.kit."+name));
         }
         return true;
     }
@@ -199,22 +194,22 @@ public class Kit {
         if(defaultKit.getClaimActions() != null){
             ArrayList<KitAction> actions = new ArrayList<>();
             for(KitAction action : defaultKit.getClaimActions()){
-                actions.add(action.clone());
+                actions.add(action.copy());
             }
             claimActions = actions;
         }
         if(defaultKit.getErrorActions() != null){
             ArrayList<KitAction> actions = new ArrayList<>();
             for(KitAction action : defaultKit.getErrorActions()){
-                actions.add(action.clone());
+                actions.add(action.copy());
             }
             errorActions = actions;
         }
-        displayItemDefault = defaultKit.getDisplayItemDefault() != null ? defaultKit.getDisplayItemDefault().clone() : null;
-        displayItemNoPermission = defaultKit.getDisplayItemNoPermission() != null ? defaultKit.getDisplayItemNoPermission().clone() : null;
-        displayItemCooldown = defaultKit.getDisplayItemCooldown() != null ? defaultKit.getDisplayItemCooldown().clone() : null;
-        displayItemOneTime = defaultKit.getDisplayItemOneTime() != null ? defaultKit.getDisplayItemOneTime().clone() : null;
-        displayItemOneTimeRequirements = defaultKit.getDisplayItemOneTimeRequirements() != null ? defaultKit.getDisplayItemOneTimeRequirements().clone() : null;
+        displayItemDefault = defaultKit.getDisplayItemDefault() != null ? defaultKit.getDisplayItemDefault().copy() : null;
+        displayItemNoPermission = defaultKit.getDisplayItemNoPermission() != null ? defaultKit.getDisplayItemNoPermission().copy() : null;
+        displayItemCooldown = defaultKit.getDisplayItemCooldown() != null ? defaultKit.getDisplayItemCooldown().copy() : null;
+        displayItemOneTime = defaultKit.getDisplayItemOneTime() != null ? defaultKit.getDisplayItemOneTime().copy() : null;
+        displayItemOneTimeRequirements = defaultKit.getDisplayItemOneTimeRequirements() != null ? defaultKit.getDisplayItemOneTimeRequirements().copy() : null;
         autoArmor = defaultKit.isAutoArmor();
     }
 }

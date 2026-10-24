@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public class InventoryPlayer {
 
-    private Player player;
+    private final Player player;
     private final UUID uuid;
     private String inventoryName;
 
@@ -17,7 +17,6 @@ public class InventoryPlayer {
     private ItemStack[] savedInventoryContents;
     private PlatformTask updateTask;
     private KitGuiHolder holder;
-    private int layoutSelectedIndex = -1;
     private int editSelectedSlot = -1;
 
     public InventoryPlayer(Player player, String inventoryName) {
@@ -28,10 +27,6 @@ public class InventoryPlayer {
 
     public Player getPlayer() {
         return player;
-    }
-
-    public void setPlayer(Player player) {
-        this.player = player;
     }
 
     public UUID getUuid() {
@@ -76,18 +71,6 @@ public class InventoryPlayer {
 
     public void setEditSelectedSlot(int editSelectedSlot) {
         this.editSelectedSlot = editSelectedSlot;
-    }
-
-    public int getLayoutSelectedIndex() {
-        return layoutSelectedIndex;
-    }
-
-    public void setLayoutSelectedIndex(int layoutSelectedIndex) {
-        this.layoutSelectedIndex = layoutSelectedIndex;
-    }
-
-    public boolean hasSavedInventoryContents() {
-        return savedInventoryContents != null;
     }
 
     public void restoreSavedInventoryContents() {

@@ -2,7 +2,9 @@ package pk.ajneb97.model.inventory;
 
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class KitGuiHolder implements InventoryHolder {
@@ -28,17 +30,13 @@ public class KitGuiHolder implements InventoryHolder {
         return type;
     }
 
-    public UUID getOwner() {
-        return owner;
-    }
-
-    public boolean isOwner(UUID uuid) {
-        return owner != null && owner.equals(uuid);
+    public boolean isNotOwner(UUID uuid) {
+        return owner == null || !owner.equals(uuid);
     }
 
     @Override
-    public Inventory getInventory() {
-        return inventory;
+    public @NotNull Inventory getInventory() {
+        return Objects.requireNonNull(inventory, "Kit GUI inventory has not been created yet");
     }
 
     public void setInventory(Inventory inventory) {

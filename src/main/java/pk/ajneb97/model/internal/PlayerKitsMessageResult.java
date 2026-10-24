@@ -2,8 +2,8 @@ package pk.ajneb97.model.internal;
 
 public class PlayerKitsMessageResult {
 
-    private String message;
-    private boolean error;
+    private final String message;
+    private final boolean error;
     private boolean proceedToBuy;
 
     public PlayerKitsMessageResult(String message, boolean error) {
@@ -15,16 +15,8 @@ public class PlayerKitsMessageResult {
         return message;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
     public boolean isError() {
         return error;
-    }
-
-    public void setError(boolean error) {
-        this.error = error;
     }
 
     public static PlayerKitsMessageResult success(){

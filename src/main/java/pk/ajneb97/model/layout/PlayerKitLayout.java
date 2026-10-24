@@ -1,7 +1,5 @@
 package pk.ajneb97.model.layout;
 
-import java.util.Arrays;
-
 public final class PlayerKitLayout {
 
     public static final int UNSET = -1;
@@ -9,7 +7,7 @@ public final class PlayerKitLayout {
     public static final int MAX_ITEMS = 54;
 
     private final String kitName;
-    private int[] slots;
+    private final int[] slots;
 
     public PlayerKitLayout(String kitName, int[] slots) {
         this.kitName = kitName;
@@ -18,10 +16,6 @@ public final class PlayerKitLayout {
 
     public String getKitName() {
         return kitName;
-    }
-
-    public int[] getSlots() {
-        return slots;
     }
 
     public boolean isEmpty() {
@@ -38,34 +32,6 @@ public final class PlayerKitLayout {
             return UNSET;
         }
         return slots[itemIndex];
-    }
-
-    public void setSlot(int itemIndex, int slot) {
-        if (itemIndex < 0 || itemIndex >= MAX_ITEMS) {
-            return;
-        }
-        if (slot != UNSET && (slot < 0 || slot > MAX_SLOT)) {
-            return;
-        }
-        ensureCapacity(itemIndex + 1);
-        for (int i = 0; i < slots.length; i++) {
-            if (i != itemIndex && slot != UNSET && slots[i] == slot) {
-                slots[i] = UNSET;
-            }
-        }
-        slots[itemIndex] = slot;
-    }
-
-    public void swap(int firstIndex, int secondIndex) {
-        int max = Math.max(firstIndex, secondIndex) + 1;
-        ensureCapacity(max);
-        int temp = slots[firstIndex];
-        slots[firstIndex] = slots[secondIndex];
-        slots[secondIndex] = temp;
-    }
-
-    public void clear() {
-        Arrays.fill(slots, UNSET);
     }
 
     public String serialize() {
@@ -91,7 +57,7 @@ public final class PlayerKitLayout {
         int[] parsed = new int[length];
         boolean[] used = new boolean[MAX_SLOT + 1];
         for (int i = 0; i < length; i++) {
-            int slot = UNSET;
+            int slot;
             try {
                 slot = Integer.parseInt(parts[i].trim());
             } catch (NumberFormatException ignored) {
@@ -106,16 +72,5 @@ public final class PlayerKitLayout {
         }
         PlayerKitLayout layout = new PlayerKitLayout(kitName, parsed);
         return layout.isEmpty() ? null : layout;
-    }
-
-    private void ensureCapacity(int size) {
-        if (size <= slots.length) {
-            return;
-        }
-        int capped = Math.min(size, MAX_ITEMS);
-        int[] resized = new int[capped];
-        Arrays.fill(resized, UNSET);
-        System.arraycopy(slots, 0, resized, 0, Math.min(slots.length, capped));
-        slots = resized;
     }
 }

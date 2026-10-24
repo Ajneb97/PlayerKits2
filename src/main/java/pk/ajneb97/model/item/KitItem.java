@@ -70,10 +70,6 @@ public class KitItem{
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public int getAmount() {
         return amount;
     }
@@ -273,21 +269,29 @@ public class KitItem{
         this.previewSlot = previewSlot;
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    private static void removeOffHandLoreLines(List<String> lines){
+        for(int i=0;i<2 && !lines.isEmpty();i++){
+            lines.removeLast();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
     public void removeOffHandFromEditInventory(PlayerKits2 plugin){
 
         if(originalItem != null){
             ItemMeta meta = originalItem.getItemMeta();
-            List<String> lore = meta.getLore();
-            lore.remove(lore.size()-1);
-            lore.remove(lore.size()-1);
-            meta.setLore(lore);
-            originalItem.setItemMeta(meta);
+            List<String> originalLore = meta != null ? meta.getLore() : null;
+            if(originalLore != null){
+                removeOffHandLoreLines(originalLore);
+                meta.setLore(originalLore);
+                originalItem.setItemMeta(meta);
+            }
             originalItem = ItemUtils.removeTagItem(plugin,originalItem,"playerkits_offhand");
             return;
         }
-        lore.remove(lore.size()-1);
-        lore.remove(lore.size()-1);
+        if(lore != null){
+            removeOffHandLoreLines(lore);
+        }
         if(nbt != null){
             for(int i=0;i<nbt.size();i++){
                 if(nbt.get(i).startsWith("playerkits_offhand")){
@@ -298,7 +302,7 @@ public class KitItem{
         }
     }
 
-    public KitItem clone(){
+    public KitItem copy(){
         KitItem kitItem = new KitItem(id);
         kitItem.setAmount(amount);
         kitItem.setName(name);
@@ -315,13 +319,13 @@ public class KitItem{
         kitItem.setCanPlace(canPlace != null ? new ArrayList<>(canPlace) : null);
         kitItem.setOriginalItem(originalItem != null ? originalItem.clone() : null);
 
-        kitItem.setSkullData(skullData != null ? skullData.clone() : null);
-        kitItem.setPotionData(potionData != null ? potionData.clone() : null);
-        kitItem.setFireworkData(fireworkData != null ? fireworkData.clone() : null);
-        kitItem.setBannerData(bannerData != null ? bannerData.clone() : null);
-        kitItem.setBookData(bookData != null ? bookData.clone() : null);
-        kitItem.setTrimData(trimData != null ? trimData.clone() : null);
-        kitItem.setCustomModelComponentData(customModelComponentData != null ? customModelComponentData.clone() : null);
+        kitItem.setSkullData(skullData != null ? skullData.copy() : null);
+        kitItem.setPotionData(potionData != null ? potionData.copy() : null);
+        kitItem.setFireworkData(fireworkData != null ? fireworkData.copy() : null);
+        kitItem.setBannerData(bannerData != null ? bannerData.copy() : null);
+        kitItem.setBookData(bookData != null ? bookData.copy() : null);
+        kitItem.setTrimData(trimData != null ? trimData.copy() : null);
+        kitItem.setCustomModelComponentData(customModelComponentData != null ? customModelComponentData.copy() : null);
 
         kitItem.setHideTooltip(hideTooltip);
         kitItem.setTooltipStyle(tooltipStyle);

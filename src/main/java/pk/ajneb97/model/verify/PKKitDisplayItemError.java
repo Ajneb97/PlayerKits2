@@ -10,7 +10,7 @@ import java.util.List;
 
 public class PKKitDisplayItemError extends PKBaseError{
 
-    private String kitName;
+    private final String kitName;
 
     public PKKitDisplayItemError(String file, String errorText, boolean critical, String kitName) {
         super(file, errorText, critical);
@@ -19,7 +19,7 @@ public class PKKitDisplayItemError extends PKBaseError{
 
     @Override
     public void sendMessage(Player player) {
-        List<String> hover = new ArrayList<String>();
+        List<String> hover = new ArrayList<>();
 
         boolean isPaper = PlayerKitsAPI.getPlugin().getDependencyManager().isPaper();
         if(isPaper){

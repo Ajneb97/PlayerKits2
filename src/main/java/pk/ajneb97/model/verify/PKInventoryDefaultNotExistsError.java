@@ -10,7 +10,7 @@ import java.util.List;
 
 public class PKInventoryDefaultNotExistsError extends PKBaseError{
 
-    private String inventoryName;
+    private final String inventoryName;
 
     public PKInventoryDefaultNotExistsError(String file, String errorText, boolean critical, String inventoryName) {
         super(file, errorText, critical);
@@ -19,7 +19,7 @@ public class PKInventoryDefaultNotExistsError extends PKBaseError{
 
     @Override
     public void sendMessage(Player player) {
-        List<String> hover = new ArrayList<String>();
+        List<String> hover = new ArrayList<>();
 
         boolean isPaper = PlayerKitsAPI.getPlugin().getDependencyManager().isPaper();
         if(isPaper){

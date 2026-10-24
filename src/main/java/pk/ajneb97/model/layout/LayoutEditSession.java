@@ -5,13 +5,11 @@ import java.util.Arrays;
 public final class LayoutEditSession {
 
     private final String kitName;
-    private final int itemCount;
     private final int[] slots;
     private int selectedIndex = -1;
 
     public LayoutEditSession(String kitName, int itemCount, PlayerKitLayout existing, int[] defaults) {
         this.kitName = kitName;
-        this.itemCount = itemCount;
         this.slots = new int[itemCount];
         Arrays.fill(this.slots, PlayerKitLayout.UNSET);
 
@@ -38,10 +36,6 @@ public final class LayoutEditSession {
 
     public String getKitName() {
         return kitName;
-    }
-
-    public int getItemCount() {
-        return itemCount;
     }
 
     public int getSlot(int index) {

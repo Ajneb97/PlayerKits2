@@ -10,9 +10,9 @@ import java.util.List;
 
 public class PKInventoryInvalidSlotError extends PKBaseError{
 
-    private String inventoryName;
-    private int slot;
-    private int maxSlots;
+    private final String inventoryName;
+    private final int slot;
+    private final int maxSlots;
 
     public PKInventoryInvalidSlotError(String file, String errorText, boolean critical, int slot, String inventoryName, int maxSlots) {
         super(file, errorText, critical);
@@ -23,7 +23,7 @@ public class PKInventoryInvalidSlotError extends PKBaseError{
 
     @Override
     public void sendMessage(Player player) {
-        List<String> hover = new ArrayList<String>();
+        List<String> hover = new ArrayList<>();
 
         boolean isPaper = PlayerKitsAPI.getPlugin().getDependencyManager().isPaper();
         if(isPaper){

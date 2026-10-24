@@ -47,8 +47,8 @@ public class KitAction {
         this.countAsItem = countAsItem;
     }
 
-    public KitAction clone(){
-        KitItem item = displayItem != null ? displayItem.clone() : null;
+    public KitAction copy(){
+        KitItem item = displayItem != null ? displayItem.copy() : null;
         return new KitAction(action,item,executeBeforeItems,countAsItem);
     }
 }

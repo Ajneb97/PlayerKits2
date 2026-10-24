@@ -10,9 +10,9 @@ import java.util.List;
 
 public class PKInventoryNotExistsError extends PKBaseError{
 
-    private String inventoryName;
-    private String inventoryPath;
-    private String slot;
+    private final String inventoryName;
+    private final String inventoryPath;
+    private final String slot;
 
     public PKInventoryNotExistsError(String file, String errorText, boolean critical, String inventoryPath, String slot, String inventoryName) {
         super(file, errorText, critical);
@@ -23,13 +23,13 @@ public class PKInventoryNotExistsError extends PKBaseError{
 
     @Override
     public void sendMessage(Player player) {
-        List<String> hover = new ArrayList<String>();
+        List<String> hover = new ArrayList<>();
 
         boolean isPaper = PlayerKitsAPI.getPlugin().getDependencyManager().isPaper();
         if(isPaper){
             JSONMessageAdventure jsonMessage = new JSONMessageAdventure(player,prefix+"<gray>Inventory <red>"+inventoryName+" <gray>not valid");
             hover.add("<yellow>THIS IS AN ERROR!");
-            hover.add("<white>The <red>"+inventoryName+" <white>openened inventory used");
+            hover.add("<white>The <red>"+inventoryName+" <white>opened inventory used");
             hover.add("<white>on slot <red>"+slot+" <white>on inventory <red>"+inventoryPath);
             hover.add("<white>is not valid. Create it on the inventory.yml file.");
 
@@ -37,7 +37,7 @@ public class PKInventoryNotExistsError extends PKBaseError{
         }else{
             JSONMessage jsonMessage = new JSONMessage(player,prefix+"&7Inventory &c"+inventoryName+" &7not valid");
             hover.add("&eTHIS IS AN ERROR!");
-            hover.add("&fThe &c"+inventoryName+" &fopenened inventory used");
+            hover.add("&fThe &c"+inventoryName+" &fopened inventory used");
             hover.add("&fon slot &c"+slot+" &fon inventory &c"+inventoryPath);
             hover.add("&fis not valid. Create it on the inventory.yml file.");
 
