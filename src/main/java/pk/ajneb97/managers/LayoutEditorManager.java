@@ -19,6 +19,7 @@ import pk.ajneb97.utils.InventoryUtils;
 import pk.ajneb97.utils.OtherUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -55,10 +56,6 @@ public class LayoutEditorManager {
         return inventorySlot < 9 ? inventorySlot + 27 : inventorySlot - 9;
     }
 
-    public LayoutEditSession getSession(Player player) {
-        return sessions.get(player.getUniqueId());
-    }
-
     public void endSession(Player player) {
         sessions.remove(player.getUniqueId());
     }
@@ -90,7 +87,7 @@ public class LayoutEditorManager {
 
         Kit kit = plugin.getKitsManager().getKitByName(kitName);
         if (kit == null) {
-            msgManager.sendMessage(player, messagesConfig.getString("kitDoesNotExists").replace("%kit%", kitName), true);
+            msgManager.sendMessage(player, MessagesManager.getMessage(messagesConfig,"kitDoesNotExists").replace("%kit%", kitName), true);
             return;
         }
 
@@ -208,13 +205,14 @@ public class LayoutEditorManager {
         }
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings("deprecation")
     private void decorate(ItemStack item, boolean selected) {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) {
             return;
         }
-        List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+        List<String> currentLore = meta.getLore();
+        List<String> lore = currentLore != null ? new ArrayList<>(currentLore) : new ArrayList<>();
         lore.add(" ");
         if (selected) {
             lore.add(MessagesManager.getLegacyColoredMessage("&a&lSELECTED"));
@@ -239,20 +237,19 @@ public class LayoutEditorManager {
         new InventoryItem(inv, SLOT_BACK, Material.ARROW).name("&eGo Back")
                 .lore(mutableLore("&7Discards any unsaved changes.")).ready();
 
-        List<String> infoLore = new ArrayList<>();
-        infoLore.add("&7This is your personal layout for");
-        infoLore.add("&a" + session.getKitName() + "&7.");
-        infoLore.add("");
-        infoLore.add("&7The grid above mirrors your inventory.");
-        infoLore.add("&7Click an item to pick it up, then click");
-        infoLore.add("&7another slot to place or swap it.");
-        infoLore.add("");
-        infoLore.add("&7The original kit is never modified and");
-        infoLore.add("&7only you see this layout.");
-        infoLore.add("");
-        infoLore.add("&8Armor may still be auto-equipped and");
-        infoLore.add("&8occupied slots fall back to the default.");
-        new InventoryItem(inv, SLOT_INFO, Material.COMPASS).name("&6&lInfo").lore(infoLore).ready();
+        new InventoryItem(inv, SLOT_INFO, Material.COMPASS).name("&6&lInfo").lore(mutableLore(
+                "&7This is your personal layout for",
+                "&a" + session.getKitName() + "&7.",
+                "",
+                "&7The grid above mirrors your inventory.",
+                "&7Click an item to pick it up, then click",
+                "&7another slot to place or swap it.",
+                "",
+                "&7The original kit is never modified and",
+                "&7only you see this layout.",
+                "",
+                "&8Armor may still be auto-equipped and",
+                "&8occupied slots fall back to the default.")).ready();
 
         new InventoryItem(inv, SLOT_RESET, Material.BARRIER).name("&c&lReset Layout")
                 .lore(mutableLore("&7Restores the default kit layout.")).ready();
@@ -262,11 +259,7 @@ public class LayoutEditorManager {
     }
 
     private List<String> mutableLore(String... lines) {
-        List<String> lore = new ArrayList<>(lines.length);
-        for (String line : lines) {
-            lore.add(line);
-        }
-        return lore;
+        return new ArrayList<>(Arrays.asList(lines));
     }
 
     public void clickInventory(InventoryPlayer inventoryPlayer, int slot, ClickType clickType) {
@@ -296,14 +289,14 @@ public class LayoutEditorManager {
         switch (slot) {
             case SLOT_SAVE:
                 saveSession(player, session, items);
-                msgManager.sendMessage(player, messagesConfig.getString("layoutSaved")
+                msgManager.sendMessage(player, MessagesManager.getMessage(messagesConfig,"layoutSaved")
                         .replace("%kit%", session.getKitName()), true);
                 closeToPrevious(inventoryPlayer);
                 break;
             case SLOT_RESET:
                 session.reset(defaultSlots(items));
                 plugin.getPlayerDataManager().clearLayout(player, session.getKitName());
-                msgManager.sendMessage(player, messagesConfig.getString("layoutReset")
+                msgManager.sendMessage(player, MessagesManager.getMessage(messagesConfig,"layoutReset")
                         .replace("%kit%", session.getKitName()), true);
                 render(inventoryPlayer, session, kit, items, false);
                 break;

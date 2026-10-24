@@ -46,7 +46,7 @@ public class PlayerDataManager {
             PlayerData fresh = new PlayerData(player.getUniqueId(), player.getName());
             PlayerData race = players.putIfAbsent(player.getUniqueId(), fresh);
             playerData = race != null ? race : fresh;
-            if (race == null && player.getName() != null) {
+            if (race == null) {
                 playerNames.put(player.getName().toLowerCase(), player.getUniqueId());
             }
         }
@@ -163,13 +163,13 @@ public class PlayerDataManager {
     public PlayerKitsMessageResult resetKitForPlayer(String playerName, String kitName) {
         FileConfiguration messagesConfig = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
         if (Bukkit.getPlayer(playerName) == null) {
-            return PlayerKitsMessageResult.error(messagesConfig.getString("playerNotOnline")
+            return PlayerKitsMessageResult.error(MessagesManager.getMessage(messagesConfig,"playerNotOnline")
                     .replace("%player%", playerName));
         }
 
         PlayerData playerData = getPlayerByName(playerName);
         if (playerData == null) {
-            return PlayerKitsMessageResult.error(messagesConfig.getString("playerDataNotFound")
+            return PlayerKitsMessageResult.error(MessagesManager.getMessage(messagesConfig,"playerDataNotFound")
                     .replace("%player%", playerName));
         }
 

@@ -18,14 +18,14 @@ import java.util.List;
 
 public class InventoryRequirementsManager {
 
-    private PlayerKits2 plugin;
-    private InventoryManager inventoryManager;
+    private final PlayerKits2 plugin;
+    private final InventoryManager inventoryManager;
     public InventoryRequirementsManager(PlayerKits2 plugin, InventoryManager inventoryManager){
         this.plugin = plugin;
         this.inventoryManager = inventoryManager;
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings("deprecation")
     public void configureRequirementsItem(ItemStack item, String kitName, Player player){
         if(item.hasItemMeta()) {
             ItemMeta meta = item.getItemMeta();
@@ -37,7 +37,8 @@ public class InventoryRequirementsManager {
                 MiniMessageUtils.setRequirementsMessage(meta,kitName,player,this);
             }else{
                 List<String> lore = new ArrayList<>();
-                for(String line : meta.getLore()){
+                List<String> metaLore = meta.getLore();
+                for(String line : metaLore != null ? metaLore : new ArrayList<String>()){
                     if(line.equals("%kit_requirements_message%")){
                         List<String> message = replaceRequirementsMessageVariable(kitName,player);
                         for(String m : message){
@@ -82,7 +83,7 @@ public class InventoryRequirementsManager {
                 int pos = line.indexOf("%status_symbol_requirement_");
                 int lastPos = line.indexOf("%", pos+1)+1;
                 String variable = line.substring(pos, lastPos);
-                int posNumber = Integer.valueOf(variable.replace("%status_symbol_requirement_","").replace("%", ""));
+                int posNumber = Integer.parseInt(variable.replace("%status_symbol_requirement_","").replace("%", ""));
                 boolean passCondition = requirementsBooleans.get(posNumber-1);
                 if(passCondition) {
                     line = line.replace(variable, msgManager.getRequirementsMessageStatusSymbolTrue());
@@ -110,7 +111,7 @@ public class InventoryRequirementsManager {
             return;
         }
 
-        if(!inventoryManager.beginClaim(player)){
+        if(inventoryManager.cannotBeginClaim(player)){
             return;
         }
 

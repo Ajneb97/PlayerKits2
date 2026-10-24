@@ -23,9 +23,6 @@ import pk.ajneb97.utils.OtherUtils;
 import pk.ajneb97.utils.PlayerUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -36,7 +33,7 @@ public class KitsManager {
 
     private static final Pattern VALID_KIT_NAME = Pattern.compile("[A-Za-z0-9_\\-]{1,48}");
 
-    private PlayerKits2 plugin;
+    private final PlayerKits2 plugin;
     private Map<String, Kit> kits;
     private final Set<UUID> claiming;
 
@@ -46,20 +43,8 @@ public class KitsManager {
         this.claiming = ConcurrentHashMap.newKeySet();
     }
 
-    public PlayerKits2 getPlugin() {
-        return plugin;
-    }
-
-    public void setPlugin(PlayerKits2 plugin) {
-        this.plugin = plugin;
-    }
-
     public ArrayList<Kit> getKits() {
         return new ArrayList<>(kits.values());
-    }
-
-    public Collection<Kit> getKitsView() {
-        return kits.values();
     }
 
     public void setKits(ArrayList<Kit> newKits) {
@@ -95,7 +80,7 @@ public class KitsManager {
         }
 
         if (getKitByName(kitName) != null) {
-            msgManager.sendMessage(player, messagesFile.getString("kitAlreadyExists").replace("%kit%", kitName), true);
+            msgManager.sendMessage(player, MessagesManager.getMessage(messagesFile,"kitAlreadyExists").replace("%kit%", kitName), true);
             return;
         }
 
@@ -136,7 +121,7 @@ public class KitsManager {
         kits.put(kitName, kit);
         plugin.getConfigsManager().getKitsConfigManager().saveConfig(kit);
 
-        msgManager.sendMessage(player, messagesFile.getString("kitCreated").replace("%kit%", kitName), true);
+        msgManager.sendMessage(player, MessagesManager.getMessage(messagesFile,"kitCreated").replace("%kit%", kitName), true);
 
         InventoryManager inventoryManager = plugin.getInventoryManager();
         String newKitDefaultInventory = mainConfigManager.getNewKitDefaultInventory();
@@ -146,7 +131,7 @@ public class KitsManager {
             if (resultSlot == -1) {
                 msgManager.sendMessage(player, messagesFile.getString("kitNotAddedToInventory"), true);
             } else {
-                msgManager.sendMessage(player, messagesFile.getString("kitAddedToInventory")
+                msgManager.sendMessage(player, MessagesManager.getMessage(messagesFile,"kitAddedToInventory")
                         .replace("%inventory%", newKitDefaultInventory).replace("%slot%", String.valueOf(resultSlot)), true);
                 plugin.getConfigsManager().getInventoryConfigManager().saveKitItemOnConfig(newKitDefaultInventory, resultSlot, kitName);
             }
@@ -157,7 +142,7 @@ public class KitsManager {
         FileConfiguration messagesFile = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
         MessagesManager msgManager = plugin.getMessagesManager();
         if (getKitByName(kitName) == null) {
-            msgManager.sendMessage(sender, messagesFile.getString("kitDoesNotExists")
+            msgManager.sendMessage(sender, MessagesManager.getMessage(messagesFile,"kitDoesNotExists")
                     .replace("%kit%", kitName), true);
             return;
         }
@@ -167,7 +152,7 @@ public class KitsManager {
         plugin.getInventoryManager().removeKitFromInventory(kitName);
         plugin.getConfigsManager().getInventoryConfigManager().save();
 
-        msgManager.sendMessage(sender, messagesFile.getString("kitDeleted").replace("%kit%", kitName), true);
+        msgManager.sendMessage(sender, MessagesManager.getMessage(messagesFile,"kitDeleted").replace("%kit%", kitName), true);
     }
 
     public PlayerKitsMessageResult giveKit(Player player, String kitName, GiveKitInstructions giveKitInstructions) {
@@ -191,11 +176,11 @@ public class KitsManager {
         MessagesManager msgManager = plugin.getMessagesManager();
 
         if (kit == null) {
-            return PlayerKitsMessageResult.error(messagesFile.getString("kitDoesNotExists").replace("%kit%", kitName));
+            return PlayerKitsMessageResult.error(MessagesManager.getMessage(messagesFile,"kitDoesNotExists").replace("%kit%", kitName));
         }
 
         if (!player.isOnline()) {
-            return PlayerKitsMessageResult.error(messagesFile.getString("playerNotOnline")
+            return PlayerKitsMessageResult.error(MessagesManager.getMessage(messagesFile,"playerNotOnline")
                     .replace("%player%", player.getName()));
         }
 
@@ -211,25 +196,25 @@ public class KitsManager {
                 return PlayerKitsMessageResult.error(messagesFile.getString("kitNoPermissions"));
             }
 
-            if (kit.isOneTime() && !PlayerUtils.isPlayerKitsAdmin(player) && !PlayerUtils.hasOneTimeBypassPermission(player)
+            if (kit.isOneTime() && !PlayerUtils.isPlayerKitsAdmin(player) && PlayerUtils.lacksOneTimeBypassPermission(player)
                     && playerDataManager.isKitOneTime(player, kit.getName())) {
                 sendKitActions(kit.getErrorActions(), player, false);
                 return PlayerKitsMessageResult.error(messagesFile.getString("oneTimeError"));
             }
 
-            if (kit.getCooldown() != 0 && !PlayerUtils.isPlayerKitsAdmin(player) && !PlayerUtils.hasCooldownBypassPermission(player)) {
+            if (kit.getCooldown() != 0 && !PlayerUtils.isPlayerKitsAdmin(player) && PlayerUtils.lacksCooldownBypassPermission(player)) {
                 long playerCooldown = playerDataManager.getKitCooldown(player, kit.getName());
                 long millisDif = playerCooldown - System.currentTimeMillis();
                 String timeStringMillisDif = OtherUtils.getTime(millisDif / 1000, msgManager);
                 if (!timeStringMillisDif.isEmpty()) {
                     sendKitActions(kit.getErrorActions(), player, false);
-                    return PlayerKitsMessageResult.error(messagesFile.getString("cooldownError")
+                    return PlayerKitsMessageResult.error(MessagesManager.getMessage(messagesFile,"cooldownError")
                             .replace("%time%", timeStringMillisDif));
                 }
             }
 
             KitRequirements kitRequirements = kit.getRequirements();
-            if (!giveKitInstructions.isIgnoreRequirements() && kitRequirements != null &&
+            if (giveKitInstructions.shouldCheckRequirements() && kitRequirements != null &&
                     (kitRequirements.getPrice() != 0 || !kitRequirements.getExtraRequirements().isEmpty())) {
                 if (!(kitRequirements.isOneTimeRequirements() && playerDataManager.isKitBought(player, kit.getName()))) {
                     if (!giveKitInstructions.isRequirementsSatisfied()) {
@@ -348,7 +333,7 @@ public class KitsManager {
 
         if (!fromCommand) {
             KitRequirements kitRequirements = kit.getRequirements();
-            boolean chargeRequirements = !giveKitInstructions.isIgnoreRequirements()
+            boolean chargeRequirements = giveKitInstructions.shouldCheckRequirements()
                     && kitRequirements != null && giveKitInstructions.isRequirementsSatisfied();
 
             if (chargeRequirements) {
@@ -363,11 +348,11 @@ public class KitsManager {
                 }
             }
 
-            if (kit.isOneTime() && !PlayerUtils.isPlayerKitsAdmin(player) && !PlayerUtils.hasOneTimeBypassPermission(player)) {
+            if (kit.isOneTime() && !PlayerUtils.isPlayerKitsAdmin(player) && PlayerUtils.lacksOneTimeBypassPermission(player)) {
                 playerDataManager.setKitOneTime(player, kit.getName());
             }
 
-            if (kit.getCooldown() != 0 && !PlayerUtils.isPlayerKitsAdmin(player) && !PlayerUtils.hasCooldownBypassPermission(player)) {
+            if (kit.getCooldown() != 0 && !PlayerUtils.isPlayerKitsAdmin(player) && PlayerUtils.lacksCooldownBypassPermission(player)) {
                 long millisMax = System.currentTimeMillis() + (kit.getCooldown() * 1000L);
                 playerDataManager.setKitCooldown(player, kit.getName(), millisMax);
             }
@@ -444,7 +429,7 @@ public class KitsManager {
         }
 
         Map<Integer, ItemStack> leftovers = playerInventory.addItem(item);
-        if (leftovers == null || leftovers.isEmpty()) {
+        if (leftovers.isEmpty()) {
             return;
         }
         for (ItemStack leftover : leftovers.values()) {

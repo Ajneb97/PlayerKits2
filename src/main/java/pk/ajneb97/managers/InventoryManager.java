@@ -28,8 +28,6 @@ import pk.ajneb97.utils.OtherUtils;
 import pk.ajneb97.utils.PlayerUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -66,23 +64,15 @@ public final class InventoryManager {
         this.inventoryRequirementsManager = new InventoryRequirementsManager(plugin, this);
     }
 
-    public Collection<InventoryPlayer> getPlayers() {
-        return players.values();
-    }
-
     public ArrayList<KitInventory> getInventories() {
         return new ArrayList<>(inventories.values());
-    }
-
-    public InventoryRequirementsManager getInventoryRequirementsManager() {
-        return inventoryRequirementsManager;
     }
 
     public void setInventories(ArrayList<KitInventory> newInventories) {
         Map<String, KitInventory> replacement = new ConcurrentHashMap<>();
         for (KitInventory inventory : newInventories) {
-            if (inventory.getName() != null) {
-                replacement.put(inventory.getName(), inventory);
+            if (inventory.name() != null) {
+                replacement.put(inventory.name(), inventory);
             }
         }
         this.inventories = replacement;
@@ -125,21 +115,21 @@ public final class InventoryManager {
 
         MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
 
-        String title = kitInventory.getTitle();
+        String title = kitInventory.title();
         String inventoryName = inventoryPlayer.getInventoryName();
         if (inventoryName.equals("buy_requirements_inventory") || inventoryName.equals("preview_inventory")) {
             title = title.replace("%kit%", inventoryPlayer.getKitName() == null ? "" : inventoryPlayer.getKitName());
         }
 
         KitGuiHolder holder = new KitGuiHolder(KitGuiHolder.Type.KITS, player.getUniqueId());
-        Inventory inv = InventoryUtils.createInventory(holder, kitInventory.getSlots(), title,
+        Inventory inv = InventoryUtils.createInventory(holder, kitInventory.slots(), title,
                 mainConfigManager.isUseMiniMessage());
 
-        List<ItemKitInventory> items = kitInventory.getItems();
+        List<ItemKitInventory> items = kitInventory.items();
         KitItemManager kitItemManager = plugin.getKitItemManager();
         KitsManager kitsManager = plugin.getKitsManager();
         PlayerDataManager playerDataManager = plugin.getPlayerDataManager();
-        int maxSlot = kitInventory.getSlots();
+        int maxSlot = kitInventory.slots();
 
         for (ItemKitInventory itemInventory : items) {
             String type = itemInventory.getType();
@@ -278,7 +268,7 @@ public final class InventoryManager {
             }
         }
 
-        int maxSlot = kitInventory.getSlots();
+        int maxSlot = kitInventory.slots();
         int slot = 0;
         for (KitItem kitItem : allItems) {
             ItemStack item = kitItemManager.createItemFromKitItem(kitItem, inventoryPlayer.getPlayer(), kit);
@@ -342,7 +332,7 @@ public final class InventoryManager {
 
         Kit kit = plugin.getKitsManager().getKitByName(kitName);
         if (kit == null) {
-            msgManager.sendMessage(player, messagesConfig.getString("kitDoesNotExists").replace("%kit%", kitName), true);
+            msgManager.sendMessage(player, MessagesManager.getMessage(messagesConfig,"kitDoesNotExists").replace("%kit%", kitName), true);
             return;
         }
 
@@ -370,7 +360,7 @@ public final class InventoryManager {
             return;
         }
 
-        if (!beginClaim(player)) {
+        if (cannotBeginClaim(player)) {
             return;
         }
 
@@ -409,7 +399,7 @@ public final class InventoryManager {
                 return;
             }
 
-            msgManager.sendMessage(player, messagesConfig.getString("kitReceived").replace("%kit%", kitName), true);
+            msgManager.sendMessage(player, MessagesManager.getMessage(messagesConfig,"kitReceived").replace("%kit%", kitName), true);
 
             if (mainConfigManager.isCloseInventoryOnClaim()) {
                 player.closeInventory();
@@ -459,18 +449,18 @@ public final class InventoryManager {
         }
     }
 
-    public boolean beginClaim(Player player) {
+    public boolean cannotBeginClaim(Player player) {
         UUID uuid = player.getUniqueId();
         long now = System.currentTimeMillis();
         Long last = lastClaimMillis.get(uuid);
         if (last != null && now - last < CLAIM_DEBOUNCE_MILLIS) {
-            return false;
+            return true;
         }
         if (!pendingClaims.add(uuid)) {
-            return false;
+            return true;
         }
         lastClaimMillis.put(uuid, now);
-        return true;
+        return false;
     }
 
     public void endClaim(Player player) {
@@ -494,7 +484,6 @@ public final class InventoryManager {
         return InventoryUtils.getKitGuiHolder(InventoryUtils.getTopInventory(player)) == inventoryPlayer.getHolder();
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
     public void syncInventory(Player player) {
         if (player != null && player.isOnline()) {
             player.updateInventory();
@@ -536,7 +525,7 @@ public final class InventoryManager {
         }
     }
 
-    @SuppressWarnings({"deprecation", "removal"})
+    @SuppressWarnings("deprecation")
     public void setKit(String kitName, Player player, Inventory inv, int slot, KitsManager kitsManager,
                        PlayerDataManager playerDataManager, KitItemManager kitItemManager, ItemStack currentItem) {
         Kit kit = kitsManager.getKitByName(kitName);
@@ -592,7 +581,7 @@ public final class InventoryManager {
             return;
         }
 
-        kitItem = kitItem.clone();
+        kitItem = kitItem.copy();
 
         boolean useMiniMessage = plugin.getConfigsManager().getMainConfigManager().isUseMiniMessage();
         if (currentItem != null && newStatus.equals(currentStatus)) {
@@ -639,9 +628,9 @@ public final class InventoryManager {
     public KitPosition getKitPositionByKitName(String kitName) {
         String expected = KIT_TYPE_PREFIX + kitName;
         for (KitInventory kitInventory : inventories.values()) {
-            for (ItemKitInventory itemKitInventory : kitInventory.getItems()) {
+            for (ItemKitInventory itemKitInventory : kitInventory.items()) {
                 if (expected.equals(itemKitInventory.getType()) && !itemKitInventory.getSlots().isEmpty()) {
-                    return new KitPosition(itemKitInventory.getSlots().get(0), kitInventory.getName());
+                    return new KitPosition(itemKitInventory.getSlots().getFirst(), kitInventory.name());
                 }
             }
         }
@@ -651,7 +640,7 @@ public final class InventoryManager {
     public void removeKitFromInventory(String kitName) {
         String expected = KIT_TYPE_PREFIX + kitName;
         for (KitInventory inventory : inventories.values()) {
-            inventory.getItems().removeIf(item -> expected.equals(item.getType()));
+            inventory.items().removeIf(item -> expected.equals(item.getType()));
         }
     }
 }

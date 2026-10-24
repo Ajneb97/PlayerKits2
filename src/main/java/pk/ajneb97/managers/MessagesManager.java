@@ -2,6 +2,7 @@ package pk.ajneb97.managers;
 
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import pk.ajneb97.api.PlayerKitsAPI;
 import pk.ajneb97.utils.MiniMessageUtils;
 import pk.ajneb97.utils.OtherUtils;
@@ -52,10 +53,6 @@ public class MessagesManager {
 		this.timeDays = timeDays;
 	}
 
-	public String getPrefix() {
-		return prefix;
-	}
-
 	public void setPrefix(String prefix) {
 		this.prefix = prefix;
 	}
@@ -98,7 +95,12 @@ public class MessagesManager {
 		}
 	}
 
-	@SuppressWarnings({"deprecation", "removal"})
+	public static String getMessage(FileConfiguration config, String path) {
+		String message = config.getString(path);
+		return message != null ? message : "";
+	}
+
+	@SuppressWarnings("deprecation")
 	public static String getLegacyColoredMessage(String message) {
 		if(OtherUtils.isNew()) {
 			Pattern pattern = Pattern.compile("#[a-fA-F0-9]{6}");
