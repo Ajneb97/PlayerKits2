@@ -27,6 +27,9 @@ public class MainConfigManager {
     private boolean isMySQL;
     private boolean updateNotify;
     private boolean useMiniMessage;
+    private boolean layoutEditor;
+    private boolean layoutEditorShiftClick;
+    private String layoutEditorTitle;
 
     public MainConfigManager(PlayerKits2 plugin){
         this.plugin = plugin;
@@ -48,6 +51,9 @@ public class MainConfigManager {
         claimKitShortCommand = config.getBoolean("claim_kit_short_command");
         useMiniMessage = config.getBoolean("use_minimessage");
         newKitDefaultSaveModeOriginal = config.getBoolean("new_kit_default_save_mode_original");
+        layoutEditor = config.getBoolean("layout_editor.enabled");
+        layoutEditorShiftClick = config.getBoolean("layout_editor.shift_click");
+        layoutEditorTitle = config.getString("layout_editor.title","&8Edit Layout: &9%kit%");
     }
 
     public boolean reloadConfig(){
@@ -79,6 +85,12 @@ public class MainConfigManager {
             }
             if(!text.contains("new_kit_default_save_mode_original:")){
                 getConfig().set("new_kit_default_save_mode_original", true);
+                configFile.saveConfig();
+            }
+            if(!text.contains("layout_editor:")){
+                getConfig().set("layout_editor.enabled", true);
+                getConfig().set("layout_editor.shift_click", true);
+                getConfig().set("layout_editor.title", "&8Edit Layout: &9%kit%");
                 configFile.saveConfig();
             }
         }catch(IOException e){
@@ -128,5 +140,17 @@ public class MainConfigManager {
 
     public boolean isUseMiniMessage() {
         return useMiniMessage;
+    }
+
+    public boolean isLayoutEditor() {
+        return layoutEditor;
+    }
+
+    public boolean isLayoutEditorShiftClick() {
+        return layoutEditorShiftClick;
+    }
+
+    public String getLayoutEditorTitle() {
+        return layoutEditorTitle;
     }
 }

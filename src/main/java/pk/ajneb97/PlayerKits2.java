@@ -33,6 +33,7 @@ public class PlayerKits2 extends JavaPlugin {
     private MessagesManager messagesManager;
     private PlayerDataManager playerDataManager;
     private InventoryManager inventoryManager;
+    private LayoutEditorManager layoutEditorManager;
     private InventoryEditManager inventoryEditManager;
     private NMSManager nmsManager;
     private UpdateCheckerManager updateCheckerManager;
@@ -51,6 +52,7 @@ public class PlayerKits2 extends JavaPlugin {
 
         this.kitItemManager = new KitItemManager(this);
         this.inventoryManager = new InventoryManager(this);
+        this.layoutEditorManager = new LayoutEditorManager(this);
         this.inventoryEditManager = new InventoryEditManager(this);
         this.kitsManager = new KitsManager(this);
         this.dependencyManager = new DependencyManager(this);
@@ -89,6 +91,9 @@ public class PlayerKits2 extends JavaPlugin {
     }
 
     public void onDisable(){
+        if(layoutEditorManager != null){
+            layoutEditorManager.clearSessions();
+        }
         this.configsManager.getPlayersConfigManager().saveConfigs();
         Bukkit.getConsoleSender().sendMessage(MessagesManager.getLegacyColoredMessage(prefix+"&eHas been disabled! &fVersion: "+version));
     }
@@ -200,6 +205,10 @@ public class PlayerKits2 extends JavaPlugin {
 
     public InventoryManager getInventoryManager() {
         return inventoryManager;
+    }
+
+    public LayoutEditorManager getLayoutEditorManager() {
+        return layoutEditorManager;
     }
 
     public InventoryEditManager getInventoryEditManager() {

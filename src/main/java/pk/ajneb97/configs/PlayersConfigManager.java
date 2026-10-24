@@ -7,6 +7,7 @@ import pk.ajneb97.configs.model.CommonConfig;
 import pk.ajneb97.model.PlayerData;
 import pk.ajneb97.model.PlayerDataKit;
 import pk.ajneb97.model.internal.GenericCallback;
+import pk.ajneb97.model.layout.PlayerKitLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,6 +58,12 @@ public class PlayersConfigManager extends DataFolderConfigManager{
 
                     playerData = new PlayerData(uuid, name);
                     playerData.setKits(playerDataKits);
+
+                    if (config.contains("layouts")) {
+                        for (String key : config.getConfigurationSection("layouts").getKeys(false)) {
+                            playerData.putLayout(PlayerKitLayout.deserialize(key, config.getString("layouts." + key)));
+                        }
+                    }
                 }
 
                 PlayerData finalPlayer = playerData;
@@ -84,6 +91,11 @@ public class PlayersConfigManager extends DataFolderConfigManager{
             config.set("kits."+kitName+".cooldown",playerDataKit.getCooldown());
             config.set("kits."+kitName+".one_time",playerDataKit.isOneTime());
             config.set("kits."+kitName+".bought",playerDataKit.isBought());
+        }
+
+        config.set("layouts",null);
+        for(PlayerKitLayout layout : playerData.getLayouts()){
+            config.set("layouts."+layout.getKitName(),layout.serialize());
         }
 
         playerConfig.saveConfig();

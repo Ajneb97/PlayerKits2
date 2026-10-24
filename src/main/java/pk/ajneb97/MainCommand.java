@@ -63,6 +63,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 claim(player,args,messagesConfig,msgManager);
             }else if(args[0].equalsIgnoreCase("preview")){
                 preview(player,args,messagesConfig,msgManager);
+            }else if(args[0].equalsIgnoreCase("layout")){
+                layout(player,args,messagesConfig,msgManager);
             }else if(args[0].equalsIgnoreCase("create")){
                 create(player,args,messagesConfig,msgManager);
             }else if(args[0].equalsIgnoreCase("give")) {
@@ -120,10 +122,25 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit reset <kit> <player>/* &8Resets kit data for a player."));
         sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit preview <kit> (optional)<player> &8Previews a kit."));
         sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit open <inventory> <player> &8Opens a specific inventory for a player."));
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit layout <kit> &8Edits your personal layout for a kit."));
         sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit reload &8Reloads the config."));
         sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6/kit verify &8Checks the plugin for errors."));
         sender.sendMessage(MessagesManager.getLegacyColoredMessage(" "));
         sender.sendMessage(MessagesManager.getLegacyColoredMessage("&7[ [ &8[&bPlayerKits&a²&8] &7] ]"));
+    }
+
+    public void layout(Player player,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
+        if(!plugin.getConfigsManager().getMainConfigManager().isLayoutEditor()){
+            msgManager.sendMessage(player,messagesConfig.getString("layoutDisabled"),true);
+            return;
+        }
+
+        if(args.length < 2){
+            msgManager.sendMessage(player,messagesConfig.getString("commandLayoutError"),true);
+            return;
+        }
+
+        plugin.getLayoutEditorManager().open(new InventoryPlayer(player,"main_inventory"),args[1]);
     }
 
     public void migrate(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
@@ -424,6 +441,9 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             if(kitPreviewEnabled){
                 commands.add("preview");
             }
+            if(mainConfigManager.isLayoutEditor()){
+                commands.add("layout");
+            }
             if(PlayerUtils.isPlayerKitsAdmin(sender)){
                 commands.add("give");commands.add("delete");commands.add("create");
                 commands.add("reload");commands.add("reset");commands.add("edit");
@@ -442,6 +462,9 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 }
                 if(kitPreviewEnabled){
                     commands.add("preview");
+                }
+                if(mainConfigManager.isLayoutEditor()){
+                    commands.add("layout");
                 }
                 if(PlayerUtils.isPlayerKitsAdmin(sender)){
                     commands.add("give");commands.add("delete");

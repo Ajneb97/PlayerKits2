@@ -103,6 +103,9 @@ public class InventoryManager {
         for(ItemKitInventory itemInventory : items){
             for(int slot : itemInventory.getSlots()){
                 String type = itemInventory.getType();
+                if(type != null && type.equals(LayoutEditorManager.INVENTORY_NAME) && !mainConfigManager.isLayoutEditor()){
+                    continue;
+                }
                 if(type != null && type.startsWith("kit: ")){
                     setKit(type.replace("kit: ",""),inventoryPlayer.getPlayer(),inv,slot,kitsManager
                             ,playerDataManager,kitItemManager,null);
@@ -116,6 +119,10 @@ public class InventoryManager {
                     if(type != null){
                         item = ItemUtils.setTagStringItem(plugin,item, "playerkits_buy", type);
                     }
+                }
+
+                if(type != null && type.equals(LayoutEditorManager.INVENTORY_NAME)){
+                    item = ItemUtils.setTagStringItem(plugin,item, "playerkits_layout_editor", "yes");
                 }
 
                 String openInventory = itemInventory.getOpenInventory();
@@ -201,6 +208,11 @@ public class InventoryManager {
             clickOnActionItem(inventoryPlayer,itemActions);
         }
 
+        if(ItemUtils.getTagStringItem(plugin,item,"playerkits_layout_editor") != null){
+            plugin.getLayoutEditorManager().openFromInventory(inventoryPlayer);
+            return;
+        }
+
         String openInventory = ItemUtils.getTagStringItem(plugin,item,"playerkits_open_inventory");
         if(openInventory != null){
             clickOnOpenInventoryItem(inventoryPlayer,openInventory);
@@ -226,6 +238,11 @@ public class InventoryManager {
         Player player = inventoryPlayer.getPlayer();
         FileConfiguration messagesConfig = plugin.getConfigsManager().getMessagesConfigManager().getConfig();
         MessagesManager msgManager = plugin.getMessagesManager();
+
+        if(clickType.isShiftClick() && mainConfigManager.isLayoutEditor() && mainConfigManager.isLayoutEditorShiftClick()){
+            plugin.getLayoutEditorManager().open(inventoryPlayer,kitName);
+            return;
+        }
 
         if(clickType.equals(ClickType.RIGHT)){
             //Preview

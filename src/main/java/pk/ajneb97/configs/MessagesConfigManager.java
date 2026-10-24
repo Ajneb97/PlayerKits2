@@ -82,6 +82,15 @@ public class MessagesConfigManager {
                 getConfig().set("pluginCriticalErrors", "&cThe plugin has detected some errors. Check them using &7/kit verify");
                 saveConfig();
             }
+            if(!text.contains("layoutSaved:")){
+                getConfig().set("layoutSaved", "&aYour personal layout for kit &7%kit% &awas saved.");
+                getConfig().set("layoutReset", "&aYour personal layout for kit &7%kit% &awas reset to the default.");
+                getConfig().set("layoutDisabled", "&cThe kit layout editor is disabled.");
+                getConfig().set("layoutNoItems", "&cThis kit has no items you can arrange.");
+                getConfig().set("layoutNoKitSelected", "&cOpen a kit first to edit its layout.");
+                getConfig().set("commandLayoutError", "&cYou need to use: &7/kit layout <kit>");
+                saveConfig();
+            }
 
         }catch(IOException e){
             e.printStackTrace();

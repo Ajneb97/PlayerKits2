@@ -42,5 +42,11 @@ kitPreviewDisabled: "&cKit preview is disabled."
 inventoryNotExists: "&cThat inventory doesn't exists."
 onlyPlayerCommand: "&cOnly a player can use this command."
 commandPreviewOtherCorrect: "&aPreviewing kit &7%kit% &ato &e%player%&a."
+layoutSaved: "&aYour personal layout for kit &7%kit% &awas saved."
+layoutReset: "&aYour personal layout for kit &7%kit% &awas reset to the default."
+layoutDisabled: "&cThe kit layout editor is disabled."
+layoutNoItems: "&cThis kit has no items you can arrange."
+layoutNoKitSelected: "&cOpen a kit first to edit its layout."
+commandLayoutError: "&cYou need to use: &7/kit layout <kit>"
 
 

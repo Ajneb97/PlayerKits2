@@ -10,6 +10,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.managers.InventoryManager;
+import pk.ajneb97.managers.LayoutEditorManager;
 import pk.ajneb97.managers.MessagesManager;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.utils.InventoryUtils;
@@ -36,12 +37,17 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onLeave(PlayerQuitEvent event){
+        plugin.getLayoutEditorManager().endSession(event.getPlayer());
         plugin.getPlayerDataManager().manageLeave(event.getPlayer());
     }
 
     @EventHandler
     public void closeInventory(InventoryCloseEvent event){
         Player player = (Player) event.getPlayer();
+        InventoryPlayer inventoryPlayer = plugin.getInventoryManager().getInventoryPlayer(player);
+        if(inventoryPlayer != null && plugin.getLayoutEditorManager().isEditing(inventoryPlayer)){
+            plugin.getLayoutEditorManager().endSession(player);
+        }
         plugin.getInventoryManager().removeInventoryPlayer(player);
     }
 
@@ -52,6 +58,13 @@ public class PlayerListener implements Listener {
         InventoryPlayer inventoryPlayer = invManager.getInventoryPlayer(player);
         if(inventoryPlayer != null) {
             event.setCancelled(true);
+            LayoutEditorManager layoutEditorManager = plugin.getLayoutEditorManager();
+            if(layoutEditorManager.isEditing(inventoryPlayer)){
+                if(event.getClickedInventory() != null && event.getClickedInventory().equals(InventoryUtils.getTopInventory(player))){
+                    layoutEditorManager.clickInventory(inventoryPlayer,event.getSlot(),event.getClick());
+                }
+                return;
+            }
             if(event.getCurrentItem() == null || event.getSlotType() == null){
                 return;
             }

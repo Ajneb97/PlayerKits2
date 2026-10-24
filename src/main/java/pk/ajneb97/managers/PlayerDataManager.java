@@ -9,6 +9,7 @@ import pk.ajneb97.database.MySQLConnection;
 import pk.ajneb97.model.PlayerData;
 import pk.ajneb97.model.internal.GenericCallback;
 import pk.ajneb97.model.internal.PlayerKitsMessageResult;
+import pk.ajneb97.model.layout.PlayerKitLayout;
 import pk.ajneb97.utils.OtherUtils;
 
 import java.util.ArrayList;
@@ -133,6 +134,29 @@ public class PlayerDataManager {
             return false;
         }else{
             return playerData.getKitHasBought(kitName);
+        }
+    }
+
+    public PlayerKitLayout getLayout(Player player,String kitName){
+        PlayerData playerData = getPlayerByUUID(player.getUniqueId());
+        return playerData == null ? null : playerData.getLayout(kitName);
+    }
+
+    public void saveLayout(Player player,PlayerKitLayout layout){
+        PlayerData playerData = getPlayer(player,true);
+        playerData.putLayout(layout);
+        playerData.setModified(true);
+        if(plugin.getMySQLConnection() != null){
+            plugin.getMySQLConnection().updateLayout(playerData,layout.getKitName(),layout.isEmpty() ? null : layout.serialize());
+        }
+    }
+
+    public void clearLayout(Player player,String kitName){
+        PlayerData playerData = getPlayer(player,true);
+        playerData.removeLayout(kitName);
+        playerData.setModified(true);
+        if(plugin.getMySQLConnection() != null){
+            plugin.getMySQLConnection().updateLayout(playerData,kitName,null);
         }
     }
 

@@ -9,6 +9,7 @@ import pk.ajneb97.model.PlayerData;
 import pk.ajneb97.model.PlayerDataKit;
 import pk.ajneb97.model.internal.GenericCallback;
 import pk.ajneb97.model.internal.SimpleCallback;
+import pk.ajneb97.model.layout.PlayerKitLayout;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -66,6 +67,14 @@ public class MySQLConnection {
                     " PRIMARY KEY ( ID ), " +
                     " FOREIGN KEY (UUID) REFERENCES playerkits_players(UUID))");
             statement2.executeUpdate();
+            PreparedStatement statement3 = connection.prepareStatement(
+                    "CREATE TABLE IF NOT EXISTS playerkits_players_layouts" +
+                    " (UUID varchar(200) NOT NULL, " +
+                    " NAME varchar(100) NOT NULL, " +
+                    " LAYOUT varchar(255) NOT NULL, " +
+                    " PRIMARY KEY ( UUID, NAME ), " +
+                    " FOREIGN KEY (UUID) REFERENCES playerkits_players(UUID))");
+            statement3.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -107,6 +116,16 @@ public class MySQLConnection {
                             playerDataKit.setOneTime(oneTime);
                             playerDataKit.setBought(bought);
                             player.addKit(playerDataKit);
+                        }
+                    }
+
+                    if(player != null){
+                        PreparedStatement layoutStatement = connection.prepareStatement(
+                                "SELECT NAME, LAYOUT FROM playerkits_players_layouts WHERE UUID = ?");
+                        layoutStatement.setString(1, uuid);
+                        ResultSet layoutResult = layoutStatement.executeQuery();
+                        while(layoutResult.next()){
+                            player.putLayout(PlayerKitLayout.deserialize(layoutResult.getString("NAME"), layoutResult.getString("LAYOUT")));
                         }
                     }
 
@@ -197,6 +216,37 @@ public class MySQLConnection {
                         statement.setBoolean(3, kit.isBought());
                         statement.setString(4, player.getUuid().toString());
                         statement.setString(5, kit.getName());
+                    }
+                    statement.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.runTaskAsynchronously(plugin);
+    }
+
+    public void updateLayout(PlayerData player,String kitName,String serializedLayout){
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                try(Connection connection = getConnection()){
+                    PreparedStatement statement;
+                    if(serializedLayout == null || serializedLayout.isEmpty()){
+                        statement = connection.prepareStatement(
+                                "DELETE FROM playerkits_players_layouts " +
+                                        "WHERE UUID=? AND NAME=?");
+
+                        statement.setString(1, player.getUuid().toString());
+                        statement.setString(2, kitName);
+                    }else{
+                        statement = connection.prepareStatement(
+                                "INSERT INTO playerkits_players_layouts " +
+                                        "(UUID, NAME, LAYOUT) VALUES (?,?,?) " +
+                                        "ON DUPLICATE KEY UPDATE LAYOUT=VALUES(LAYOUT)");
+
+                        statement.setString(1, player.getUuid().toString());
+                        statement.setString(2, kitName);
+                        statement.setString(3, serializedLayout);
                     }
                     statement.executeUpdate();
                 } catch (SQLException e) {

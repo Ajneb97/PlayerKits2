@@ -17,6 +17,7 @@ import pk.ajneb97.model.internal.GiveKitInstructions;
 import pk.ajneb97.model.internal.PlayerKitsMessageResult;
 import pk.ajneb97.model.inventory.KitInventory;
 import pk.ajneb97.model.item.KitItem;
+import pk.ajneb97.model.layout.PlayerKitLayout;
 import pk.ajneb97.utils.ActionUtils;
 import pk.ajneb97.utils.OtherUtils;
 import pk.ajneb97.utils.PlayerUtils;
@@ -316,8 +317,13 @@ public class KitsManager {
         //Actions before
         sendKitActions(kit.getClaimActions(),player,true);
 
+        PlayerKitLayout layout = plugin.getConfigsManager().getMainConfigManager().isLayoutEditor()
+                ? playerDataManager.getLayout(player,kit.getName()) : null;
+        ArrayList<ItemStack> itemsWithoutLayoutSlot = new ArrayList<>();
+
         //Give kit items
-        for(KitItem kitItem : items){
+        for(int index=0;index<items.size();index++){
+            KitItem kitItem = items.get(index);
             ItemStack item = kitItemManager.createItemFromKitItem(kitItem,player,kit);
 
             if(itemHelmet != null && kitItem.equals(itemHelmet)){
@@ -330,12 +336,16 @@ public class KitsManager {
                 playerInventory.setBoots(item);
             }else if(itemOffhand != null && kitItem.equals(itemOffhand)){
                 playerInventory.setItemInOffHand(item);
+            }else if(!setItemInLayoutSlot(playerInventory,layout,index,item)){
+                itemsWithoutLayoutSlot.add(item);
+            }
+        }
+
+        for(ItemStack item : itemsWithoutLayoutSlot){
+            if(playerInventory.firstEmpty() == -1 && dropItemsIfFullInventory){
+                player.getWorld().dropItemNaturally(player.getLocation(), item);
             }else{
-                if(playerInventory.firstEmpty() == -1 && dropItemsIfFullInventory){
-                    player.getWorld().dropItemNaturally(player.getLocation(), item);
-                }else{
-                    playerInventory.addItem(item);
-                }
+                playerInventory.addItem(item);
             }
         }
 
@@ -379,6 +389,22 @@ public class KitsManager {
         }
 
         return PlayerKitsMessageResult.success();
+    }
+
+    private boolean setItemInLayoutSlot(PlayerInventory playerInventory, PlayerKitLayout layout, int index, ItemStack item){
+        if(layout == null){
+            return false;
+        }
+        int slot = layout.getSlot(index);
+        if(slot < 0 || slot > PlayerKitLayout.MAX_SLOT){
+            return false;
+        }
+        ItemStack currentItem = playerInventory.getItem(slot);
+        if(currentItem != null && !currentItem.getType().equals(Material.AIR)){
+            return false;
+        }
+        playerInventory.setItem(slot,item);
+        return true;
     }
 
     public void giveFirstJoinKit(Player player){

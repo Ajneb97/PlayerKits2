@@ -1,7 +1,12 @@
 package pk.ajneb97.model;
 
+import pk.ajneb97.model.layout.PlayerKitLayout;
+
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerData {
 
@@ -9,12 +14,14 @@ public class PlayerData {
     private UUID uuid;
 
     private ArrayList<PlayerDataKit> kits;
+    private Map<String, PlayerKitLayout> layouts;
     private boolean modified;
 
     public PlayerData(UUID uuid, String name){
         this.name = name;
         this.uuid = uuid;
         this.kits = new ArrayList<>();
+        this.layouts = new ConcurrentHashMap<>();
         this.modified = false;
     }
 
@@ -126,6 +133,31 @@ public class PlayerData {
             return false;
         }else{
             return playerDataKit.isBought();
+        }
+    }
+
+    public Collection<PlayerKitLayout> getLayouts(){
+        return layouts.values();
+    }
+
+    public PlayerKitLayout getLayout(String kitName){
+        return kitName == null ? null : layouts.get(kitName);
+    }
+
+    public void putLayout(PlayerKitLayout layout){
+        if(layout == null || layout.getKitName() == null){
+            return;
+        }
+        if(layout.isEmpty()){
+            layouts.remove(layout.getKitName());
+        }else{
+            layouts.put(layout.getKitName(),layout);
+        }
+    }
+
+    public void removeLayout(String kitName){
+        if(kitName != null){
+            layouts.remove(kitName);
         }
     }
 
