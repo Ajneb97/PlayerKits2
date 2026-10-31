@@ -17,8 +17,11 @@ import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.inventory.KitInventory;
 import pk.ajneb97.utils.PlayerUtils;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MainCommand implements CommandExecutor, TabCompleter {
 
@@ -82,7 +85,11 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             }else if(args[0].equalsIgnoreCase("open")){
                 open(sender,args,messagesConfig,msgManager);
             }
-            else{
+            else if(args[0].equalsIgnoreCase("setlanguage")){
+                setLanguage(sender,args,messagesConfig,msgManager);
+            }else if(args[0].equalsIgnoreCase("listlanguages")){
+                listLanguages(sender,msgManager,messagesConfig);
+            }else{
                 // /kit <kit> (short command)
                 if(claimKitShortCommand){
                     claimKitShortCommand(player,messagesConfig,msgManager,args[0]);
@@ -428,6 +435,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 commands.add("give");commands.add("delete");commands.add("create");
                 commands.add("reload");commands.add("reset");commands.add("edit");
                 commands.add("verify");commands.add("migrate");commands.add("open");
+                commands.add("setlanguage");commands.add("listlanguages");
             }
             for(String c : commands) {
                 if(args[0].isEmpty() || c.toLowerCase().startsWith(args[0].toLowerCase())) {
@@ -519,5 +527,60 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             return null;
         }
         return completions;
+    }
+
+    public void listLanguages(CommandSender sender, MessagesManager msgManager, FileConfiguration messagesConfig){
+        if(!PlayerUtils.isPlayerKitsAdmin(sender)){
+            msgManager.sendMessage(sender,messagesConfig.getString("noPermissions"),true);
+            return;
+        }
+        // Dynamically list languages based on files present in the plugin data folder
+        Set<String> langs = new HashSet<>();
+        // always include default english
+        langs.add("en");
+        File dataFolder = plugin.getDataFolder();
+        if(dataFolder != null && dataFolder.exists()){
+            File[] files = dataFolder.listFiles();
+            if(files != null){
+                for(File f : files){
+                    String name = f.getName();
+                    if(name.startsWith("messages_") && name.endsWith(".yml")){
+                        String code = name.substring("messages_".length(), name.length()-4);
+                        if(!code.isEmpty()) langs.add(code);
+                    }
+                }
+            }
+        }
+
+        sender.sendMessage(MessagesManager.getLegacyColoredMessage("&6Available languages:"));
+        for(String l : langs){
+            if(l.equals("en")){
+                sender.sendMessage(MessagesManager.getLegacyColoredMessage("&e"+l+" &7- English (default)"));
+            }else{
+                sender.sendMessage(MessagesManager.getLegacyColoredMessage("&e"+l+" &7- messages_"+l+".yml"));
+            }
+        }
+    }
+
+    public void setLanguage(CommandSender sender,String[] args,FileConfiguration messagesConfig,MessagesManager msgManager){
+        if(!PlayerUtils.isPlayerKitsAdmin(sender)){
+            msgManager.sendMessage(sender,messagesConfig.getString("noPermissions"),true);
+            return;
+        }
+        if(args.length < 2){
+            msgManager.sendMessage(sender,messagesConfig.getString("commandDoesNotExists"),true);
+            return;
+        }
+        String lang = args[1].toLowerCase();
+        // simple validation: only accept 'en' or 'zh' for now
+        if(!lang.equals("en") && !lang.equals("zh")){
+            msgManager.sendMessage(sender, MessagesManager.getLegacyColoredMessage("&cUnsupported language. Use /kit listlanguages"), true);
+            return;
+        }
+
+        plugin.getConfigsManager().getMainConfigManager().setLanguage(lang);
+        // reload messages
+        plugin.getConfigsManager().reload();
+        msgManager.sendMessage(sender, MessagesManager.getLegacyColoredMessage("&aLanguage set to &e"+lang+"&a. Reloaded configs."), true);
     }
 }
