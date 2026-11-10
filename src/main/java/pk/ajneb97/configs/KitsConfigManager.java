@@ -58,6 +58,7 @@ public class KitsConfigManager extends DataFolderConfigManager{
         config.set("permission_required",kit.isPermissionRequired());
         config.set("clear_inventory",kit.isClearInventory());
         config.set("custom_permission",kit.getCustomPermission());
+        config.set("preview_inventory",kit.getPreviewInventory());
         config.set("save_original_items",kit.isSaveOriginalItems());
         config.set("allow_placeholders_on_original_items",kit.isAllowPlaceholdersOnOriginalItems());
 
@@ -184,6 +185,7 @@ public class KitsConfigManager extends DataFolderConfigManager{
         kit.setPermissionRequired(permissionRequired);
         kit.setClearInventory(clearInventory);
         kit.setCustomPermission(customPermission);
+        kit.setPreviewInventory(config.getString(mainPath+"preview_inventory"));
         kit.setItems(items);
         kit.setClaimActions(claimActions);
         kit.setErrorActions(errorActions);
