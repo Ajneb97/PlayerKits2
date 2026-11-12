@@ -488,11 +488,24 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         List<String> completions = new ArrayList<>();
         String argKit = args[argKitPos];
 
+        boolean isPreview = args[0].equalsIgnoreCase("preview");
+        boolean previewRequirestKitPermission = plugin.getConfigsManager().getMainConfigManager().isKitPreviewRequiresKitPermission();
+
         ArrayList<Kit> kits = plugin.getKitsManager().getKits();
         for(Kit kit : kits) {
             if(argKit.isEmpty() || kit.getName().toLowerCase().startsWith(argKit.toLowerCase())) {
-                if(kit.playerHasPermission(sender)){
-                    completions.add(kit.getName());
+                if(isPreview){
+                    if(!previewRequirestKitPermission){
+                        completions.add(kit.getName());
+                    }else{
+                       if(kit.playerHasPermission(sender)){
+                           completions.add(kit.getName());
+                       }
+                    }
+                }else{
+                    if(kit.playerHasPermission(sender)){
+                        completions.add(kit.getName());
+                    }
                 }
             }
         }
