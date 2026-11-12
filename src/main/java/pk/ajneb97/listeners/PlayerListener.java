@@ -6,6 +6,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import pk.ajneb97.PlayerKits2;
@@ -59,6 +60,24 @@ public class PlayerListener implements Listener {
             if(event.getClickedInventory().equals(InventoryUtils.getTopInventory(player))) {
                 ClickType clickType = event.getClick();
                 invManager.clickInventory(inventoryPlayer,event.getCurrentItem(),clickType);
+            }
+        }
+    }
+
+    // Textured inventories (pack_hidden filler) have empty slots: never let a drag put items into them.
+    @EventHandler
+    public void dragInventory(InventoryDragEvent event){
+        if(!(event.getWhoClicked() instanceof Player)){
+            return;
+        }
+        if(plugin.getInventoryManager().getInventoryPlayer((Player) event.getWhoClicked()) == null){
+            return;
+        }
+        int topSize = event.getView().getTopInventory().getSize();
+        for(int rawSlot : event.getRawSlots()){
+            if(rawSlot < topSize){
+                event.setCancelled(true);
+                return;
             }
         }
     }
