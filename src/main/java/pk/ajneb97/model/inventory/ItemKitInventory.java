@@ -12,6 +12,9 @@ public class ItemKitInventory {
     private String openInventory;
     private List<String> clickActions;
     private String type;
+    private PackIcon packIcon;
+    private boolean packHidden;
+    private boolean packOnly;
 
     public ItemKitInventory(String slotsString, KitItem item, String openInventory, List<String> clickActions, String type) {
         slots = new ArrayList<>();
@@ -82,5 +85,32 @@ public class ItemKitInventory {
 
     public void setClickActions(List<String> clickActions) {
         this.clickActions = clickActions;
+    }
+
+    /** Icon for players with the resource pack ({@code pack_icon}), null for none. */
+    public PackIcon getPackIcon() {
+        return packIcon;
+    }
+
+    public void setPackIcon(PackIcon packIcon) {
+        this.packIcon = packIcon;
+    }
+
+    /** {@code pack_hidden}: left out for players who see the textured inventory (glass filler). */
+    public boolean isPackHidden() {
+        return packHidden;
+    }
+
+    public void setPackHidden(boolean packHidden) {
+        this.packHidden = packHidden;
+    }
+
+    /** {@code pack_only}: shown only to players who see the textured inventory. */
+    public boolean isPackOnly() {
+        return packOnly;
+    }
+
+    public void setPackOnly(boolean packOnly) {
+        this.packOnly = packOnly;
     }
 }

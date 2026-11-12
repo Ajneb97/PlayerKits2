@@ -6,6 +6,8 @@ import pk.ajneb97.configs.model.CommonConfig;
 import pk.ajneb97.managers.KitItemManager;
 import pk.ajneb97.model.inventory.ItemKitInventory;
 import pk.ajneb97.model.inventory.KitInventory;
+import pk.ajneb97.model.inventory.PackIcon;
+import pk.ajneb97.model.inventory.PackStyle;
 import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.OtherUtils;
 import java.util.ArrayList;
@@ -80,7 +82,7 @@ public class InventoryConfigManager {
 
                 List<ItemKitInventory> items = new ArrayList<>();
                 for(String slotString : config.getConfigurationSection("inventories."+key).getKeys(false)) {
-                    if(!slotString.equals("slots") && !slotString.equals("title")) {
+                    if(!slotString.equals("slots") && !slotString.equals("title") && !slotString.equals(PackStyle.SECTION)) {
                         String path = "inventories."+key+"."+slotString;
                         KitItem item = null;
                         if(config.contains(path+".item")){
@@ -97,11 +99,15 @@ public class InventoryConfigManager {
                                 config.getString(path+".type") : null;
 
                         ItemKitInventory itemCraft = new ItemKitInventory(slotString,item,openInventory,clickActions,type);
+                        itemCraft.setPackIcon(PackIcon.fromConfig(config.getConfigurationSection(path+"."+PackIcon.KEY)));
+                        itemCraft.setPackHidden(config.getBoolean(path+".pack_hidden",false));
+                        itemCraft.setPackOnly(config.getBoolean(path+".pack_only",false));
                         items.add(itemCraft);
                     }
                 }
 
                 KitInventory inv = new KitInventory(key,slots,title,items);
+                inv.setPackStyle(PackStyle.fromConfig(config.getConfigurationSection("inventories."+key+"."+PackStyle.SECTION)));
                 inventories.add(inv);
             }
         }
@@ -125,6 +131,9 @@ public class InventoryConfigManager {
             String name = kitInventory.getName();
             config.set("inventories."+name+".slots",kitInventory.getSlots());
             config.set("inventories."+name+".title",kitInventory.getTitle());
+            if(kitInventory.getPackStyle() != null){
+                kitInventory.getPackStyle().save(config,"inventories."+name+"."+PackStyle.SECTION);
+            }
             for(ItemKitInventory item : kitInventory.getItems()){
                 String slotsString = item.getSlotsString();
                 String path = "inventories."+name+"."+slotsString;
@@ -139,6 +148,15 @@ public class InventoryConfigManager {
                 }
                 if(item.getClickActions() != null && !item.getClickActions().isEmpty()){
                     config.set(path+".click_actions",item.getClickActions());
+                }
+                if(item.getPackIcon() != null){
+                    item.getPackIcon().save(config,path+"."+PackIcon.KEY);
+                }
+                if(item.isPackHidden()){
+                    config.set(path+".pack_hidden",true);
+                }
+                if(item.isPackOnly()){
+                    config.set(path+".pack_only",true);
                 }
             }
         }

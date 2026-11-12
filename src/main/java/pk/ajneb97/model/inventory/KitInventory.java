@@ -9,12 +9,22 @@ public class KitInventory {
     private int slots;
     private String title;
     private List<ItemKitInventory> items;
+    private PackStyle packStyle;
 
     public KitInventory(String name, int slots, String title, List<ItemKitInventory> items) {
         this.name = name;
         this.slots = slots;
         this.title = title;
         this.items = items;
+    }
+
+    /** Look for players with the resource pack ({@code pack} section), null for none. */
+    public PackStyle getPackStyle() {
+        return packStyle;
+    }
+
+    public void setPackStyle(PackStyle packStyle) {
+        this.packStyle = packStyle;
     }
 
     public String getName() {

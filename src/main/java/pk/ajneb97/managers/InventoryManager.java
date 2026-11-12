@@ -1,6 +1,7 @@
 package pk.ajneb97.managers;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -18,6 +19,7 @@ import pk.ajneb97.model.internal.PlayerKitsMessageResult;
 import pk.ajneb97.model.inventory.InventoryPlayer;
 import pk.ajneb97.model.inventory.ItemKitInventory;
 import pk.ajneb97.model.inventory.KitInventory;
+import pk.ajneb97.model.inventory.PackStyle;
 import pk.ajneb97.model.item.KitItem;
 import pk.ajneb97.utils.*;
 
@@ -85,10 +87,17 @@ public class InventoryManager {
 
         String title = kitInventory.getTitle();
         if(inventoryPlayer.getInventoryName().equals("buy_requirements_inventory") || inventoryPlayer.getInventoryName().equals("preview_inventory")){
-            title = title.replace("%kit%",inventoryPlayer.getKitName());
+            title = title.replace("%kit%",inventoryPlayer.getKitName())
+                    .replace("%kit_display%",getKitDisplayName(inventoryPlayer.getKitName()));
         }
+        // Textured look for players with the resource pack (inventory.yml "pack" section)
+        PackStyle packStyle = kitInventory.getPackStyle();
+        boolean pack = packStyle != null && PackStyle.hasPack(inventoryPlayer.getPlayer());
         Inventory inv;
-        if(mainConfigManager.isUseMiniMessage()){
+        if(pack){
+            inv = Bukkit.createInventory(null,kitInventory.getSlots(),
+                    MessagesManager.getLegacyColoredMessage(packStyle.title(title,inventoryPlayer.getPlayer(),plugin)));
+        }else if(mainConfigManager.isUseMiniMessage()){
             inv = MiniMessageUtils.createInventory(kitInventory.getSlots(),title);
         }else{
             inv = Bukkit.createInventory(null,kitInventory.getSlots(), MessagesManager.getLegacyColoredMessage(title));
@@ -101,7 +110,13 @@ public class InventoryManager {
 
         //Add items for all inventories
         for(ItemKitInventory itemInventory : items){
+            if(pack ? itemInventory.isPackHidden() : itemInventory.isPackOnly()){
+                continue;
+            }
             for(int slot : itemInventory.getSlots()){
+                if(slot < 0 || slot >= kitInventory.getSlots()){
+                    continue;
+                }
                 String type = itemInventory.getType();
                 if(type != null && type.startsWith("kit: ")){
                     setKit(type.replace("kit: ",""),inventoryPlayer.getPlayer(),inv,slot,kitsManager
@@ -109,7 +124,14 @@ public class InventoryManager {
                     continue;
                 }
 
-                ItemStack item = kitItemManager.createItemFromKitItem(itemInventory.getItem(),inventoryPlayer.getPlayer(),null);
+                KitItem kitItem = itemInventory.getItem();
+                if(kitItem == null){
+                    continue;
+                }
+                if(pack && itemInventory.getPackIcon() != null){
+                    kitItem = itemInventory.getPackIcon().apply(kitItem);
+                }
+                ItemStack item = kitItemManager.createItemFromKitItem(kitItem,inventoryPlayer.getPlayer(),null);
 
                 if(inventoryPlayer.getInventoryName().equals("buy_requirements_inventory")){
                     inventoryRequirementsManager.configureRequirementsItem(item,inventoryPlayer.getKitName(),inventoryPlayer.getPlayer());
@@ -136,6 +158,24 @@ public class InventoryManager {
 
         inventoryPlayer.getPlayer().openInventory(inv);
         players.add(inventoryPlayer);
+    }
+
+    /**
+     * @param kitName a kit's name
+     * @return the name of the kit's default display item without colours (for {@code %kit_display%}
+     * in titles), or the kit name when it has none
+     */
+    public String getKitDisplayName(String kitName){
+        if(kitName == null){
+            return "";
+        }
+        Kit kit = plugin.getKitsManager().getKitByName(kitName);
+        if(kit == null || kit.getDisplayItemDefault() == null || kit.getDisplayItemDefault().getName() == null){
+            return kitName;
+        }
+        String name = ChatColor.stripColor(MessagesManager.getLegacyColoredMessage(kit.getDisplayItemDefault().getName()));
+        name = name.replace("%kit_name%",kitName).trim();
+        return name.isEmpty() ? kitName : name;
     }
 
     private ItemStack setItemActions(ItemKitInventory itemInventory, ItemStack item) {
