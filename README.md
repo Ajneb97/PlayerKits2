@@ -13,5 +13,6 @@ What makes PlayerKits 2 special is its easy way to create kits, just having the 
 
 ## Other Links
 - [Wiki](https://ajneb97.gitbook.io/playerkits-2)
+- [Kit preview layouts](docs/kit-previews.md)
 - [bStats](https://bstats.org/plugin/bukkit/PlayerKits%202/19795)
 - [Support me on Ko-fi](https://ko-fi.com/ajneb97)

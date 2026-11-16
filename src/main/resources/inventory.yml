@@ -37,6 +37,13 @@ inventories:
         id: "ARROW"
         name: "&7Go Back"
       open_inventory: previous
+    49:
+      item:
+        id: "CHEST"
+        name: "&aClaim Kit"
+        lore:
+          - "&7Click to claim this kit."
+      type: preview_claim
   buy_requirements_inventory:
     slots: 27
     title: "&4&lBuy Kit Requirements"

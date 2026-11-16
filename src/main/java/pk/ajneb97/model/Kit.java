@@ -12,6 +12,7 @@ public class Kit {
     private boolean permissionRequired;
     private boolean clearInventory;
     private String customPermission;
+    private String previewInventory;
     private boolean oneTime;
     private ArrayList<KitItem> items;
     private ArrayList<KitAction> claimActions;
@@ -157,6 +158,14 @@ public class Kit {
         this.customPermission = customPermission;
     }
 
+    public String getPreviewInventory() {
+        return previewInventory;
+    }
+
+    public void setPreviewInventory(String previewInventory) {
+        this.previewInventory = previewInventory;
+    }
+
     public boolean isSaveOriginalItems() {
         return saveOriginalItems;
     }
@@ -197,6 +206,7 @@ public class Kit {
         oneTime = defaultKit.isOneTime();
         clearInventory = defaultKit.isClearInventory();
         permissionRequired = defaultKit.isPermissionRequired();
+        previewInventory = defaultKit.getPreviewInventory();
         if(defaultKit.getClaimActions() != null){
             ArrayList<KitAction> actions = new ArrayList<>();
             for(KitAction action : defaultKit.getClaimActions()){

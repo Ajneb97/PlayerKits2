@@ -27,6 +27,11 @@ import java.util.List;
 
 public class InventoryManager {
 
+    private static final String PREVIEW_INVENTORY = "preview_inventory";
+    private static final String REQUIREMENTS_INVENTORY = "buy_requirements_inventory";
+    private static final String PREVIEW_CLAIM_TYPE = "preview_claim";
+    private static final String PREVIEW_CLAIM_TAG = "playerkits_preview_claim";
+
     private PlayerKits2 plugin;
     private ArrayList<KitInventory> inventories;
     private ArrayList<InventoryPlayer> players;
@@ -80,12 +85,26 @@ public class InventoryManager {
     }
 
     public void openInventory(InventoryPlayer inventoryPlayer){
-        KitInventory kitInventory = getInventory(inventoryPlayer.getInventoryName());
+        String inventoryName = inventoryPlayer.getInventoryName();
+        String kitName = inventoryPlayer.getKitName();
+        boolean preview = PREVIEW_INVENTORY.equals(inventoryName) && kitName != null;
+        boolean requirements = REQUIREMENTS_INVENTORY.equals(inventoryName);
+        KitInventory kitInventory = getInventory(inventoryName);
+        KitsManager kitsManager = plugin.getKitsManager();
+        if (preview) {
+            Kit kit = kitsManager.getKitByName(kitName);
+            KitInventory layout = kit == null ? null : getInventory(kit.getPreviewInventory());
+            if (layout != null && !REQUIREMENTS_INVENTORY.equals(layout.getName())
+                    && layout.getTitle() != null && layout.getSlots() >= 9
+                    && layout.getSlots() <= 54 && layout.getSlots() % 9 == 0) {
+                kitInventory = layout;
+            }
+        }
         MainConfigManager mainConfigManager = plugin.getConfigsManager().getMainConfigManager();
 
         String title = kitInventory.getTitle();
-        if(inventoryPlayer.getInventoryName().equals("buy_requirements_inventory") || inventoryPlayer.getInventoryName().equals("preview_inventory")){
-            title = title.replace("%kit%",inventoryPlayer.getKitName());
+        if (kitName != null && (preview || requirements)) {
+            title = title.replace("%kit%", kitName);
         }
         Inventory inv;
         if(mainConfigManager.isUseMiniMessage()){
@@ -96,13 +115,19 @@ public class InventoryManager {
 
         List<ItemKitInventory> items = kitInventory.getItems();
         KitItemManager kitItemManager = plugin.getKitItemManager();
-        KitsManager kitsManager = plugin.getKitsManager();
         PlayerDataManager playerDataManager = plugin.getPlayerDataManager();
 
         //Add items for all inventories
         for(ItemKitInventory itemInventory : items){
+            String type = itemInventory.getType();
+            boolean previewClaim = PREVIEW_CLAIM_TYPE.equals(type);
+            if (previewClaim && (!preview || itemInventory.getItem() == null)) {
+                continue;
+            }
             for(int slot : itemInventory.getSlots()){
-                String type = itemInventory.getType();
+                if (preview && (slot < 0 || slot >= inv.getSize())) {
+                    continue;
+                }
                 if(type != null && type.startsWith("kit: ")){
                     setKit(type.replace("kit: ",""),inventoryPlayer.getPlayer(),inv,slot,kitsManager
                             ,playerDataManager,kitItemManager,null);
@@ -111,8 +136,13 @@ public class InventoryManager {
 
                 ItemStack item = kitItemManager.createItemFromKitItem(itemInventory.getItem(),inventoryPlayer.getPlayer(),null);
 
-                if(inventoryPlayer.getInventoryName().equals("buy_requirements_inventory")){
-                    inventoryRequirementsManager.configureRequirementsItem(item,inventoryPlayer.getKitName(),inventoryPlayer.getPlayer());
+                if (previewClaim) {
+                    inv.setItem(slot, ItemUtils.setTagStringItem(plugin, item, PREVIEW_CLAIM_TAG, kitName));
+                    continue;
+                }
+
+                if(requirements){
+                    inventoryRequirementsManager.configureRequirementsItem(item,kitName,inventoryPlayer.getPlayer());
                     if(type != null){
                         item = ItemUtils.setTagStringItem(plugin,item, "playerkits_buy", type);
                     }
@@ -129,7 +159,7 @@ public class InventoryManager {
         }
 
         //Special items for some inventories
-        if(inventoryPlayer.getInventoryName().equals("preview_inventory")){
+        if(preview){
             setKitPreviewItems(inv,inventoryPlayer,kitInventory);
         }
 
@@ -173,23 +203,42 @@ public class InventoryManager {
             }
         }
 
-        int slot = 0;
-        for(KitItem kitItem : allItems){
-            ItemStack item = kitItemManager.createItemFromKitItem(kitItem,inventoryPlayer.getPlayer(),kit);
-            if(kitItem.getPreviewSlot() != -1){
-                inv.setItem(kitItem.getPreviewSlot(),item);
-            }else{
-                inv.setItem(slot,item);
+        boolean[] reservedSlots = new boolean[inv.getSize()];
+        for (ItemKitInventory entry : kitInventory.getItems()) {
+            List<String> actions = entry.getClickActions();
+            if (entry.getType() == null && entry.getOpenInventory() == null
+                    && (actions == null || actions.isEmpty())) {
+                continue;
             }
-            slot++;
+            for (int slot : entry.getSlots()) {
+                if (slot >= 0 && slot < reservedSlots.length) {
+                    reservedSlots[slot] = true;
+                }
+            }
+        }
 
-            if(slot >= kitInventory.getSlots()){
-                break;
+        int[] preferredSlots = allItems.stream().mapToInt(KitItem::getPreviewSlot).toArray();
+        int[] assignedSlots = PreviewLayout.assignSlots(preferredSlots, reservedSlots);
+        for (int index = 0; index < assignedSlots.length; index++) {
+            int slot = assignedSlots[index];
+            if (slot != -1) {
+                ItemStack item = kitItemManager.createItemFromKitItem(allItems.get(index), inventoryPlayer.getPlayer(), kit);
+                inv.setItem(slot, item);
             }
         }
     }
 
     public void clickInventory(InventoryPlayer inventoryPlayer, ItemStack item, ClickType clickType){
+        if (PREVIEW_INVENTORY.equals(inventoryPlayer.getInventoryName())) {
+            String previewKit = ItemUtils.getTagStringItem(plugin, item, PREVIEW_CLAIM_TAG);
+            if (previewKit != null && previewKit.equals(inventoryPlayer.getKitName())) {
+                if (clickType == ClickType.LEFT || clickType == ClickType.RIGHT) {
+                    clickOnKitItem(inventoryPlayer, previewKit, ClickType.LEFT);
+                }
+                return;
+            }
+        }
+
         String kitName = ItemUtils.getTagStringItem(plugin,item,"playerkits_kit");
         if(kitName != null){
             clickOnKitItem(inventoryPlayer,kitName,clickType);
@@ -208,7 +257,7 @@ public class InventoryManager {
         }
 
         //Requirements inventory
-        if(inventoryPlayer.getInventoryName().equals("buy_requirements_inventory")){
+        if(REQUIREMENTS_INVENTORY.equals(inventoryPlayer.getInventoryName())){
             String buyTag = ItemUtils.getTagStringItem(plugin,item,"playerkits_buy");
             if(buyTag == null){
                 return;
@@ -240,8 +289,10 @@ public class InventoryManager {
                     return;
                 }
             }
-            inventoryPlayer.setPreviousInventoryName(inventoryPlayer.getInventoryName());
-            inventoryPlayer.setInventoryName("preview_inventory");
+            if (!PREVIEW_INVENTORY.equals(inventoryPlayer.getInventoryName())) {
+                inventoryPlayer.setPreviousInventoryName(inventoryPlayer.getInventoryName());
+            }
+            inventoryPlayer.setInventoryName(PREVIEW_INVENTORY);
             inventoryPlayer.setKitName(kitName);
             openInventory(inventoryPlayer);
             return;
@@ -255,9 +306,11 @@ public class InventoryManager {
             return;
         }else{
             if(result.isProceedToBuy()){
-                //Open requirements inventory
-                inventoryPlayer.setPreviousInventoryName(inventoryPlayer.getInventoryName());
-                inventoryPlayer.setInventoryName("buy_requirements_inventory");
+                // A purchase started in a preview returns to the menu that opened it.
+                if (!PREVIEW_INVENTORY.equals(inventoryPlayer.getInventoryName())) {
+                    inventoryPlayer.setPreviousInventoryName(inventoryPlayer.getInventoryName());
+                }
+                inventoryPlayer.setInventoryName(REQUIREMENTS_INVENTORY);
                 inventoryPlayer.setKitName(kitName);
                 openInventory(inventoryPlayer);
                 return;
@@ -275,7 +328,8 @@ public class InventoryManager {
 
     public void clickOnOpenInventoryItem(InventoryPlayer inventoryPlayer,String openInventory){
         if(openInventory.equals("previous")){
-            inventoryPlayer.setInventoryName(inventoryPlayer.getPreviousInventoryName());
+            String previous = inventoryPlayer.getPreviousInventoryName();
+            inventoryPlayer.setInventoryName(previous == null ? "main_inventory" : previous);
         }else{
             inventoryPlayer.setPreviousInventoryName(inventoryPlayer.getInventoryName());
             inventoryPlayer.setInventoryName(openInventory);
