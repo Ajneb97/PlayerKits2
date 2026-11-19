@@ -97,6 +97,10 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 msgManager.sendMessage(player,messagesConfig.getString("pluginCriticalErrors"),true);
                 return true;
             }
+            if(!plugin.getConfigsManager().getMainConfigManager().isKitMenuEnabled()){
+                msgManager.sendMessage(player,messagesConfig.getString("kitMenuDisabled"),true);
+                return true;
+            }
             plugin.getInventoryManager().openInventory(new InventoryPlayer(player,"main_inventory"));
         }
 
