@@ -1,7 +1,8 @@
 package pk.ajneb97.configs;
 
+import io.github.projectunified.minelib.scheduler.async.AsyncScheduler;
+import io.github.projectunified.minelib.scheduler.global.GlobalScheduler;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.scheduler.BukkitRunnable;
 import pk.ajneb97.PlayerKits2;
 import pk.ajneb97.configs.model.CommonConfig;
 import pk.ajneb97.model.PlayerData;
@@ -30,7 +31,7 @@ public class PlayersConfigManager extends DataFolderConfigManager{
     }
 
     public void loadConfig(UUID uuid, GenericCallback<PlayerData> callback) {
-        new BukkitRunnable() {
+        AsyncScheduler.get(plugin).run(new Runnable() {
             @Override
             public void run() {
                 PlayerData playerData = null;
@@ -61,14 +62,14 @@ public class PlayersConfigManager extends DataFolderConfigManager{
 
                 PlayerData finalPlayer = playerData;
 
-                new BukkitRunnable(){
+                GlobalScheduler.get(plugin).run(new Runnable(){
                     @Override
                     public void run() {
                         callback.onDone(finalPlayer);
                     }
-                }.runTask(plugin);
+                });
             }
-        }.runTaskAsynchronously(plugin);
+        });
     }
 
     public void saveConfig(PlayerData playerData){

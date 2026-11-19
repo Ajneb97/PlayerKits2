@@ -1,6 +1,6 @@
 package pk.ajneb97.tasks;
 
-import org.bukkit.scheduler.BukkitRunnable;
+import io.github.projectunified.minelib.scheduler.async.AsyncScheduler;
 import pk.ajneb97.PlayerKits2;
 
 public class PlayerDataSaveTask {
@@ -16,20 +16,16 @@ public class PlayerDataSaveTask {
 		end = true;
 	}
 	
-	public void start(int seconds) {
-		long ticks = seconds* 20L;
-		
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				if(end) {
-					this.cancel();
-				}else {
-					execute();
-				}
+	public void start(int minutes) {
+		long ticks = minutes*60*20;
+		AsyncScheduler.get(plugin).runTimer(() -> {
+			if(end) {
+				return false;
+			}else {
+				execute();
+				return true;
 			}
-			
-		}.runTaskTimerAsynchronously(plugin, 0L, ticks);
+		}, 0L, ticks);
 	}
 	
 	public void execute() {
