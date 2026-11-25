@@ -90,6 +90,11 @@ public class PlayerKits2 extends JavaPlugin {
 
     public void onDisable(){
         this.configsManager.getPlayersConfigManager().saveConfigs();
+
+        if(mySQLConnection != null){
+            mySQLConnection.shutdown();
+        }
+
         Bukkit.getConsoleSender().sendMessage(MessagesManager.getLegacyColoredMessage(prefix+"&eHas been disabled! &fVersion: "+version));
     }
 

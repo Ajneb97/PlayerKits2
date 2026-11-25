@@ -1,11 +1,32 @@
+# Whether kit items should be dropped to the ground if the player doesn't
+# have enough space on its inventory.
 drop_items_if_full_inventory: false
+
+# Whether the /kit claim <kit> should be replaced with /kit <kit>
 claim_kit_short_command: false
+
+# Whether the GUI should be closed when the player claims a kit.
 close_inventory_on_claim: false
+
+# Enable or disable the kit inventory preview system.
 kit_preview: true
+
+# Whether the player needs kit permissions to open the preview inventory.
 kit_preview_requires_kit_permission: false
+
+# Here you can set a valid kit name to give it to players that are
+# joining for the first time.
 first_join_kit: none
+
+# Whether all new kit items should be saved as a copy of the original items.
+# Equivalent of using /kit create <kit> original.
 new_kit_default_save_mode_original: true
+
+# Sets the inventory in which new kits will be automatically added.
 new_kit_default_inventory: "main_inventory"
+
+# Default values for new kits. You can add any kit property from "Kits Tutorial"
+# section on the wiki.
 new_kit_default_values:
   cooldown: 3600
   permission_required: false
@@ -41,9 +62,19 @@ new_kit_default_values:
         - "&cto claim this kit again."
       item_flags:
         - HIDE_ATTRIBUTES
+
+# This option defines the time (in seconds) to automatically save
+# player data.
 player_data_save_time: 300
+
+# Enabled or disable the plugin update message when joining the server.
 update_notify: true
+
+# Defines if every message/text in the plugin should use the MiniMessage format.
+# Only works on Paper 1.19.4+.
 use_minimessage: false
+
+# MySQL support credentials
 mysql_database:
   enabled: false
   host: localhost
@@ -51,8 +82,14 @@ mysql_database:
   username: root
   password: root
   database: database
+
+  # Pool properties:
+  # https://github.com/brettwooldridge/HikariCP#configuration-knobs-baby
   pool:
     connectionTimeout: 5000
+
+  # Advanced properties:
+  # https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html
   advanced:
     verifyServerCertificate: false
     useSSL: true
